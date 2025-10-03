@@ -11,7 +11,6 @@ function App() {
         <h1 className="text-3xl font-bold text-blue-600">Shop Frontend</h1>
         <p className="text-gray-600 mt-2">Tailwind CSS 적용 완료 🎉</p>
         <div className="flex justify-center pt-6">
-  <img src="/logo-black.jpg" alt="로고" className="w-40 h-auto object-contain mx-auto" />
 </div>
     <Router>
       {/* 네비게이션 */}
