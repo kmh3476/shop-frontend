@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../lib/api"; // axios 대신 api 인스턴스 사용
 
 function ProductList() {
   const [products, setProducts] = useState([]);
@@ -14,8 +14,12 @@ function ProductList() {
   }, []);
 
   const fetchProducts = async () => {
-    const res = await axios.get("http://localhost:4000/products");
-    setProducts(res.data);
+    try {
+      const res = await api.get("/products"); // api 인스턴스 사용
+      setProducts(res.data);
+    } catch (err) {
+      console.error("상품 불러오기 실패:", err);
+    }
   };
 
   const addToCart = (product) => {
