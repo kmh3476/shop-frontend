@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import api from "../lib/api"; // axios 대신 api 인스턴스 사용
+import api from "../lib/api";
 
 function Admin() {
   const [products, setProducts] = useState([]);
@@ -9,47 +9,39 @@ function Admin() {
     fetchProducts();
   }, []);
 
-  // 상품 목록 불러오기
   const fetchProducts = async () => {
     try {
-      const res = await api.get("/products"); // http://localhost:4000/api/products
+      const res = await api.get("/products");
       setProducts(res.data);
     } catch (err) {
-      console.error("❌ 상품 불러오기 실패:", err);
+      console.error("상품 불러오기 실패:", err);
     }
   };
 
-  // 입력값 변경
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // 상품 추가
   const addProduct = async () => {
     if (!form.name || !form.price) {
       alert("상품명과 가격은 필수입니다!");
       return;
     }
     try {
-      await api.post("/products", {
-        name: form.name,
-        price: Number(form.price), // 숫자로 변환
-        description: form.description,
-      });
+      await api.post("/products", form);
       setForm({ name: "", price: "", description: "" });
       fetchProducts();
     } catch (err) {
-      console.error("❌ 상품 추가 실패:", err);
+      console.error("상품 추가 실패:", err);
     }
   };
 
-  // 상품 삭제
   const deleteProduct = async (id) => {
     try {
       await api.delete(`/products/${id}`);
       fetchProducts();
     } catch (err) {
-      console.error("❌ 상품 삭제 실패:", err);
+      console.error("상품 삭제 실패:", err);
     }
   };
 
