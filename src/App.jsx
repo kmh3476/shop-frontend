@@ -5,10 +5,16 @@ import Cart from "./pages/Cart";
 
 function App() {
   return (
+    
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
         <h1 className="text-3xl font-bold text-blue-600">Shop Frontend</h1>
         <p className="text-gray-600 mt-2">Tailwind CSS 적용 완료 🎉</p>
+        <img 
+  src="/logo(black).jpg" 
+  alt="로고"
+  className="w-full h-60 object-cover rounded-2xl shadow-lg hover:scale-105 transition"
+/>
     <Router>
       {/* 네비게이션 */}
       <nav style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>
