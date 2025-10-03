@@ -13,7 +13,7 @@ function App() {
         <img 
   src="/logo(black).jpg" 
   alt="로고"
-  className="w-full h-10 object-cover rounded-2xl shadow-lg hover:scale-105 transition justify-center"
+  className="top-0 w-10 h-10 object-cover rounded-2xl shadow-lg justify-center"
 />
     <Router>
       {/* 네비게이션 */}
