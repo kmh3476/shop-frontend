@@ -6,12 +6,19 @@ import Cart from "./pages/Cart";
 function App() {
   return (
     
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
-        <h1 className="text-3xl font-bold text-blue-600">Shop Frontend</h1>
-        <p className="text-gray-600 mt-2">Tailwind CSS 적용 완료 🎉</p>
-        <div className="flex justify-center pt-6">
-</div>
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center">
+  {/* 상단 중앙 제목 */}
+  <h1 className="text-3xl font-bold text-blue-600 mt-8">
+    Shop Frontend
+  </h1>
+
+  {/* 설명 문구 */}
+  <p className="text-gray-600 mt-2">Tailwind CSS 적용 완료 🎉</p>
+
+  {/* 아래쪽에 추가 콘텐츠 (예: 버튼, 로고 등) */}
+  <div className="flex justify-center pt-6">
+    {/* 여기에 버튼이나 이미지 넣으면 됨 */}
+    
     <Router>
       {/* 네비게이션 */}
       <nav style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>
