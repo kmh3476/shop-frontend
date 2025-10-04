@@ -6,31 +6,35 @@ import Cart from "./pages/Cart";
 function App() {
   return (
     <Router>
-      <header className="relative w-full h-64 flex flex-col items-center justify-center text-center bg-white overflow-hidden">
-        {/* 배경 이미지 */}
-        <img
-          src="/logo-wblack.png"
-          alt="Logo"
-          className="absolute inset-0 w-full h-full object-contain"
-        />
-        {/* 텍스트 */}
-        <h1 className="relative z-0 mt-48 text-3xl font-bold text-blue-600">
-          Shop Frontend
-        </h1>
-        <p className="relative z-0 mt-2 text-gray-600">
-          Tailwind CSS 적용 완료 🎉
-        </p>
-      </header>
+<div className="flex flex-col min-h-screen"></div>
 
+      <header className="absolute top-0 left-0 w-full h-96 flex flex-col justify-center items-center text-center text-white">
+  {/* 배경 이미지 */}
+  <img
+    src="/clothes-sample.png"
+    alt="Background"
+    className="absolute inset-0 w-full h-full object-cover z-0"/>
+
+<img
+    src="/logo-wblue.png"
+    alt="tlogo"
+    className="absolute top-2 inset-0 w-full h-full h-20 object-contain z-50"
+  />
+
+  </header>
+
+  {/* 오버레이 (배경 위에 반투명 검은색 레이어) */}
+  <div className="absolute inset-0 h-96 bg-black/40 z-0"></div>
+  
       {/* 네비게이션 */}
-      <nav className="flex space-x-6 py-8 text-lg font-medium w-full justify-center bg-white border-b">
-        <Link to="/products" className="hover:text-blue-500">
+      <nav className="absolute top-0 right-0 flex space-x-6 py-4 px-8 text-lg font-medium">
+        <Link to="/products" className="text-white">
           🛍 상품목록
         </Link>
-        <Link to="/cart" className="hover:text-blue-500">
+        <Link to="/cart" className="text-white">
           🛒 장바구니
         </Link>
-        <Link to="/admin" className="hover:text-blue-500">
+        <Link to="/admin" className="text-white">
           ⚙ 관리자
         </Link>
       </nav>
@@ -46,10 +50,16 @@ function App() {
         </div>
       </main>
 
-      {/* 푸터 */}
-      <footer className="py-4 text-gray-400 text-sm border-t w-full text-center">
-        © 2025 onyou
-      </footer>
+      <footer className="w-full py-2 border-t bg-white flex justify-center items-center space-x-4 text-sm text-gray-500">
+  {/* 로고 먼저 */}
+  <img
+    src="/logo-wblack.png"
+    alt="Logo"
+    className="h-24 object-contain"
+  />
+  {/* 그다음 텍스트 */}
+  <span>© 2025 onyou</span>
+</footer>
     </Router>
   );
 }
