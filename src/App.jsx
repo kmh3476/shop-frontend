@@ -10,16 +10,14 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* ✅ 기본 레이아웃 (홈 + 장바구니 + 관리자) */}
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<div />} /> {/* 홈은 배경만 표시 */}
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/admin" element={<Admin />} />
-        </Route>
+        {/* ✅ 기본 홈화면 (배경 + 로고 + 네비게이션) */}
+        <Route path="/" element={<MainLayout />} />
 
-        {/* ✅ 상품목록 (깨끗한 레이아웃 + 상단 로고 + 장바구니/관리자 메뉴 유지) */}
+        {/* ✅ 깨끗한 화면(CleanLayout)에 들어갈 페이지들 */}
         <Route element={<CleanLayout />}>
           <Route path="/products" element={<ProductList />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/admin" element={<Admin />} />
         </Route>
       </Routes>
     </Router>
