@@ -18,7 +18,7 @@ function App() {
 <img
     src="/logo-wblue.png"
     alt="tlogo"
-    className="absolute top-2 inset-0 w-full h-full h-20 object-contain z-50"
+    className="absolute top-2 inset-0 w-full h-30 h-28 object-contain z-50"
   />
 
   </header>
