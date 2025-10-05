@@ -7,10 +7,10 @@ function Admin() {
     name: "",
     price: "",
     description: "",
-    image: "", // ✅ 이미지 URL
+    imageUrl: "", // ✅ image → imageUrl 로 변경
   });
-  const [imageFile, setImageFile] = useState(null); // ✅ 업로드용 파일
-  const [uploading, setUploading] = useState(false); // ✅ 업로드 상태 표시
+  const [imageFile, setImageFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ function Admin() {
     setImageFile(e.target.files[0]);
   };
 
-  // ✅ 이미지 업로드 (Cloudinary → backend 경유)
+  // ✅ Cloudinary 업로드 (백엔드 경유)
   const uploadImage = async () => {
     if (!imageFile) return null;
     setUploading(true);
@@ -50,10 +50,10 @@ function Admin() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setUploading(false);
-      return res.data.imageUrl; // 백엔드에서 받은 Cloudinary URL
+      return res.data.imageUrl; // ✅ 백엔드에서 반환된 Cloudinary URL
     } catch (err) {
       setUploading(false);
-      console.error("이미지 업로드 실패:", err);
+      console.error("❌ 이미지 업로드 실패:", err);
       alert("이미지 업로드에 실패했습니다.");
       return null;
     }
@@ -70,8 +70,8 @@ function Admin() {
     if (imageFile) imageUrl = await uploadImage();
 
     try {
-      await api.post("/products", { ...form, image: imageUrl });
-      setForm({ name: "", price: "", description: "", image: "" });
+      await api.post("/products", { ...form, imageUrl }); // ✅ image → imageUrl
+      setForm({ name: "", price: "", description: "", imageUrl: "" });
       setImageFile(null);
       fetchProducts();
     } catch (err) {
@@ -86,7 +86,7 @@ function Admin() {
       name: product.name,
       price: product.price,
       description: product.description,
-      image: product.image || "",
+      imageUrl: product.imageUrl || "",
     });
   };
 
@@ -94,13 +94,13 @@ function Admin() {
   const updateProduct = async () => {
     if (!editingId) return;
 
-    let imageUrl = form.image;
+    let imageUrl = form.imageUrl;
     if (imageFile) imageUrl = await uploadImage();
 
     try {
-      await api.put(`/products/${editingId}`, { ...form, image: imageUrl });
+      await api.put(`/products/${editingId}`, { ...form, imageUrl }); // ✅ 필드명 통일
       setEditingId(null);
-      setForm({ name: "", price: "", description: "", image: "" });
+      setForm({ name: "", price: "", description: "", imageUrl: "" });
       setImageFile(null);
       fetchProducts();
     } catch (err) {
@@ -121,7 +121,7 @@ function Admin() {
   // ✅ 폼 초기화
   const cancelEdit = () => {
     setEditingId(null);
-    setForm({ name: "", price: "", description: "", image: "" });
+    setForm({ name: "", price: "", description: "", imageUrl: "" });
     setImageFile(null);
   };
 
@@ -153,14 +153,14 @@ function Admin() {
         onChange={handleChange}
       />
 
-      {/* ✅ 이미지 업로드 부분 */}
+      {/* ✅ 이미지 업로드 */}
       <input type="file" accept="image/*" onChange={handleImageChange} />
       {uploading && <p>이미지 업로드 중...</p>}
-      {form.image && (
+      {form.imageUrl && (
         <img
-          src={form.image}
+          src={form.imageUrl}
           alt="상품 미리보기"
-          style={{ width: "100px", marginTop: "10px" }}
+          style={{ width: "100px", marginTop: "10px", borderRadius: "8px" }}
         />
       )}
 
@@ -177,9 +177,9 @@ function Admin() {
       <ul>
         {products.map((p) => (
           <li key={p._id} style={{ marginBottom: "10px" }}>
-            {p.image && (
+            {p.imageUrl && (
               <img
-                src={p.image}
+                src={p.imageUrl}
                 alt={p.name}
                 style={{
                   width: "60px",
