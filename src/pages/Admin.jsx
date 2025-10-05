@@ -49,7 +49,7 @@ function Admin() {
     formData.append("image", imageFile);
 
     try {
-      // ✅ baseURL에 이미 /api 포함되어 있으므로 /upload만 작성
+      // ✅ /api 중복 제거 → "/upload" 만
       const res = await api.post("/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -139,7 +139,14 @@ function Admin() {
 
       <h2>{editingId ? "상품 수정" : "상품 추가"}</h2>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "300px" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+          width: "300px",
+        }}
+      >
         <input
           type="text"
           name="name"
