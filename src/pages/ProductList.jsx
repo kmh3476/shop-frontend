@@ -14,10 +14,14 @@ function ProductList() {
 
   const fetchProducts = async () => {
     try {
+      // API 요청 로그 찍기 (디버깅용)
+      console.log("📡 Fetching from:", import.meta.env.VITE_API_BASE_URL + "/products");
+
       const res = await api.get("/products");
       setProducts(res.data);
     } catch (err) {
-      console.error("❌ 상품 불러오기 실패:", err);
+      console.error("❌ 상품 불러오기 실패:", err.message, err);
+      alert("서버 연결 실패: 백엔드가 켜져 있는지 확인하세요!");
     }
   };
 
@@ -48,34 +52,47 @@ function ProductList() {
 
       {/* 🔹 상품 리스트 */}
       <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full max-w-6xl">
-        {products.map((p) => (
-          <div
-            key={p._id}
-            className="border rounded-xl p-5 shadow hover:shadow-lg transition bg-white flex flex-col items-center"
-          >
-            {/* ✅ 이미지 표시 (Cloudinary URL 지원) */}
-            <img
-              src={p.image || p.imageUrl || "https://via.placeholder.com/250x200?text=No+Image"}
-              alt={p.name}
-              className="w-full h-48 object-cover rounded-lg mb-4"
-            />
-
-            <h2 className="text-lg font-semibold text-gray-800">{p.name}</h2>
-            <p className="text-gray-500 text-sm mt-1 line-clamp-2">
-              {p.description}
-            </p>
-            <p className="mt-3 font-bold text-blue-600">
-              {p.price.toLocaleString()}원
-            </p>
-
-            <button
-              onClick={() => addToCart(p)}
-              className="mt-4 w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+        {products.length === 0 ? (
+          <p className="text-gray-400 col-span-full text-center">
+            상품이 없습니다 😢
+          </p>
+        ) : (
+          products.map((p) => (
+            <div
+              key={p._id}
+              className="border rounded-xl p-5 shadow hover:shadow-lg transition bg-white flex flex-col items-center"
             >
-              장바구니 담기
-            </button>
-          </div>
-        ))}
+              {/* ✅ 이미지 표시 (백엔드 URL 포함) */}
+              <img
+                src={
+                  p.image?.startsWith("http")
+                    ? p.image
+                    : p.image
+                    ? `${import.meta.env.VITE_API_BASE_URL.replace("/api", "")}/${p.image}`
+                    : "https://placehold.co/250x200?text=No+Image"
+                }
+                alt={p.name}
+                className="w-full h-48 object-cover rounded-lg mb-4"
+                onError={(e) => (e.target.src = "https://placehold.co/250x200?text=No+Image")}
+              />
+
+              <h2 className="text-lg font-semibold text-gray-800">{p.name}</h2>
+              <p className="text-gray-500 text-sm mt-1 line-clamp-2">
+                {p.description}
+              </p>
+              <p className="mt-3 font-bold text-blue-600">
+                {p.price?.toLocaleString()}원
+              </p>
+
+              <button
+                onClick={() => addToCart(p)}
+                className="mt-4 w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+              >
+                장바구니 담기
+              </button>
+            </div>
+          ))
+        )}
       </section>
 
       {/* 🔹 푸터 */}

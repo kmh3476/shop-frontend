@@ -1,4 +1,4 @@
-﻿import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+﻿import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import CleanLayout from "./layouts/CleanLayout";
 
@@ -9,11 +9,34 @@ import Cart from "./pages/Cart";
 function App() {
   return (
     <Router>
+      {/* 🔹 공통 네비게이션 */}
+      <nav
+        style={{
+          padding: "12px 20px",
+          backgroundColor: "#f9fafb",
+          borderBottom: "1px solid #ddd",
+          display: "flex",
+          justifyContent: "center",
+          gap: "20px",
+        }}
+      >
+        <Link to="/products" style={{ textDecoration: "none", color: "#2563eb", fontWeight: "bold" }}>
+          🛍 상품목록
+        </Link>
+        <Link to="/cart" style={{ textDecoration: "none", color: "#2563eb", fontWeight: "bold" }}>
+          🛒 장바구니
+        </Link>
+        <Link to="/admin" style={{ textDecoration: "none", color: "#2563eb", fontWeight: "bold" }}>
+          ⚙ 관리자
+        </Link>
+      </nav>
+
+      {/* 🔹 라우팅 설정 */}
       <Routes>
-        {/* ✅ 기본 홈화면 (배경 + 로고 + 네비게이션) */}
+        {/* ✅ 홈 화면 (MainLayout) */}
         <Route path="/" element={<MainLayout />} />
 
-        {/* ✅ 깨끗한 화면(CleanLayout)에 들어갈 페이지들 */}
+        {/* ✅ CleanLayout 하위 페이지들 */}
         <Route element={<CleanLayout />}>
           <Route path="/products" element={<ProductList />} />
           <Route path="/cart" element={<Cart />} />
