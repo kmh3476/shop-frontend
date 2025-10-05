@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../lib/api";
+import noImage from "../assets/no-image.png";
 
 function Admin() {
   const [products, setProducts] = useState([]);
@@ -176,26 +177,24 @@ function Admin() {
       <h2>상품 목록</h2>
       <ul>
         {products.map((p) => (
-          <li key={p._id} style={{ marginBottom: "10px" }}>
-            {p.imageUrl && (
-              <img
-                src={p.imageUrl}
-                alt={p.name}
-                style={{
-                  width: "60px",
-                  height: "60px",
-                  objectFit: "cover",
-                  borderRadius: "6px",
-                }}
-              />
-            )}
-            <br />
-            <strong>{p.name}</strong> - {p.price}원 <br />
-            {p.description} <br />
-            <button onClick={() => startEdit(p)}>수정</button>
-            <button onClick={() => deleteProduct(p._id)}>삭제</button>
-          </li>
-        ))}
+  <li key={p._id} style={{ marginBottom: "10px" }}>
+    <img
+      src={p.imageUrl || noImage} // ✅ 기본 이미지 처리
+      alt={p.name || "이미지 없음"}
+      style={{
+        width: "60px",
+        height: "60px",
+        objectFit: "cover",
+        borderRadius: "6px",
+      }}
+    />
+    <br />
+    <strong>{p.name}</strong> - {p.price}원 <br />
+    {p.description} <br />
+    <button onClick={() => startEdit(p)}>수정</button>
+    <button onClick={() => deleteProduct(p._id)}>삭제</button>
+  </li>
+))}
       </ul>
     </div>
   );
