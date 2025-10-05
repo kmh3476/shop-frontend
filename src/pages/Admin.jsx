@@ -3,8 +3,15 @@ import api from "../lib/api";
 
 function Admin() {
   const [products, setProducts] = useState([]);
-  const [form, setForm] = useState({ name: "", price: "", description: "" });
-  const [editingId, setEditingId] = useState(null); // ✨ 수정 중인 상품 ID
+  const [form, setForm] = useState({
+    name: "",
+    price: "",
+    description: "",
+    image: "", // ✅ 이미지 URL
+  });
+  const [imageFile, setImageFile] = useState(null); // ✅ 업로드용 파일
+  const [uploading, setUploading] = useState(false); // ✅ 업로드 상태 표시
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     fetchProducts();
@@ -25,15 +32,47 @@ function Admin() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // ✅ 이미지 파일 선택
+  const handleImageChange = (e) => {
+    setImageFile(e.target.files[0]);
+  };
+
+  // ✅ 이미지 업로드 (Cloudinary → backend 경유)
+  const uploadImage = async () => {
+    if (!imageFile) return null;
+    setUploading(true);
+
+    const formData = new FormData();
+    formData.append("image", imageFile);
+
+    try {
+      const res = await api.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setUploading(false);
+      return res.data.imageUrl; // 백엔드에서 받은 Cloudinary URL
+    } catch (err) {
+      setUploading(false);
+      console.error("이미지 업로드 실패:", err);
+      alert("이미지 업로드에 실패했습니다.");
+      return null;
+    }
+  };
+
   // ✅ 상품 추가
   const addProduct = async () => {
     if (!form.name || !form.price) {
       alert("상품명과 가격은 필수입니다!");
       return;
     }
+
+    let imageUrl = "";
+    if (imageFile) imageUrl = await uploadImage();
+
     try {
-      await api.post("/products", form);
-      setForm({ name: "", price: "", description: "" });
+      await api.post("/products", { ...form, image: imageUrl });
+      setForm({ name: "", price: "", description: "", image: "" });
+      setImageFile(null);
       fetchProducts();
     } catch (err) {
       console.error("상품 추가 실패:", err);
@@ -47,16 +86,22 @@ function Admin() {
       name: product.name,
       price: product.price,
       description: product.description,
+      image: product.image || "",
     });
   };
 
   // ✅ 상품 수정 완료
   const updateProduct = async () => {
     if (!editingId) return;
+
+    let imageUrl = form.image;
+    if (imageFile) imageUrl = await uploadImage();
+
     try {
-      await api.put(`/products/${editingId}`, form);
+      await api.put(`/products/${editingId}`, { ...form, image: imageUrl });
       setEditingId(null);
-      setForm({ name: "", price: "", description: "" });
+      setForm({ name: "", price: "", description: "", image: "" });
+      setImageFile(null);
       fetchProducts();
     } catch (err) {
       console.error("상품 수정 실패:", err);
@@ -76,7 +121,8 @@ function Admin() {
   // ✅ 폼 초기화
   const cancelEdit = () => {
     setEditingId(null);
-    setForm({ name: "", price: "", description: "" });
+    setForm({ name: "", price: "", description: "", image: "" });
+    setImageFile(null);
   };
 
   return (
@@ -84,6 +130,7 @@ function Admin() {
       <h1>📦 관리자 페이지</h1>
 
       <h2>{editingId ? "상품 수정" : "상품 추가"}</h2>
+
       <input
         type="text"
         name="name"
@@ -105,6 +152,18 @@ function Admin() {
         value={form.description}
         onChange={handleChange}
       />
+
+      {/* ✅ 이미지 업로드 부분 */}
+      <input type="file" accept="image/*" onChange={handleImageChange} />
+      {uploading && <p>이미지 업로드 중...</p>}
+      {form.image && (
+        <img
+          src={form.image}
+          alt="상품 미리보기"
+          style={{ width: "100px", marginTop: "10px" }}
+        />
+      )}
+
       {editingId ? (
         <>
           <button onClick={updateProduct}>수정 완료</button>
@@ -118,6 +177,19 @@ function Admin() {
       <ul>
         {products.map((p) => (
           <li key={p._id} style={{ marginBottom: "10px" }}>
+            {p.image && (
+              <img
+                src={p.image}
+                alt={p.name}
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  objectFit: "cover",
+                  borderRadius: "6px",
+                }}
+              />
+            )}
+            <br />
             <strong>{p.name}</strong> - {p.price}원 <br />
             {p.description} <br />
             <button onClick={() => startEdit(p)}>수정</button>
