@@ -46,9 +46,7 @@ function Admin() {
     formData.append("image", imageFile);
 
     try {
-      const res = await api.post("/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await api.post("/upload", formData);
       setUploading(false);
       return res.data.imageUrl; // ✅ 백엔드에서 반환된 Cloudinary URL
     } catch (err) {
