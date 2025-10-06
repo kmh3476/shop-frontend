@@ -3,16 +3,6 @@ import { Outlet, Link } from "react-router-dom";
 function CleanLayout() {
   return (
     <div className="min-h-screen bg-white flex flex-col items-center">
-      {/* 상단 네비게이션 */}
-      <nav className="absolute top-[2vh] right-[3vw] flex space-x-6 text-lg font-medium">
-        <Link to="/cart" className="text-gray-700 hover:text-blue-500">
-          🛒 장바구니
-        </Link>
-        <Link to="/admin" className="text-gray-700 hover:text-blue-500">
-          ⚙ 관리자
-        </Link>
-      </nav>
-
       {/* 중앙 로고 */}
       <Link
         to="/"
