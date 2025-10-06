@@ -8,13 +8,15 @@ function ProductList() {
     return saved ? JSON.parse(saved) : [];
   });
 
+  // ✅ 모달 상태 추가
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   useEffect(() => {
     fetchProducts();
   }, []);
 
   const fetchProducts = async () => {
     try {
-      // ✅ 백엔드 API 기본 URL 처리
       const baseURL = import.meta.env.VITE_API_BASE_URL;
       const endpoint = baseURL.endsWith("/api")
         ? `${baseURL}/products`
@@ -67,7 +69,7 @@ function ProductList() {
               key={p._id}
               className="border rounded-xl p-5 shadow hover:shadow-lg transition bg-white flex flex-col items-center"
             >
-              {/* ✅ 이미지 표시 (백엔드 URL 포함) */}
+              {/* ✅ 이미지 클릭 시 모달 열기 */}
               <img
                 src={
                   p.image?.startsWith("http")
@@ -77,9 +79,16 @@ function ProductList() {
                     : "https://placehold.co/250x200?text=No+Image"
                 }
                 alt={p.name}
-                className="w-full h-48 object-cover rounded-lg mb-4"
+                className="w-full h-48 object-cover rounded-lg mb-4 cursor-pointer"
+                onClick={() => setSelectedImage(
+                  p.image?.startsWith("http")
+                    ? p.image
+                    : p.image
+                    ? `${import.meta.env.VITE_API_BASE_URL.replace("/api", "")}/${p.image}`
+                    : "https://placehold.co/600x400?text=No+Image"
+                )}
                 onError={(e) =>
-                  (e.target.src =
+                  (e.currentTarget.src =
                     "https://placehold.co/250x200?text=No+Image")
                 }
               />
@@ -102,6 +111,20 @@ function ProductList() {
           ))
         )}
       </section>
+
+      {/* ✅ 이미지 모달 */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+          onClick={() => setSelectedImage(null)}
+        >
+          <img
+            src={selectedImage}
+            alt="상품 이미지 크게 보기"
+            className="max-w-[90%] max-h-[90%] rounded-lg shadow-lg"
+          />
+        </div>
+      )}
 
       {/* 🔹 푸터 */}
       <footer className="mt-16 text-gray-400 text-sm border-t pt-4 w-full text-center">
