@@ -1,6 +1,12 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 function MainLayout() {
+  const location = useLocation();
+
+  // ✅ 현재 경로가 상품목록, 장바구니, 관리자 중 하나면 네비게이션 숨김
+  const hideNavOnPages = ["/products", "/cart", "/admin"];
+  const shouldHideNav = hideNavOnPages.includes(location.pathname);
+
   return (
     <div className="flex flex-col min-h-screen relative">
       {/* 🔹 상단 배경 헤더 */}
@@ -24,28 +30,26 @@ function MainLayout() {
           />
         </Link>
 
-        {/* 네비게이션 */}
-        <nav className="absolute top-[2vh] right-[3vw] flex space-x-6 text-[clamp(0.8rem,1.5vw,1.1rem)] font-medium z-30">
-          <Link to="/products" className="text-white hover:text-blue-300">
-            🛍 상품목록
-          </Link>
-          <Link to="/cart" className="text-white hover:text-blue-300">
-            🛒 장바구니
-          </Link>
-          <Link to="/admin" className="text-white hover:text-blue-300">
-            ⚙ 관리자
-          </Link>
-        </nav>
+        {/* ✅ 네비게이션 (특정 페이지에서는 숨김) */}
+        {!shouldHideNav && (
+          <nav className="absolute top-[2vh] right-[3vw] flex space-x-6 text-[clamp(0.8rem,1.5vw,1.1rem)] font-medium z-30">
+            <Link to="/products" className="text-white hover:text-blue-300">
+              🛍 상품목록
+            </Link>
+            <Link to="/cart" className="text-white hover:text-blue-300">
+              🛒 장바구니
+            </Link>
+            <Link to="/admin" className="text-white hover:text-blue-300">
+              ⚙ 관리자
+            </Link>
+          </nav>
+        )}
       </header>
 
       {/* 🔹 배경 밑 섹션 */}
       <main className="flex flex-col flex-1 bg-white items-center justify-start p-12">
-        {/* 섹션 제목 */}
-        <h2 className="text-2xl font-bold text-gray-800 mb-10">
-          🥝 추천 상품
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-10">🥝 추천 상품</h2>
 
-        {/* 카드 레이아웃 */}
         <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl w-full">
           {/* 카드 1 */}
           <div className="border rounded-xl shadow hover:shadow-lg transition bg-white overflow-hidden">
