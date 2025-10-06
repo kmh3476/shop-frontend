@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // ✅ 추가
+import { useNavigate } from "react-router-dom";
 import api from "../lib/api";
 
 function ProductList() {
@@ -9,7 +9,7 @@ function ProductList() {
     return saved ? JSON.parse(saved) : [];
   });
 
-  const navigate = useNavigate(); // ✅ 페이지 이동용
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProducts();
@@ -66,16 +66,16 @@ function ProductList() {
           products.map((p) => (
             <div
               key={p._id}
-              onClick={() => navigate(`/products/${p._id}`)} // ✅ 상세페이지 이동
+              onClick={() => navigate(`/products/${p._id}`)}
               className="border rounded-xl p-5 shadow hover:shadow-lg transition bg-white flex flex-col items-center cursor-pointer"
             >
-              {/* ✅ 이미지 표시 */}
+              {/* ✅ 이미지 표시 (Cloudinary + 로컬 모두 지원) */}
               <img
                 src={
                   p.imageUrl?.startsWith("http")
                     ? p.imageUrl
-                    : p.imageUrl
-                    ? `${import.meta.env.VITE_API_BASE_URL.replace("/api", "")}/${p.imageUrl}`
+                    : p.image
+                    ? `${import.meta.env.VITE_API_BASE_URL.replace("/api", "")}/${p.image}`
                     : "https://placehold.co/250x200?text=No+Image"
                 }
                 alt={p.name}
@@ -93,10 +93,9 @@ function ProductList() {
                 {p.price?.toLocaleString()}원
               </p>
 
-              {/* ✅ 장바구니 버튼 (이벤트 전파 방지 추가) */}
               <button
                 onClick={(e) => {
-                  e.stopPropagation(); // 상세페이지 이동 막기
+                  e.stopPropagation();
                   addToCart(p);
                 }}
                 className="mt-4 w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
