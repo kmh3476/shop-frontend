@@ -174,38 +174,48 @@ function Admin() {
 
       <h2 style={{ marginTop: "40px" }}>상품 목록</h2>
       <ul style={{ listStyle: "none", padding: 0 }}>
-        {products.map((p) => (
-          <li
-            key={p._id}
-            style={{
-              marginBottom: "20px",
-              padding: "10px",
-              border: "1px solid #ddd",
-              borderRadius: "10px",
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-            }}
-          >
-            <img
-              src={`${p.imageUrl || p.image || noImage}?v=${Date.now()}`} // ✅ 새 이미지 캐시 무시
-              alt={p.name}
-              style={{
-                width: "80px",
-                height: "80px",
-                objectFit: "cover",
-                borderRadius: "8px",
-              }}
-            />
-            <div style={{ flex: 1 }}>
-              <strong>{p.name}</strong> - {p.price}원 <br />
-              <small>{p.description}</small>
-            </div>
-            <button onClick={() => startEdit(p)}>✏️ 수정</button>
-            <button onClick={() => deleteProduct(p._id)}>🗑 삭제</button>
-          </li>
-        ))}
-      </ul>
+  {products.map((p) => {
+    const imgSrc = (() => {
+      const url = p.imageUrl || p.image || noImage;
+      // ✅ base64 형태이면 그대로 사용 (쿼리 안 붙임)
+      if (url.startsWith("data:image")) return url;
+      // ✅ 일반 URL이면 캐시 무효화를 위해 쿼리 추가
+      return `${url}?v=${Date.now()}`;
+    })();
+
+    return (
+      <li
+        key={p._id}
+        style={{
+          marginBottom: "20px",
+          padding: "10px",
+          border: "1px solid #ddd",
+          borderRadius: "10px",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+        }}
+      >
+        <img
+          src={imgSrc}
+          alt={p.name}
+          style={{
+            width: "80px",
+            height: "80px",
+            objectFit: "cover",
+            borderRadius: "8px",
+          }}
+        />
+        <div style={{ flex: 1 }}>
+          <strong>{p.name}</strong> - {p.price}원 <br />
+          <small>{p.description}</small>
+        </div>
+        <button onClick={() => startEdit(p)}>✏️ 수정</button>
+        <button onClick={() => deleteProduct(p._id)}>🗑 삭제</button>
+      </li>
+    );
+  })}
+</ul>
     </div>
   );
 }
