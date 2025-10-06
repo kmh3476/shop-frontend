@@ -52,41 +52,47 @@ function Admin() {
   };
 
   // ✅ 상품 추가 / 수정
-  const saveProduct = async () => {
-    if (!form.name || !form.price) {
-      alert("상품명과 가격은 필수입니다!");
-      return;
-    }
+const saveProduct = async () => {
+  if (!form.name || !form.price) {
+    alert("상품명과 가격은 필수입니다!");
+    return;
+  }
 
-    const imageUrl = await handleImageUpload();
-    const productData = { ...form, imageUrl };
+  // ✅ 업로드된 이미지 URL 직접 받기
+  const uploadedUrl = await handleImageUpload();
 
-    try {
-      let updatedProduct;
-
-      if (editingId) {
-        // 수정
-        const res = await api.put(`/products/${editingId}`, productData);
-        updatedProduct = res.data;
-        // 상태 즉시 갱신
-        setProducts((prev) =>
-          prev.map((p) => (p._id === editingId ? updatedProduct : p))
-        );
-      } else {
-        // 새로 추가
-        const res = await api.post("/products", productData);
-        updatedProduct = res.data;
-        setProducts((prev) => [...prev, updatedProduct]);
-      }
-
-      // 입력 폼 초기화
-      setEditingId(null);
-      setForm({ name: "", price: "", description: "", imageUrl: "" });
-      setFile(null);
-    } catch (err) {
-      console.error("❌ 상품 저장 실패:", err);
-    }
+  // ✅ 업로드 성공 시 form.imageUrl 교체
+  const productData = {
+    ...form,
+    imageUrl: uploadedUrl || form.imageUrl || "",
   };
+
+  try {
+    let updatedProduct;
+
+    if (editingId) {
+      // 수정
+      const res = await api.put(`/products/${editingId}`, productData);
+      updatedProduct = res.data;
+      setProducts((prev) =>
+        prev.map((p) => (p._id === editingId ? updatedProduct : p))
+      );
+    } else {
+      // 새로 추가
+      const res = await api.post("/products", productData);
+      updatedProduct = res.data;
+      setProducts((prev) => [...prev, updatedProduct]);
+    }
+
+    // 입력 폼 초기화
+    setEditingId(null);
+    setForm({ name: "", price: "", description: "", imageUrl: "" });
+    setFile(null);
+  } catch (err) {
+    console.error("❌ 상품 저장 실패:", err);
+  }
+};
+
 
   // ✅ 수정 모드 진입
   const startEdit = (p) => {
