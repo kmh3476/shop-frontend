@@ -14,10 +14,15 @@ function ProductList() {
 
   const fetchProducts = async () => {
     try {
-      // API 요청 로그 찍기 (디버깅용)
-      console.log("📡 Fetching from:", import.meta.env.VITE_API_BASE_URL + "/products");
+      // ✅ 백엔드 API 기본 URL 처리
+      const baseURL = import.meta.env.VITE_API_BASE_URL;
+      const endpoint = baseURL.endsWith("/api")
+        ? `${baseURL}/products`
+        : `${baseURL}/api/products`;
 
-      const res = await api.get("/products");
+      console.log("📡 Fetching from:", endpoint);
+
+      const res = await api.get(endpoint);
       setProducts(res.data);
     } catch (err) {
       console.error("❌ 상품 불러오기 실패:", err.message, err);
@@ -73,7 +78,10 @@ function ProductList() {
                 }
                 alt={p.name}
                 className="w-full h-48 object-cover rounded-lg mb-4"
-                onError={(e) => (e.target.src = "https://placehold.co/250x200?text=No+Image")}
+                onError={(e) =>
+                  (e.target.src =
+                    "https://placehold.co/250x200?text=No+Image")
+                }
               />
 
               <h2 className="text-lg font-semibold text-gray-800">{p.name}</h2>
