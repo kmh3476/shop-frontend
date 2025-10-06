@@ -4,6 +4,7 @@ import CleanLayout from "./layouts/CleanLayout";
 
 import Admin from "./pages/Admin";
 import ProductList from "./pages/ProductList";
+import ProductDetail from "./pages/ProductDetail"; // ✅ 추가
 import Cart from "./pages/Cart";
 
 function App() {
@@ -20,13 +21,34 @@ function App() {
           gap: "20px",
         }}
       >
-        <Link to="/products" style={{ textDecoration: "none", color: "#2563eb", fontWeight: "bold" }}>
+        <Link
+          to="/products"
+          style={{
+            textDecoration: "none",
+            color: "#2563eb",
+            fontWeight: "bold",
+          }}
+        >
           🛍 상품목록
         </Link>
-        <Link to="/cart" style={{ textDecoration: "none", color: "#2563eb", fontWeight: "bold" }}>
+        <Link
+          to="/cart"
+          style={{
+            textDecoration: "none",
+            color: "#2563eb",
+            fontWeight: "bold",
+          }}
+        >
           🛒 장바구니
         </Link>
-        <Link to="/admin" style={{ textDecoration: "none", color: "#2563eb", fontWeight: "bold" }}>
+        <Link
+          to="/admin"
+          style={{
+            textDecoration: "none",
+            color: "#2563eb",
+            fontWeight: "bold",
+          }}
+        >
           ⚙ 관리자
         </Link>
       </nav>
@@ -39,6 +61,7 @@ function App() {
         {/* ✅ CleanLayout 하위 페이지들 */}
         <Route element={<CleanLayout />}>
           <Route path="/products" element={<ProductList />} />
+          <Route path="/products/:id" element={<ProductDetail />} /> {/* ✅ 추가 */}
           <Route path="/cart" element={<Cart />} />
           <Route path="/admin" element={<Admin />} />
         </Route>

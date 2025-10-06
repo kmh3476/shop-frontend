@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // ✅ 추가
 import api from "../lib/api";
 
 function ProductList() {
@@ -8,20 +9,20 @@ function ProductList() {
     return saved ? JSON.parse(saved) : [];
   });
 
+  const navigate = useNavigate(); // ✅ 페이지 이동용
+
   useEffect(() => {
     fetchProducts();
   }, []);
 
   const fetchProducts = async () => {
     try {
-      // ✅ 백엔드 API 기본 URL 처리
       const baseURL = import.meta.env.VITE_API_BASE_URL;
       const endpoint = baseURL.endsWith("/api")
         ? `${baseURL}/products`
         : `${baseURL}/api/products`;
 
       console.log("📡 Fetching from:", endpoint);
-
       const res = await api.get(endpoint);
       setProducts(res.data);
     } catch (err) {
@@ -65,22 +66,22 @@ function ProductList() {
           products.map((p) => (
             <div
               key={p._id}
-              className="border rounded-xl p-5 shadow hover:shadow-lg transition bg-white flex flex-col items-center"
+              onClick={() => navigate(`/products/${p._id}`)} // ✅ 상세페이지 이동
+              className="border rounded-xl p-5 shadow hover:shadow-lg transition bg-white flex flex-col items-center cursor-pointer"
             >
-              {/* ✅ 이미지 표시 (백엔드 URL 포함) */}
+              {/* ✅ 이미지 표시 */}
               <img
                 src={
-                  p.image?.startsWith("http")
-                    ? p.image
-                    : p.image
-                    ? `${import.meta.env.VITE_API_BASE_URL.replace("/api", "")}/${p.image}`
+                  p.imageUrl?.startsWith("http")
+                    ? p.imageUrl
+                    : p.imageUrl
+                    ? `${import.meta.env.VITE_API_BASE_URL.replace("/api", "")}/${p.imageUrl}`
                     : "https://placehold.co/250x200?text=No+Image"
                 }
                 alt={p.name}
                 className="w-full h-48 object-cover rounded-lg mb-4"
                 onError={(e) =>
-                  (e.target.src =
-                    "https://placehold.co/250x200?text=No+Image")
+                  (e.target.src = "https://placehold.co/250x200?text=No+Image")
                 }
               />
 
@@ -92,8 +93,12 @@ function ProductList() {
                 {p.price?.toLocaleString()}원
               </p>
 
+              {/* ✅ 장바구니 버튼 (이벤트 전파 방지 추가) */}
               <button
-                onClick={() => addToCart(p)}
+                onClick={(e) => {
+                  e.stopPropagation(); // 상세페이지 이동 막기
+                  addToCart(p);
+                }}
                 className="mt-4 w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
               >
                 장바구니 담기
