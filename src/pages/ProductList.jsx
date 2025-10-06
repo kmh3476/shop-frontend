@@ -71,19 +71,19 @@ function ProductList() {
             >
               {/* ✅ 이미지 표시 (Cloudinary + 로컬 모두 지원) */}
               <img
-                src={
-                  p.imageUrl?.startsWith("http")
-                    ? p.imageUrl
-                    : p.image
-                    ? `${import.meta.env.VITE_API_BASE_URL.replace("/api", "")}/${p.image}`
-                    : "https://placehold.co/250x200?text=No+Image"
-                }
-                alt={p.name}
-                className="w-full h-48 object-cover rounded-lg mb-4"
-                onError={(e) =>
-                  (e.target.src = "https://placehold.co/250x200?text=No+Image")
-                }
-              />
+  src={
+    p.image?.startsWith("http")
+      ? p.image
+      : p.imageUrl?.startsWith("http")
+      ? p.imageUrl
+      : "https://placehold.co/250x200?text=No+Image"
+  }
+  alt={p.name}
+  className="w-full h-48 object-cover rounded-lg mb-4"
+  onError={(e) =>
+    (e.target.src = "https://placehold.co/250x200?text=No+Image")
+  }
+/>
 
               <h2 className="text-lg font-semibold text-gray-800">{p.name}</h2>
               <p className="text-gray-500 text-sm mt-1 line-clamp-2">
