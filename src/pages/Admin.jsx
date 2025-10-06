@@ -4,22 +4,16 @@ import noImage from "../assets/no-image.png";
 
 function Admin() {
   const [products, setProducts] = useState([]);
-  const [form, setForm] = useState({
-    name: "",
-    price: "",
-    description: "",
-    imageUrl: "",
-  });
-  const [imageFile, setImageFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
+  const [form, setForm] = useState({ name: "", price: "", description: "", imageUrl: "" });
+  const [file, setFile] = useState(null);
   const [editingId, setEditingId] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
-  // ✅ 처음 로드 시 상품 목록 가져오기
+  // ✅ 상품 목록 로드
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  // ✅ 상품 불러오기
   const fetchProducts = async () => {
     try {
       const res = await api.get("/products");
@@ -30,26 +24,14 @@ function Admin() {
     }
   };
 
-  // ✅ 입력값 변경 처리
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  // ✅ 이미지 파일 선택
-  const handleImageChange = (e) => {
-    setImageFile(e.target.files[0]);
-  };
-
-  // ✅ 이미지 Cloudinary 업로드 (백엔드 경유)
-  const uploadImage = async () => {
-    if (!imageFile) return null;
+  // ✅ 이미지 업로드 (백엔드 경유)
+  const handleImageUpload = async () => {
+    if (!file) return form.imageUrl;
     setUploading(true);
-
     const formData = new FormData();
-    formData.append("image", imageFile);
+    formData.append("image", file);
 
     try {
-      // ✅ /api 중복 제거 → "/upload" 만
       const res = await api.post("/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -59,59 +41,52 @@ function Admin() {
       setUploading(false);
       console.error("❌ 이미지 업로드 실패:", err);
       alert("이미지 업로드에 실패했습니다.");
-      return null;
+      return form.imageUrl;
     }
   };
 
-  // ✅ 상품 추가
-  const addProduct = async () => {
+  // ✅ 상품 등록 또는 수정
+  const saveProduct = async () => {
     if (!form.name || !form.price) {
       alert("상품명과 가격은 필수입니다!");
       return;
     }
 
-    let imageUrl = "";
-    if (imageFile) imageUrl = await uploadImage();
+    const imageUrl = await handleImageUpload();
+    const productData = { ...form, imageUrl };
 
     try {
-      await api.post("/products", { ...form, imageUrl });
+      if (editingId) {
+        await api.put(`/products/${editingId}`, productData);
+        setEditingId(null);
+      } else {
+        await api.post("/products", productData);
+      }
       setForm({ name: "", price: "", description: "", imageUrl: "" });
-      setImageFile(null);
+      setFile(null);
       fetchProducts();
     } catch (err) {
-      console.error("❌ 상품 추가 실패:", err);
-      alert("상품 추가 중 오류가 발생했습니다.");
+      console.error("❌ 상품 저장 실패:", err);
+      alert("상품 저장 중 오류가 발생했습니다.");
     }
   };
 
   // ✅ 수정 모드 진입
-  const startEdit = (product) => {
-    setEditingId(product._id);
+  const startEdit = (p) => {
+    setEditingId(p._id);
     setForm({
-      name: product.name,
-      price: product.price,
-      description: product.description,
-      imageUrl: product.imageUrl || "",
+      name: p.name,
+      price: p.price,
+      description: p.description,
+      imageUrl: p.image || p.imageUrl || "",
     });
   };
 
-  // ✅ 상품 수정
-  const updateProduct = async () => {
-    if (!editingId) return;
-
-    let imageUrl = form.imageUrl;
-    if (imageFile) imageUrl = await uploadImage();
-
-    try {
-      await api.put(`/products/${editingId}`, { ...form, imageUrl });
-      setEditingId(null);
-      setForm({ name: "", price: "", description: "", imageUrl: "" });
-      setImageFile(null);
-      fetchProducts();
-    } catch (err) {
-      console.error("❌ 상품 수정 실패:", err);
-      alert("상품 수정 중 오류가 발생했습니다.");
-    }
+  // ✅ 수정 취소
+  const cancelEdit = () => {
+    setEditingId(null);
+    setForm({ name: "", price: "", description: "", imageUrl: "" });
+    setFile(null);
   };
 
   // ✅ 상품 삭제
@@ -126,74 +101,55 @@ function Admin() {
     }
   };
 
-  // ✅ 수정 취소
-  const cancelEdit = () => {
-    setEditingId(null);
-    setForm({ name: "", price: "", description: "", imageUrl: "" });
-    setImageFile(null);
-  };
-
   return (
     <div style={{ padding: "20px" }}>
       <h1>📦 관리자 페이지</h1>
 
       <h2>{editingId ? "상품 수정" : "상품 추가"}</h2>
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-          width: "300px",
-        }}
-      >
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "300px" }}>
         <input
           type="text"
-          name="name"
           placeholder="상품명"
           value={form.name}
-          onChange={handleChange}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
         />
         <input
           type="number"
-          name="price"
           placeholder="가격"
           value={form.price}
-          onChange={handleChange}
+          onChange={(e) => setForm({ ...form, price: e.target.value })}
         />
         <input
           type="text"
-          name="description"
           placeholder="설명"
           value={form.description}
-          onChange={handleChange}
+          onChange={(e) => setForm({ ...form, description: e.target.value })}
         />
-        <input type="file" accept="image/*" onChange={handleImageChange} />
+        <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files[0])} />
         {uploading && <p>🕓 이미지 업로드 중...</p>}
 
         {/* ✅ 이미지 미리보기 */}
-        {form.imageUrl && (
-          <img
-            src={form.imageUrl || noImage}
-            alt="업로드된 이미지"
-            style={{
-              width: "250px",
-              height: "200px",
-              objectFit: "cover",
-              borderRadius: "8px",
-              marginTop: "10px",
-            }}
-          />
-        )}
+        <img
+          src={
+            file
+              ? URL.createObjectURL(file)
+              : form.imageUrl
+              ? form.imageUrl
+              : noImage
+          }
+          alt="미리보기"
+          style={{
+            width: "250px",
+            height: "200px",
+            objectFit: "cover",
+            borderRadius: "8px",
+            marginTop: "10px",
+          }}
+        />
 
-        {editingId ? (
-          <>
-            <button onClick={updateProduct}>💾 수정 완료</button>
-            <button onClick={cancelEdit}>❌ 취소</button>
-          </>
-        ) : (
-          <button onClick={addProduct}>➕ 추가</button>
-        )}
+        <button onClick={saveProduct}>{editingId ? "💾 수정 완료" : "➕ 상품 추가"}</button>
+        {editingId && <button onClick={cancelEdit}>취소</button>}
       </div>
 
       <h2 style={{ marginTop: "40px" }}>상품 목록</h2>
@@ -212,8 +168,8 @@ function Admin() {
             }}
           >
             <img
-              src={p.imageUrl || noImage}
-              alt={p.name || "이미지 없음"}
+              src={p.image || p.imageUrl || noImage}
+              alt={p.name}
               style={{
                 width: "80px",
                 height: "80px",
