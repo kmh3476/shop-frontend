@@ -26,6 +26,14 @@ function ProductDetail() {
   if (loading) return <p className="text-center mt-10">불러오는 중...</p>;
   if (!product) return <p className="text-center mt-10">상품을 찾을 수 없습니다.</p>;
 
+  // ✅ 이미지 경로 처리 (Cloudinary + 로컬 + 기본 이미지)
+  const imageSrc =
+    product.image?.startsWith("http")
+      ? product.image
+      : product.imageUrl?.startsWith("http")
+      ? product.imageUrl
+      : "https://placehold.co/400x300?text=No+Image";
+
   return (
     <div className="flex flex-col items-center py-10">
       <Link
@@ -37,7 +45,7 @@ function ProductDetail() {
 
       <div className="max-w-2xl w-full bg-white shadow-md rounded-lg overflow-hidden">
         <img
-          src={product.imageUrl || noImage}
+          src={imageSrc}
           alt={product.name}
           onError={(e) => (e.currentTarget.src = noImage)}
           className="w-full h-[350px] object-cover"
@@ -48,7 +56,7 @@ function ProductDetail() {
           </h2>
           <p className="text-gray-500 mb-4">{product.description}</p>
           <p className="text-lg font-bold text-blue-600 mb-6">
-            {product.price.toLocaleString()}원
+            {product.price?.toLocaleString()}원
           </p>
 
           <button className="px-5 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition">
