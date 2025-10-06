@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 
-// ✅ 모달 컴포넌트 추가
+// ✅ 모달 컴포넌트
 function ImageModal({ imageUrl, onClose }) {
   if (!imageUrl) return null;
   return (
@@ -36,8 +36,6 @@ function Admin() {
   const [file, setFile] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
-
-  // ✅ 새로 추가된 모달 상태
   const [selectedImage, setSelectedImage] = useState(null);
 
   // ✅ 상품 목록 불러오기
@@ -54,7 +52,7 @@ function Admin() {
     }
   };
 
-  // ✅ 이미지 업로드 (업로드 후 form.imageUrl 갱신)
+  // ✅ 이미지 업로드
   const handleImageUpload = async () => {
     if (!file) return form.imageUrl;
     setUploading(true);
@@ -69,29 +67,28 @@ function Admin() {
 
       setUploading(false);
 
-      // ✅ 새 이미지 URL을 즉시 상태에 반영
+      // ✅ Cloudinary 업로드 URL 즉시 반영
       const uploadedUrl = res.data.imageUrl;
       setForm((prev) => ({ ...prev, imageUrl: uploadedUrl }));
-
       return uploadedUrl;
     } catch (err) {
       setUploading(false);
       console.error("❌ 이미지 업로드 실패:", err);
-      alert("이미지 업로드에 실패했습니다.");
+      alert("이미지 업로드 실패");
       return form.imageUrl;
     }
   };
 
+  // ✅ 상품 저장
   const saveProduct = async () => {
     if (!form.name || !form.price) {
       alert("상품명과 가격은 필수입니다!");
       return;
     }
 
-    // ✅ 업로드 실행
+    // ✅ Cloudinary 업로드 먼저 실행
     const uploadedUrl = await handleImageUpload();
 
-    // ✅ 저장할 데이터 확정
     const productData = {
       ...form,
       imageUrl: uploadedUrl || form.imageUrl || "",
@@ -101,7 +98,6 @@ function Admin() {
 
     try {
       let updatedProduct;
-
       if (editingId) {
         const res = await api.put(`/products/${editingId}`, productData);
         updatedProduct = res.data;
@@ -114,7 +110,7 @@ function Admin() {
         setProducts((prev) => [...prev, updatedProduct]);
       }
 
-      // 초기화
+      // ✅ 상태 초기화
       setEditingId(null);
       setForm({ name: "", price: "", description: "", imageUrl: "" });
       setFile(null);
@@ -123,7 +119,7 @@ function Admin() {
     }
   };
 
-  // ✅ 수정 모드 진입
+  // ✅ 수정 모드
   const startEdit = (p) => {
     setEditingId(p._id);
     setForm({
@@ -135,7 +131,6 @@ function Admin() {
     setFile(null);
   };
 
-  // ✅ 수정 취소
   const cancelEdit = () => {
     setEditingId(null);
     setForm({ name: "", price: "", description: "", imageUrl: "" });
@@ -153,12 +148,13 @@ function Admin() {
     }
   };
 
-  // ✅ 파일 선택 시 미리보기 즉시 갱신
+  // ✅ 파일 선택 시 미리보기
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     setFile(selected);
     if (selected) {
       const previewUrl = URL.createObjectURL(selected);
+      // ⚡ Cloudinary 업로드 후 교체되므로 임시로만 표시
       setForm((prev) => ({ ...prev, imageUrl: previewUrl }));
     }
   };
@@ -202,10 +198,12 @@ function Admin() {
             marginTop: "10px",
             cursor: "pointer",
           }}
-          onClick={() => setSelectedImage(form.imageUrl || noImage)} // 🔍 클릭 시 확대 보기
+          onClick={() => setSelectedImage(form.imageUrl || noImage)}
         />
 
-        <button onClick={saveProduct}>{editingId ? "💾 수정 완료" : "➕ 상품 추가"}</button>
+        <button onClick={saveProduct}>
+          {editingId ? "💾 수정 완료" : "➕ 상품 추가"}
+        </button>
         {editingId && <button onClick={cancelEdit}>취소</button>}
       </div>
 
@@ -214,7 +212,7 @@ function Admin() {
         {products.map((p) => {
           const url = p.imageUrl || p.image || noImage;
           const safeUrl = typeof url === "string" ? url.trim() : "";
-          const imgSrc = safeUrl.startsWith("data:image")
+          const imgSrc = safeUrl.startsWith("http")
             ? safeUrl
             : `${safeUrl}?v=${Date.now()}`;
 
@@ -242,7 +240,7 @@ function Admin() {
                   cursor: "pointer",
                 }}
                 onError={(e) => (e.currentTarget.src = noImage)}
-                onClick={() => setSelectedImage(imgSrc)} // 🔍 클릭 시 확대 보기
+                onClick={() => setSelectedImage(imgSrc)}
               />
               <div style={{ flex: 1 }}>
                 <strong>{p.name}</strong> - {p.price}원 <br />
@@ -255,7 +253,6 @@ function Admin() {
         })}
       </ul>
 
-      {/* ✅ 이미지 모달 */}
       <ImageModal imageUrl={selectedImage} onClose={() => setSelectedImage(null)} />
     </div>
   );
