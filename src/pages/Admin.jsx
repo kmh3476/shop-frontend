@@ -51,47 +51,46 @@ function Admin() {
     }
   };
 
-const saveProduct = async () => {
-  if (!form.name || !form.price) {
-    alert("상품명과 가격은 필수입니다!");
-    return;
-  }
-
-  // ✅ 업로드 실행
-  const uploadedUrl = await handleImageUpload();
-
-  // ✅ 저장할 데이터 확정
-  const productData = {
-    ...form,
-    imageUrl: uploadedUrl || form.imageUrl || "",
-  };
-
-  console.log("📦 저장 데이터:", productData);
-
-  try {
-    let updatedProduct;
-
-    if (editingId) {
-      const res = await api.put(`/products/${editingId}`, productData);
-      updatedProduct = res.data;
-      setProducts((prev) =>
-        prev.map((p) => (p._id === editingId ? updatedProduct : p))
-      );
-    } else {
-      const res = await api.post("/products", productData);
-      updatedProduct = res.data;
-      setProducts((prev) => [...prev, updatedProduct]);
+  const saveProduct = async () => {
+    if (!form.name || !form.price) {
+      alert("상품명과 가격은 필수입니다!");
+      return;
     }
 
-    // 초기화
-    setEditingId(null);
-    setForm({ name: "", price: "", description: "", imageUrl: "" });
-    setFile(null);
-  } catch (err) {
-    console.error("❌ 상품 저장 실패:", err);
-  }
-};
+    // ✅ 업로드 실행
+    const uploadedUrl = await handleImageUpload();
 
+    // ✅ 저장할 데이터 확정
+    const productData = {
+      ...form,
+      imageUrl: uploadedUrl || form.imageUrl || "",
+    };
+
+    console.log("📦 저장 데이터:", productData);
+
+    try {
+      let updatedProduct;
+
+      if (editingId) {
+        const res = await api.put(`/products/${editingId}`, productData);
+        updatedProduct = res.data;
+        setProducts((prev) =>
+          prev.map((p) => (p._id === editingId ? updatedProduct : p))
+        );
+      } else {
+        const res = await api.post("/products", productData);
+        updatedProduct = res.data;
+        setProducts((prev) => [...prev, updatedProduct]);
+      }
+
+      // 초기화
+      setEditingId(null);
+      setForm({ name: "", price: "", description: "", imageUrl: "" });
+      setFile(null);
+    } catch (err) {
+      console.error("❌ 상품 저장 실패:", err);
+    }
+  };
 
   // ✅ 수정 모드 진입
   const startEdit = (p) => {
@@ -179,48 +178,51 @@ const saveProduct = async () => {
 
       <h2 style={{ marginTop: "40px" }}>상품 목록</h2>
       <ul style={{ listStyle: "none", padding: 0 }}>
-  {products.map((p) => {
-    const imgSrc = (() => {
-      const url = p.imageUrl || p.image || noImage;
-      // ✅ base64 형태이면 그대로 사용 (쿼리 안 붙임)
-      if (url.startsWith("data:image")) return url;
-      // ✅ 일반 URL이면 캐시 무효화를 위해 쿼리 추가
-      return `${url}?v=${Date.now()}`;
-    })();
+        {products.map((p) => {
+          // 🔧 Base64 여부를 안전하게 체크 (공백, undefined 방지)
+          const url = p.imageUrl || p.image || noImage;
+          const safeUrl = typeof url === "string" ? url.trim() : "";
 
-    return (
-      <li
-        key={p._id}
-        style={{
-          marginBottom: "20px",
-          padding: "10px",
-          border: "1px solid #ddd",
-          borderRadius: "10px",
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-        }}
-      >
-        <img
-          src={imgSrc}
-          alt={p.name}
-          style={{
-            width: "80px",
-            height: "80px",
-            objectFit: "cover",
-            borderRadius: "8px",
-          }}
-        />
-        <div style={{ flex: 1 }}>
-          <strong>{p.name}</strong> - {p.price}원 <br />
-          <small>{p.description}</small>
-        </div>
-        <button onClick={() => startEdit(p)}>✏️ 수정</button>
-        <button onClick={() => deleteProduct(p._id)}>🗑 삭제</button>
-      </li>
-    );
-  })}
-</ul>
+          // 🔧 Base64일 경우 쿼리 붙이지 않음
+          const imgSrc = safeUrl.startsWith("data:image")
+            ? safeUrl
+            : `${safeUrl}?v=${Date.now()}`;
+
+          return (
+            <li
+              key={p._id}
+              style={{
+                marginBottom: "20px",
+                padding: "10px",
+                border: "1px solid #ddd",
+                borderRadius: "10px",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+              }}
+            >
+              <img
+                src={imgSrc}
+                alt={p.name}
+                style={{
+                  width: "80px",
+                  height: "80px",
+                  objectFit: "cover",
+                  borderRadius: "8px",
+                }}
+                // 🔧 이미지 에러시 기본 이미지로 대체
+                onError={(e) => (e.currentTarget.src = noImage)}
+              />
+              <div style={{ flex: 1 }}>
+                <strong>{p.name}</strong> - {p.price}원 <br />
+                <small>{p.description}</small>
+              </div>
+              <button onClick={() => startEdit(p)}>✏️ 수정</button>
+              <button onClick={() => deleteProduct(p._id)}>🗑 삭제</button>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
