@@ -51,40 +51,39 @@ function Admin() {
     }
   };
 
-  // ✅ 상품 추가 / 수정
 const saveProduct = async () => {
   if (!form.name || !form.price) {
     alert("상품명과 가격은 필수입니다!");
     return;
   }
 
-  // ✅ 업로드된 이미지 URL 직접 받기
+  // ✅ 업로드 실행
   const uploadedUrl = await handleImageUpload();
 
-  // ✅ 업로드 성공 시 form.imageUrl 교체
+  // ✅ 저장할 데이터 확정
   const productData = {
     ...form,
     imageUrl: uploadedUrl || form.imageUrl || "",
   };
 
+  console.log("📦 저장 데이터:", productData);
+
   try {
     let updatedProduct;
 
     if (editingId) {
-      // 수정
       const res = await api.put(`/products/${editingId}`, productData);
       updatedProduct = res.data;
       setProducts((prev) =>
         prev.map((p) => (p._id === editingId ? updatedProduct : p))
       );
     } else {
-      // 새로 추가
       const res = await api.post("/products", productData);
       updatedProduct = res.data;
       setProducts((prev) => [...prev, updatedProduct]);
     }
 
-    // 입력 폼 초기화
+    // 초기화
     setEditingId(null);
     setForm({ name: "", price: "", description: "", imageUrl: "" });
     setFile(null);
