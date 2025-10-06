@@ -20,7 +20,6 @@ function Admin() {
       setProducts(res.data);
     } catch (err) {
       console.error("❌ 상품 불러오기 실패:", err);
-      alert("상품 목록을 불러오는 중 오류가 발생했습니다.");
     }
   };
 
@@ -45,7 +44,7 @@ function Admin() {
     }
   };
 
-  // ✅ 상품 등록 또는 수정
+  // ✅ 상품 추가 또는 수정
   const saveProduct = async () => {
     if (!form.name || !form.price) {
       alert("상품명과 가격은 필수입니다!");
@@ -56,18 +55,26 @@ function Admin() {
     const productData = { ...form, imageUrl };
 
     try {
+      let updated;
       if (editingId) {
-        await api.put(`/products/${editingId}`, productData);
-        setEditingId(null);
+        const res = await api.put(`/products/${editingId}`, productData);
+        updated = res.data;
+        // 상태에서 해당 상품 교체
+        setProducts((prev) =>
+          prev.map((p) => (p._id === editingId ? updated : p))
+        );
       } else {
-        await api.post("/products", productData);
+        const res = await api.post("/products", productData);
+        updated = res.data;
+        setProducts((prev) => [...prev, updated]);
       }
+
+      // 폼 초기화
+      setEditingId(null);
       setForm({ name: "", price: "", description: "", imageUrl: "" });
       setFile(null);
-      fetchProducts();
     } catch (err) {
       console.error("❌ 상품 저장 실패:", err);
-      alert("상품 저장 중 오류가 발생했습니다.");
     }
   };
 
@@ -78,8 +85,9 @@ function Admin() {
       name: p.name,
       price: p.price,
       description: p.description,
-      imageUrl: p.image || p.imageUrl || "",
+      imageUrl: p.imageUrl || p.image || "",
     });
+    setFile(null);
   };
 
   // ✅ 수정 취소
@@ -94,17 +102,25 @@ function Admin() {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
     try {
       await api.delete(`/products/${id}`);
-      fetchProducts();
+      setProducts((prev) => prev.filter((p) => p._id !== id));
     } catch (err) {
       console.error("❌ 상품 삭제 실패:", err);
-      alert("상품 삭제 중 오류가 발생했습니다.");
+    }
+  };
+
+  // ✅ 파일 선택 시 미리보기 즉시 갱신
+  const handleFileChange = (e) => {
+    const selected = e.target.files[0];
+    setFile(selected);
+    if (selected) {
+      const previewUrl = URL.createObjectURL(selected);
+      setForm((prev) => ({ ...prev, imageUrl: previewUrl }));
     }
   };
 
   return (
     <div style={{ padding: "20px" }}>
       <h1>📦 관리자 페이지</h1>
-
       <h2>{editingId ? "상품 수정" : "상품 추가"}</h2>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "300px" }}>
@@ -126,18 +142,11 @@ function Admin() {
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
         />
-        <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files[0])} />
+        <input type="file" accept="image/*" onChange={handleFileChange} />
         {uploading && <p>🕓 이미지 업로드 중...</p>}
 
-        {/* ✅ 이미지 미리보기 */}
         <img
-          src={
-            file
-              ? URL.createObjectURL(file)
-              : form.imageUrl
-              ? form.imageUrl
-              : noImage
-          }
+          src={form.imageUrl || noImage}
           alt="미리보기"
           style={{
             width: "250px",
@@ -168,7 +177,7 @@ function Admin() {
             }}
           >
             <img
-              src={p.image || p.imageUrl || noImage}
+              src={p.imageUrl || p.image || noImage}
               alt={p.name}
               style={{
                 width: "80px",
