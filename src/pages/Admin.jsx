@@ -2,12 +2,43 @@ import { useEffect, useState } from "react";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 
+// ✅ 모달 컴포넌트 추가
+function ImageModal({ imageUrl, onClose }) {
+  if (!imageUrl) return null;
+  return (
+    <div
+      className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50"
+      onClick={onClose}
+    >
+      <div
+        className="relative max-w-[90vw] max-h-[90vh] flex justify-center items-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <img
+          src={imageUrl}
+          alt="Product"
+          className="max-w-full max-h-full rounded-lg shadow-lg"
+        />
+        <button
+          className="absolute top-2 right-2 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70 transition"
+          onClick={onClose}
+        >
+          ✖
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Admin() {
   const [products, setProducts] = useState([]);
   const [form, setForm] = useState({ name: "", price: "", description: "", imageUrl: "" });
   const [file, setFile] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
+
+  // ✅ 새로 추가된 모달 상태
+  const [selectedImage, setSelectedImage] = useState(null);
 
   // ✅ 상품 목록 불러오기
   useEffect(() => {
@@ -169,7 +200,9 @@ function Admin() {
             objectFit: "cover",
             borderRadius: "8px",
             marginTop: "10px",
+            cursor: "pointer",
           }}
+          onClick={() => setSelectedImage(form.imageUrl || noImage)} // 🔍 클릭 시 확대 보기
         />
 
         <button onClick={saveProduct}>{editingId ? "💾 수정 완료" : "➕ 상품 추가"}</button>
@@ -179,11 +212,8 @@ function Admin() {
       <h2 style={{ marginTop: "40px" }}>상품 목록</h2>
       <ul style={{ listStyle: "none", padding: 0 }}>
         {products.map((p) => {
-          // 🔧 Base64 여부를 안전하게 체크 (공백, undefined 방지)
           const url = p.imageUrl || p.image || noImage;
           const safeUrl = typeof url === "string" ? url.trim() : "";
-
-          // 🔧 Base64일 경우 쿼리 붙이지 않음
           const imgSrc = safeUrl.startsWith("data:image")
             ? safeUrl
             : `${safeUrl}?v=${Date.now()}`;
@@ -209,9 +239,10 @@ function Admin() {
                   height: "80px",
                   objectFit: "cover",
                   borderRadius: "8px",
+                  cursor: "pointer",
                 }}
-                // 🔧 이미지 에러시 기본 이미지로 대체
                 onError={(e) => (e.currentTarget.src = noImage)}
+                onClick={() => setSelectedImage(imgSrc)} // 🔍 클릭 시 확대 보기
               />
               <div style={{ flex: 1 }}>
                 <strong>{p.name}</strong> - {p.price}원 <br />
@@ -223,6 +254,9 @@ function Admin() {
           );
         })}
       </ul>
+
+      {/* ✅ 이미지 모달 */}
+      <ImageModal imageUrl={selectedImage} onClose={() => setSelectedImage(null)} />
     </div>
   );
 }
