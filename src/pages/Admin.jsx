@@ -9,7 +9,7 @@ function Admin() {
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  // ✅ 상품 목록 로드
+  // ✅ 상품 목록 불러오기
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -23,10 +23,11 @@ function Admin() {
     }
   };
 
-  // ✅ 이미지 업로드 (백엔드 경유)
+  // ✅ 이미지 업로드 (업로드 후 form.imageUrl 갱신)
   const handleImageUpload = async () => {
     if (!file) return form.imageUrl;
     setUploading(true);
+
     const formData = new FormData();
     formData.append("image", file);
 
@@ -34,8 +35,14 @@ function Admin() {
       const res = await api.post("/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+
       setUploading(false);
-      return res.data.imageUrl;
+
+      // ✅ 새 이미지 URL을 즉시 상태에 반영
+      const uploadedUrl = res.data.imageUrl;
+      setForm((prev) => ({ ...prev, imageUrl: uploadedUrl }));
+
+      return uploadedUrl;
     } catch (err) {
       setUploading(false);
       console.error("❌ 이미지 업로드 실패:", err);
@@ -44,7 +51,7 @@ function Admin() {
     }
   };
 
-  // ✅ 상품 추가 또는 수정
+  // ✅ 상품 추가 / 수정
   const saveProduct = async () => {
     if (!form.name || !form.price) {
       alert("상품명과 가격은 필수입니다!");
@@ -55,21 +62,24 @@ function Admin() {
     const productData = { ...form, imageUrl };
 
     try {
-      let updated;
+      let updatedProduct;
+
       if (editingId) {
+        // 수정
         const res = await api.put(`/products/${editingId}`, productData);
-        updated = res.data;
-        // 상태에서 해당 상품 교체
+        updatedProduct = res.data;
+        // 상태 즉시 갱신
         setProducts((prev) =>
-          prev.map((p) => (p._id === editingId ? updated : p))
+          prev.map((p) => (p._id === editingId ? updatedProduct : p))
         );
       } else {
+        // 새로 추가
         const res = await api.post("/products", productData);
-        updated = res.data;
-        setProducts((prev) => [...prev, updated]);
+        updatedProduct = res.data;
+        setProducts((prev) => [...prev, updatedProduct]);
       }
 
-      // 폼 초기화
+      // 입력 폼 초기화
       setEditingId(null);
       setForm({ name: "", price: "", description: "", imageUrl: "" });
       setFile(null);
@@ -145,6 +155,7 @@ function Admin() {
         <input type="file" accept="image/*" onChange={handleFileChange} />
         {uploading && <p>🕓 이미지 업로드 중...</p>}
 
+        {/* ✅ 미리보기 */}
         <img
           src={form.imageUrl || noImage}
           alt="미리보기"
@@ -177,7 +188,7 @@ function Admin() {
             }}
           >
             <img
-              src={p.imageUrl || p.image || noImage}
+              src={`${p.imageUrl || p.image || noImage}?v=${Date.now()}`} // ✅ 새 이미지 캐시 무시
               alt={p.name}
               style={{
                 width: "80px",
