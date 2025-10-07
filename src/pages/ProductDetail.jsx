@@ -244,13 +244,13 @@ function ProductDetail() {
             <h2 className="text-lg font-semibold mb-2">📋 상품 상세정보</h2>
             <p>{product.description || "상품 상세정보가 없습니다."}</p>
             {product.images?.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
+              <div className="flex flex-col items-center gap-6 mt-6">
                 {product.images.map((img, idx) => (
                   <img
                     key={idx}
                     src={img}
                     alt={`detail-${idx}`}
-                    className="rounded-md w-full object-cover"
+                    className="w-full max-w-[600px] object-contain rounded-md shadow-sm"
                     onError={(e) => (e.currentTarget.src = noImage)}
                   />
                 ))}
