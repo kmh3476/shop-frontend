@@ -3,25 +3,24 @@ import { Link } from "react-router-dom";
 function MainLayout() {
   return (
     <div className="flex flex-col min-h-screen relative">
+      {/* 🔹 메인 헤더 (배경만 표시) */}
+      <header className="relative w-full h-[60vh] flex flex-col justify-center items-center text-center text-white overflow-hidden">
+        {/* 배경 이미지 */}
+        <img
+          src="/woodcard.jpg"
+          alt="background"
+          className="absolute inset-0 w-full h-full object-cover z-0"
+        />
 
-<header className="relative w-full h-[40vh] flex flex-col justify-center items-center text-center text-white overflow-hidden">
-  {/* 🔹 배경 이미지 */}
-  <img
-    src="/woodcard.jpg"
-    alt="background"
-    className="absolute inset-0 w-full h-full object-cover z-0"
-  />
+        {/* 반투명 오버레이 */}
+        <div className="absolute inset-0 bg-black/30 z-10"></div>
 
-  {/* 🔹 반투명 오버레이*/}
-  <div className="absolute inset-0 bg-black/40 z-10"></div>
-
-  {/* 🔹 헤더 내용 */}
-    <div className="relative z-20">
-  </div>
-</header>
+        {/* 내용 없음 (배경 전용) */}
+        <div className="relative z-20"></div>
+      </header>
 
       {/* 🔹 추천 상품 섹션 */}
-      <main className="flex flex-col flex-1 bg-white items-center justify-start p-12">
+      <main className="flex flex-col flex-1 bg-white items-center justify-start p-12 relative z-30">
         <h2 className="text-2xl font-bold text-gray-800 mb-10">🥝 추천 상품</h2>
 
         <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl w-full">
