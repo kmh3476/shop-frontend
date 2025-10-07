@@ -32,8 +32,13 @@ function ImageModal({ imageUrl, onClose }) {
 
 function Admin() {
   const [products, setProducts] = useState([]);
-  const [form, setForm] = useState({ name: "", price: "", description: "", imageUrl: "" });
-  const [file, setFile] = useState(null);
+  const [form, setForm] = useState({
+    name: "",
+    price: "",
+    description: "",
+    images: [],
+  });
+  const [files, setFiles] = useState([]); // ✅ 다중 파일
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -52,30 +57,32 @@ function Admin() {
     }
   };
 
-  // ✅ 이미지 업로드
+  // ✅ 여러 이미지 업로드
   const handleImageUpload = async () => {
-    if (!file) return form.imageUrl;
-    setUploading(true);
+    if (files.length === 0) return form.images;
 
-    const formData = new FormData();
-    formData.append("image", file);
+    setUploading(true);
+    const uploadedUrls = [];
 
     try {
-      const res = await api.post("/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("image", file);
+
+        const res = await api.post("/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        uploadedUrls.push(res.data.imageUrl);
+      }
 
       setUploading(false);
-
-      // ✅ Cloudinary 업로드 URL 즉시 반영
-      const uploadedUrl = res.data.imageUrl;
-      setForm((prev) => ({ ...prev, imageUrl: uploadedUrl }));
-      return uploadedUrl;
+      return [...form.images, ...uploadedUrls];
     } catch (err) {
       setUploading(false);
       console.error("❌ 이미지 업로드 실패:", err);
-      alert("이미지 업로드 실패");
-      return form.imageUrl;
+      alert("이미지 업로드에 실패했습니다.");
+      return form.images;
     }
   };
 
@@ -86,15 +93,12 @@ function Admin() {
       return;
     }
 
-    // ✅ Cloudinary 업로드 먼저 실행
-    const uploadedUrl = await handleImageUpload();
+    const uploadedImages = await handleImageUpload();
 
     const productData = {
       ...form,
-      imageUrl: uploadedUrl || form.imageUrl || "",
+      images: uploadedImages.length > 0 ? uploadedImages : form.images,
     };
-
-    console.log("📦 저장 데이터:", productData);
 
     try {
       let updatedProduct;
@@ -110,10 +114,9 @@ function Admin() {
         setProducts((prev) => [...prev, updatedProduct]);
       }
 
-      // ✅ 상태 초기화
       setEditingId(null);
-      setForm({ name: "", price: "", description: "", imageUrl: "" });
-      setFile(null);
+      setForm({ name: "", price: "", description: "", images: [] });
+      setFiles([]);
     } catch (err) {
       console.error("❌ 상품 저장 실패:", err);
     }
@@ -126,18 +129,37 @@ function Admin() {
       name: p.name,
       price: p.price,
       description: p.description,
-      imageUrl: p.imageUrl || p.image || "",
+      images: p.images || (p.imageUrl ? [p.imageUrl] : []),
     });
-    setFile(null);
+    setFiles([]);
   };
 
+  // ✅ 수정 취소
   const cancelEdit = () => {
     setEditingId(null);
-    setForm({ name: "", price: "", description: "", imageUrl: "" });
-    setFile(null);
+    setForm({ name: "", price: "", description: "", images: [] });
+    setFiles([]);
   };
 
-  // ✅ 상품 삭제
+  // ✅ 이미지 미리보기 + 삭제
+  const handleFileChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    setFiles(selectedFiles);
+
+    const previewUrls = selectedFiles.map((file) => URL.createObjectURL(file));
+    setForm((prev) => ({
+      ...prev,
+      images: [...prev.images, ...previewUrls],
+    }));
+  };
+
+  const removeImage = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }));
+  };
+
   const deleteProduct = async (id) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
     try {
@@ -148,23 +170,20 @@ function Admin() {
     }
   };
 
-  // ✅ 파일 선택 시 미리보기
-  const handleFileChange = (e) => {
-    const selected = e.target.files[0];
-    setFile(selected);
-    if (selected) {
-      const previewUrl = URL.createObjectURL(selected);
-      // ⚡ Cloudinary 업로드 후 교체되므로 임시로만 표시
-      setForm((prev) => ({ ...prev, imageUrl: previewUrl }));
-    }
-  };
-
   return (
     <div style={{ padding: "20px" }}>
       <h1>📦 관리자 페이지</h1>
       <h2>{editingId ? "상품 수정" : "상품 추가"}</h2>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "300px" }}>
+      {/* ✅ 상품 입력폼 */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+          width: "320px",
+        }}
+      >
         <input
           type="text"
           placeholder="상품명"
@@ -183,23 +202,60 @@ function Admin() {
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
         />
-        <input type="file" accept="image/*" onChange={handleFileChange} />
+
+        {/* ✅ 여러 장 업로드 */}
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleFileChange}
+        />
+
         {uploading && <p>🕓 이미지 업로드 중...</p>}
 
-        {/* ✅ 미리보기 */}
-        <img
-          src={form.imageUrl || noImage}
-          alt="미리보기"
+        {/* ✅ 이미지 미리보기 */}
+        <div
           style={{
-            width: "250px",
-            height: "200px",
-            objectFit: "cover",
-            borderRadius: "8px",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "10px",
             marginTop: "10px",
-            cursor: "pointer",
           }}
-          onClick={() => setSelectedImage(form.imageUrl || noImage)}
-        />
+        >
+          {form.images.map((img, idx) => (
+            <div key={idx} style={{ position: "relative" }}>
+              <img
+                src={img}
+                alt={`preview-${idx}`}
+                style={{
+                  width: "80px",
+                  height: "80px",
+                  objectFit: "cover",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                }}
+                onClick={() => setSelectedImage(img)}
+              />
+              <button
+                onClick={() => removeImage(idx)}
+                style={{
+                  position: "absolute",
+                  top: "-6px",
+                  right: "-6px",
+                  background: "rgba(0,0,0,0.6)",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: "20px",
+                  height: "20px",
+                  cursor: "pointer",
+                }}
+              >
+                ✖
+              </button>
+            </div>
+          ))}
+        </div>
 
         <button onClick={saveProduct}>
           {editingId ? "💾 수정 완료" : "➕ 상품 추가"}
@@ -207,15 +263,14 @@ function Admin() {
         {editingId && <button onClick={cancelEdit}>취소</button>}
       </div>
 
+      {/* ✅ 상품 목록 */}
       <h2 style={{ marginTop: "40px" }}>상품 목록</h2>
       <ul style={{ listStyle: "none", padding: 0 }}>
         {products.map((p) => {
-          const url = p.imageUrl || p.image || noImage;
-          const safeUrl = typeof url === "string" ? url.trim() : "";
-          const imgSrc = safeUrl.startsWith("http")
-            ? safeUrl
-            : `${safeUrl}?v=${Date.now()}`;
-
+          const firstImage =
+            (p.images && p.images[0]) ||
+            p.imageUrl ||
+            "https://placehold.co/100x100?text=No+Image";
           return (
             <li
               key={p._id}
@@ -230,7 +285,7 @@ function Admin() {
               }}
             >
               <img
-                src={imgSrc}
+                src={firstImage}
                 alt={p.name}
                 style={{
                   width: "80px",
@@ -239,8 +294,10 @@ function Admin() {
                   borderRadius: "8px",
                   cursor: "pointer",
                 }}
-                onError={(e) => (e.currentTarget.src = noImage)}
-                onClick={() => setSelectedImage(imgSrc)}
+                onClick={() => setSelectedImage(firstImage)}
+                onError={(e) =>
+                  (e.currentTarget.src = "https://placehold.co/100x100?text=No+Image")
+                }
               />
               <div style={{ flex: 1 }}>
                 <strong>{p.name}</strong> - {p.price}원 <br />
@@ -253,6 +310,7 @@ function Admin() {
         })}
       </ul>
 
+      {/* ✅ 이미지 확대 모달 */}
       <ImageModal imageUrl={selectedImage} onClose={() => setSelectedImage(null)} />
     </div>
   );
