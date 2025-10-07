@@ -128,35 +128,39 @@ const handleImageUpload = async () => {
 };
 
 
-  const saveProduct = async () => {
-  if (!form.name || !form.price) {
-    alert("상품명과 가격은 필수입니다!");
-    return;
-  }
+    const saveProduct = async () => {
+    if (!form.name || !form.price) {
+      alert("상품명과 가격은 필수입니다!");
+      return;
+    }
 
-  const uploadedImages = await handleImageUpload();
+    const uploadedImages = await handleImageUpload();
 
-  // ✅ 중복 제거 + blob 제거 + 공백 제거
-  const cleanImages = [...form.images, ...uploadedImages]
-    .filter((img) => img && !img.startsWith("blob:"))
-    .filter((v, i, arr) => arr.indexOf(v) === i);
+    // ✅ 중복 제거 + blob 제거 + 공백 제거
+    const cleanImages = [...form.images, ...uploadedImages]
+      .filter((img) => img && !img.startsWith("blob:"))
+      .filter((v, i, arr) => arr.indexOf(v) === i);
 
-  // ✅ 대표 이미지가 누락되지 않게, 중복 방지
-  const productData = {
-    name: form.name.trim(),
-    price: Number(form.price),
-    description: form.description.trim(),
-    images: cleanImages.filter((img) => img !== form.mainImage), // 중복 제거
-    mainImage:
+    // ✅ 대표 이미지가 누락되지 않게 / images에 포함되도록 보장
+    let mainImg =
       form.mainImage && !form.mainImage.startsWith("blob:")
         ? form.mainImage
         : uploadedImages[0] ||
           cleanImages[0] ||
-          "https://placehold.co/250x200?text=No+Image",
-  };
+          "https://placehold.co/250x200?text=No+Image";
 
+    // ✅ mainImage가 images 배열에 없다면 추가
+    if (!cleanImages.includes(mainImg)) {
+      cleanImages.unshift(mainImg);
+    }
 
-
+    const productData = {
+      name: form.name.trim(),
+      price: Number(form.price),
+      description: form.description.trim(),
+      images: cleanImages,
+      mainImage: mainImg,
+    };
 
     try {
       let result;
@@ -183,6 +187,7 @@ const handleImageUpload = async () => {
       console.error("❌ 상품 저장 실패:", err);
     }
   };
+
 
   const startEdit = (p) => {
   setEditingId(p._id);
