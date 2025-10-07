@@ -4,7 +4,7 @@ import { useParams, Link } from "react-router-dom";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 
-// ✅ 이미지 모달 (크게 보기 + 반응형 확대)
+// ✅ 수정된 ImageModal
 function ImageModal({ imageUrl, onClose }) {
   if (!imageUrl) return null;
   return (
@@ -16,12 +16,17 @@ function ImageModal({ imageUrl, onClose }) {
         className="relative flex justify-center items-center"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* ✅ 이미지: 창 크기에 맞게 자동 조정 + 확대 가능 */}
+        {/* ✅ 핵심 수정 부분 */}
         <img
           src={imageUrl}
           alt="Product"
-          className="max-w-[95vw] max-h-[95vh] object-contain rounded-lg shadow-2xl transition-transform duration-300 hover:scale-105"
-          style={{ width: "auto", height: "auto" }}
+          className="rounded-lg shadow-2xl transition-transform duration-300 hover:scale-105"
+          style={{
+            width: "min(90vw, 1000px)", // 👉 화면 너비 90% 또는 최대 1000px까지 확대
+            height: "auto",
+            maxHeight: "90vh", // 세로 제한 (화면 넘치지 않게)
+            objectFit: "contain",
+          }}
         />
         <button
           className="absolute top-3 right-3 text-white bg-black/60 px-3 py-2 rounded-full hover:bg-black/80 transition"
@@ -33,6 +38,7 @@ function ImageModal({ imageUrl, onClose }) {
     </div>
   );
 }
+
 
 function ProductDetail() {
   const { id } = useParams();
