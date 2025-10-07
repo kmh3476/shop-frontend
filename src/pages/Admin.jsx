@@ -96,101 +96,104 @@ function Admin() {
     }
   };
 
-// ✅ 여러 이미지 업로드 (완전 안정화)
+// ✅ 여러 이미지 업로드 (모두 반영되도록 수정)
 const handleImageUpload = async () => {
-  if (files.length === 0)
+  if (!files.length) {
+    // 기존 Cloudinary URL만 유지 (blob 제거)
     return form.images.filter((img) => !img.startsWith("blob:"));
+  }
 
   setUploading(true);
   try {
-    // 여러 장 동시에 업로드 (속도 향상)
-    const uploadPromises = files.map(async (file) => {
+    // ✅ 모든 파일을 병렬로 업로드
+    const uploadPromises = files.map((file) => {
       const formData = new FormData();
       formData.append("image", file);
-      const res = await api.post("/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      return res.data.imageUrl;
+      return api
+        .post("/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        })
+        .then((res) => res.data.imageUrl)
+        .catch((err) => {
+          console.error("❌ 개별 이미지 업로드 실패:", err);
+          return null;
+        });
     });
 
-    const uploadedUrls = await Promise.all(uploadPromises);
+    const uploadedUrls = (await Promise.all(uploadPromises)).filter(Boolean);
 
-    // ✅ 기존 Cloudinary URL 유지 (blob 제거)
-    const validExisting = form.images.filter(
-      (img) => img && !img.startsWith("blob:")
-    );
+    // ✅ 기존 Cloudinary URL + 새 업로드 이미지 병합
+    const existing = form.images.filter((img) => !img.startsWith("blob:"));
+    const merged = [...existing, ...uploadedUrls];
 
     setUploading(false);
-    return [...validExisting, ...uploadedUrls];
+    return merged;
   } catch (err) {
-    console.error("❌ 이미지 업로드 실패:", err);
-    alert("이미지 업로드 중 오류가 발생했습니다.");
+    console.error("❌ 이미지 업로드 중 오류:", err);
     setUploading(false);
+    alert("이미지 업로드 중 오류가 발생했습니다.");
     return form.images.filter((img) => !img.startsWith("blob:"));
   }
 };
 
 
 
-    const saveProduct = async () => {
-    if (!form.name || !form.price) {
-      alert("상품명과 가격은 필수입니다!");
-      return;
-    }
 
-    const uploadedImages = await handleImageUpload();
+const saveProduct = async () => {
+  if (!form.name || !form.price) {
+    alert("상품명과 가격은 필수입니다!");
+    return;
+  }
 
-    // ✅ 중복 제거 + blob 제거 + 공백 제거
-    const cleanImages = [...form.images, ...uploadedImages]
-      .filter((img) => img && !img.startsWith("blob:"))
-      .filter((v, i, arr) => arr.indexOf(v) === i);
+  // ✅ 모든 이미지 업로드 후 배열 병합
+  const uploadedImages = await handleImageUpload();
 
-    // ✅ 대표 이미지가 누락되지 않게 / images에 포함되도록 보장
-    let mainImg =
-      form.mainImage && !form.mainImage.startsWith("blob:")
-        ? form.mainImage
-        : uploadedImages[0] ||
-          cleanImages[0] ||
-          "https://placehold.co/250x200?text=No+Image";
+  // ✅ 중복 제거 + blob 제거
+  const cleanImages = uploadedImages
+    .filter((img) => img && !img.startsWith("blob:"))
+    .filter((v, i, arr) => arr.indexOf(v) === i);
 
-    // ✅ mainImage가 images 배열에 없다면 추가
-    if (!cleanImages.includes(mainImg)) {
-      cleanImages.unshift(mainImg);
-    }
+  // ✅ 대표 이미지 보존
+  const mainImg =
+    form.mainImage && cleanImages.includes(form.mainImage)
+      ? form.mainImage
+      : cleanImages[0] || "https://placehold.co/250x200?text=No+Image";
 
-    const productData = {
-      name: form.name.trim(),
-      price: Number(form.price),
-      description: form.description.trim(),
-      images: cleanImages,
-      mainImage: mainImg,
-    };
-
-    try {
-      let result;
-      if (editingId) {
-        result = await api.put(`/products/${editingId}`, productData);
-        setProducts((prev) =>
-          prev.map((p) => (p._id === editingId ? result.data : p))
-        );
-      } else {
-        result = await api.post("/products", productData);
-        setProducts((prev) => [...prev, result.data]);
-      }
-
-      setEditingId(null);
-      setForm({
-        name: "",
-        price: "",
-        description: "",
-        images: [],
-        mainImage: "",
-      });
-      setFiles([]);
-    } catch (err) {
-      console.error("❌ 상품 저장 실패:", err);
-    }
+  const productData = {
+    name: form.name.trim(),
+    price: Number(form.price),
+    description: form.description.trim(),
+    images: cleanImages,
+    mainImage: mainImg,
   };
+
+  try {
+    let result;
+    if (editingId) {
+      result = await api.put(`/products/${editingId}`, productData);
+      setProducts((prev) =>
+        prev.map((p) => (p._id === editingId ? result.data : p))
+      );
+    } else {
+      result = await api.post("/products", productData);
+      setProducts((prev) => [result.data, ...prev]); // 최신이 위로
+    }
+
+    // ✅ 폼 초기화
+    setEditingId(null);
+    setForm({
+      name: "",
+      price: "",
+      description: "",
+      images: [],
+      mainImage: "",
+    });
+    setFiles([]);
+  } catch (err) {
+    console.error("❌ 상품 저장 실패:", err);
+  }
+};
+
 
 
   const startEdit = (p) => {
