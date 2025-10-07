@@ -29,7 +29,7 @@ function MainLayout() {
       <img
             src="/woodcard.jpg"
             alt="background"
-            className="relative w-full flex flex-col items-center justify-center text-center text-white py-18"
+            className="relative flex flex-col items-center justify-center text-center py-20 px-6 bg-fixed bg-center bg-cover"
           />
 
       {/* 🔹 추천 상품 섹션 */}
