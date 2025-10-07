@@ -4,7 +4,7 @@ import { useParams, Link } from "react-router-dom";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 
-// ✅ 수정된 ImageModal
+// ✅ 수정된 ImageModal (작은 원본 이미지도 크게 보이도록 개선)
 function ImageModal({ imageUrl, onClose }) {
   if (!imageUrl) return null;
   return (
@@ -16,16 +16,16 @@ function ImageModal({ imageUrl, onClose }) {
         className="relative flex justify-center items-center"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* ✅ 이미지 크기 30%로 조정 */}
         <img
           src={imageUrl}
           alt="Product"
-          className="rounded-lg shadow-2xl transition-transform duration-300 hover:scale-105"
+          className="rounded-lg shadow-2xl transition-transform duration-300 cursor-zoom-out"
           style={{
-            width: "min(30vw, 600px)", // 👉 화면 너비의 30%, 최대 600px
-            minWidth: "300px",         // 👉 너무 작게 안 보이게 최소 크기 설정
+            width: "auto",
             height: "auto",
-            maxHeight: "80vh",
+            maxWidth: "90vw",   // 👉 화면 너비의 최대 90%
+            maxHeight: "85vh",  // 👉 화면 높이의 최대 85%
+            minWidth: "400px",  // 👉 너무 작은 이미지도 400px은 유지
             objectFit: "contain",
           }}
         />
@@ -39,9 +39,6 @@ function ImageModal({ imageUrl, onClose }) {
     </div>
   );
 }
-
-
-
 
 function ProductDetail() {
   const { id } = useParams();
@@ -75,7 +72,7 @@ function ProductDetail() {
       : noImage;
 
   return (
-    <div className="flex flex-col items-center py-10">
+    <div className="flex flex-col items-center py-10 bg-gray-50 min-h-screen">
       <Link
         to="/products"
         className="text-blue-500 hover:underline mb-6 self-start ml-6"
