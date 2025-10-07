@@ -96,119 +96,110 @@ function Admin() {
     }
   };
 
-// ✅ 여러 이미지 업로드 (모두 반영되도록 수정)
-const handleImageUpload = async () => {
-  if (!files.length) {
-    // 기존 Cloudinary URL만 유지 (blob 제거)
-    return form.images.filter((img) => !img.startsWith("blob:"));
-  }
-
-  setUploading(true);
-  try {
-    // ✅ 모든 파일을 병렬로 업로드
-    const uploadPromises = files.map((file) => {
-      const formData = new FormData();
-      formData.append("image", file);
-      return api
-        .post("/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        })
-        .then((res) => res.data.imageUrl)
-        .catch((err) => {
-          console.error("❌ 개별 이미지 업로드 실패:", err);
-          return null;
-        });
-    });
-
-    const uploadedUrls = (await Promise.all(uploadPromises)).filter(Boolean);
-
-    // ✅ 기존 Cloudinary URL + 새 업로드 이미지 병합
-    const existing = form.images.filter((img) => !img.startsWith("blob:"));
-    const merged = [...existing, ...uploadedUrls];
-
-    setUploading(false);
-    return merged;
-  } catch (err) {
-    console.error("❌ 이미지 업로드 중 오류:", err);
-    setUploading(false);
-    alert("이미지 업로드 중 오류가 발생했습니다.");
-    return form.images.filter((img) => !img.startsWith("blob:"));
-  }
-};
-
-
-
-
-const saveProduct = async () => {
-  if (!form.name || !form.price) {
-    alert("상품명과 가격은 필수입니다!");
-    return;
-  }
-
-  // ✅ 모든 이미지 업로드 후 배열 병합
-  const uploadedImages = await handleImageUpload();
-
-  // ✅ 중복 제거 + blob 제거
-  const cleanImages = uploadedImages
-    .filter((img) => img && !img.startsWith("blob:"))
-    .filter((v, i, arr) => arr.indexOf(v) === i);
-
-  // ✅ 대표 이미지 보존
-  const mainImg =
-    form.mainImage && cleanImages.includes(form.mainImage)
-      ? form.mainImage
-      : cleanImages[0] || "https://placehold.co/250x200?text=No+Image";
-
-  const productData = {
-    name: form.name.trim(),
-    price: Number(form.price),
-    description: form.description.trim(),
-    images: cleanImages,
-    mainImage: mainImg,
-  };
-
-  try {
-    let result;
-    if (editingId) {
-      result = await api.put(`/products/${editingId}`, productData);
-      setProducts((prev) =>
-        prev.map((p) => (p._id === editingId ? result.data : p))
-      );
-    } else {
-      result = await api.post("/products", productData);
-      setProducts((prev) => [result.data, ...prev]); // 최신이 위로
+  // ✅ 여러 이미지 업로드 (병렬 업로드)
+  const handleImageUpload = async (filesToUpload = files) => {
+    if (!filesToUpload.length) {
+      return form.images.filter((img) => !img.startsWith("blob:"));
     }
 
-    // ✅ 폼 초기화
-    setEditingId(null);
+    setUploading(true);
+    try {
+      const uploadPromises = filesToUpload.map((file) => {
+        const formData = new FormData();
+        formData.append("image", file);
+        return api
+          .post("/upload", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          })
+          .then((res) => res.data.imageUrl)
+          .catch((err) => {
+            console.error("❌ 개별 이미지 업로드 실패:", err);
+            return null;
+          });
+      });
+
+      const uploadedUrls = (await Promise.all(uploadPromises)).filter(Boolean);
+
+      const existing = form.images.filter((img) => !img.startsWith("blob:"));
+      const merged = [...existing, ...uploadedUrls];
+
+      setUploading(false);
+      return merged;
+    } catch (err) {
+      console.error("❌ 이미지 업로드 중 오류:", err);
+      setUploading(false);
+      alert("이미지 업로드 중 오류가 발생했습니다.");
+      return form.images.filter((img) => !img.startsWith("blob:"));
+    }
+  };
+
+  // ✅ 상품 저장
+  const saveProduct = async () => {
+    if (!form.name || !form.price) {
+      alert("상품명과 가격은 필수입니다!");
+      return;
+    }
+
+    const uploadedImages = await handleImageUpload(files);
+
+    const cleanImages = uploadedImages
+      .filter((img) => img && !img.startsWith("blob:"))
+      .filter((v, i, arr) => arr.indexOf(v) === i);
+
+    const mainImg =
+      form.mainImage && cleanImages.includes(form.mainImage)
+        ? form.mainImage
+        : cleanImages[0] || "https://placehold.co/250x200?text=No+Image";
+
+    const productData = {
+      name: form.name.trim(),
+      price: Number(form.price),
+      description: form.description.trim(),
+      images: cleanImages,
+      mainImage: mainImg,
+    };
+
+    try {
+      let result;
+      if (editingId) {
+        result = await api.put(`/products/${editingId}`, productData);
+        setProducts((prev) =>
+          prev.map((p) => (p._id === editingId ? result.data : p))
+        );
+      } else {
+        result = await api.post("/products", productData);
+        setProducts((prev) => [result.data, ...prev]);
+      }
+
+      // ✅ 폼 초기화
+      setEditingId(null);
+      setForm({
+        name: "",
+        price: "",
+        description: "",
+        images: [],
+        mainImage: "",
+      });
+      setFiles([]);
+    } catch (err) {
+      console.error("❌ 상품 저장 실패:", err);
+    }
+  };
+
+  // ✅ 수정 시작
+  const startEdit = (p) => {
+    setEditingId(p._id);
     setForm({
-      name: "",
-      price: "",
-      description: "",
-      images: [],
-      mainImage: "",
+      name: p.name,
+      price: p.price,
+      description: p.description,
+      images: p.images || [],
+      mainImage: p.mainImage || p.images?.[0] || p.image || "",
     });
     setFiles([]);
-  } catch (err) {
-    console.error("❌ 상품 저장 실패:", err);
-  }
-};
+  };
 
-
-
-  const startEdit = (p) => {
-  setEditingId(p._id);
-  setForm({
-    name: p.name,
-    price: p.price,
-    description: p.description,
-    images: p.images || [],
-    mainImage: p.mainImage || p.images?.[0] || p.image || "", // ✅ 대표 이미지 확실히 불러오기
-  });
-  setFiles([]);
-};
-
-
+  // ✅ 취소
   const cancelEdit = () => {
     setEditingId(null);
     setForm({
@@ -221,6 +212,7 @@ const saveProduct = async () => {
     setFiles([]);
   };
 
+  // ✅ 파일 선택 (미리보기 포함)
   const handleFileChange = (e) => {
     const selected = Array.from(e.target.files);
     setFiles(selected);
@@ -231,6 +223,7 @@ const saveProduct = async () => {
     }));
   };
 
+  // ✅ 이미지 삭제
   const removeImage = (index) => {
     const newImages = form.images.filter((_, i) => i !== index);
     const newMain =
@@ -238,10 +231,12 @@ const saveProduct = async () => {
     setForm({ ...form, images: newImages, mainImage: newMain });
   };
 
+  // ✅ 대표 이미지 지정
   const setAsMainImage = (img) => {
     setForm((prev) => ({ ...prev, mainImage: img }));
   };
 
+  // ✅ 상품 삭제
   const deleteProduct = async (id) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
     try {
@@ -257,7 +252,7 @@ const saveProduct = async () => {
       <h1>📦 관리자 페이지</h1>
       <h2>{editingId ? "상품 수정" : "상품 추가"}</h2>
 
-      {/* ✅ 상품 입력폼 (기존 그대로 유지) */}
+      {/* ✅ 상품 입력폼 */}
       <div
         style={{
           display: "flex",
@@ -284,15 +279,11 @@ const saveProduct = async () => {
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
         />
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={handleFileChange}
-        />
+        <input type="file" accept="image/*" multiple onChange={handleFileChange} />
 
         {uploading && <p>🕓 이미지 업로드 중...</p>}
 
+        {/* ✅ 이미지 미리보기 */}
         <div
           style={{
             display: "flex",
@@ -357,67 +348,64 @@ const saveProduct = async () => {
         {editingId && <button onClick={cancelEdit}>취소</button>}
       </div>
 
-{/* ✅ 상품 목록 */}
-<h2 style={{ marginTop: "40px" }}>상품 목록</h2>
-<ul style={{ listStyle: "none", padding: 0 }}>
-  {products.map((p) => {
-    // ✅ 썸네일 우선순위 (mainImage → image → images[0])
-    const thumbnail =
-      (p.mainImage && p.mainImage.startsWith("http") && p.mainImage) ||
-      (p.image && p.image.startsWith("http") && p.image) ||
-      (Array.isArray(p.images) &&
-        p.images.length > 0 &&
-        p.images.find((img) => img && img.startsWith("http"))) ||
-      "https://placehold.co/100x100?text=No+Image";
+      {/* ✅ 상품 목록 */}
+      <h2 style={{ marginTop: "40px" }}>상품 목록</h2>
+      <ul style={{ listStyle: "none", padding: 0 }}>
+        {products.map((p) => {
+          const thumbnail =
+            (p.mainImage && p.mainImage.startsWith("http") && p.mainImage) ||
+            (p.image && p.image.startsWith("http") && p.image) ||
+            (Array.isArray(p.images) &&
+              p.images.length > 0 &&
+              p.images.find((img) => img && img.startsWith("http"))) ||
+            "https://placehold.co/100x100?text=No+Image";
 
-    return (
-      <li
-        key={p._id}
-        style={{
-          marginBottom: "20px",
-          padding: "10px",
-          border: "1px solid #ddd",
-          borderRadius: "10px",
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-        }}
-      >
-        <img
-          src={thumbnail}
-          alt={p.name}
-          style={{
-            width: "80px",
-            height: "80px",
-            objectFit: "cover",
-            borderRadius: "8px",
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            setModalImages(
-              Array.isArray(p.images) && p.images.length > 0
-                ? p.images
-                : [thumbnail]
-            );
-            setModalIndex(0);
-          }}
-          onError={(e) =>
-            (e.currentTarget.src =
-              "https://placehold.co/100x100?text=No+Image")
-          }
-        />
-        <div style={{ flex: 1 }}>
-          <strong>{p.name}</strong> - {p.price}원 <br />
-          <small>{p.description}</small>
-        </div>
-        <button onClick={() => startEdit(p)}>✏️ 수정</button>
-        <button onClick={() => deleteProduct(p._id)}>🗑 삭제</button>
-      </li>
-    );
-  })}
-</ul>
-
-
+          return (
+            <li
+              key={p._id}
+              style={{
+                marginBottom: "20px",
+                padding: "10px",
+                border: "1px solid #ddd",
+                borderRadius: "10px",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+              }}
+            >
+              <img
+                src={thumbnail}
+                alt={p.name}
+                style={{
+                  width: "80px",
+                  height: "80px",
+                  objectFit: "cover",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  setModalImages(
+                    Array.isArray(p.images) && p.images.length > 0
+                      ? p.images
+                      : [thumbnail]
+                  );
+                  setModalIndex(0);
+                }}
+                onError={(e) =>
+                  (e.currentTarget.src =
+                    "https://placehold.co/100x100?text=No+Image")
+                }
+              />
+              <div style={{ flex: 1 }}>
+                <strong>{p.name}</strong> - {p.price}원 <br />
+                <small>{p.description}</small>
+              </div>
+              <button onClick={() => startEdit(p)}>✏️ 수정</button>
+              <button onClick={() => deleteProduct(p._id)}>🗑 삭제</button>
+            </li>
+          );
+        })}
+      </ul>
 
       {/* ✅ 다중 이미지 모달 */}
       {modalImages.length > 0 && (
