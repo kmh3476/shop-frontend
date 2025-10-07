@@ -90,7 +90,7 @@ function Admin() {
     }
   };
 
-  // ✅ 여러 이미지 업로드 (한 장씩 순차 업로드)
+  // ✅ 여러 이미지 순차 업로드 (안정성 보강)
   const handleImageUpload = async (filesToUpload = files) => {
     if (!filesToUpload.length) {
       return form.images.filter((img) => !img.startsWith("blob:"));
@@ -107,24 +107,24 @@ function Admin() {
 
         setUploading(`🕓 업로드 중... (${i + 1}/${filesToUpload.length})`);
 
-        // ✅ 개별 업로드 (단일 /upload)
+        // ✅ 각 파일을 순차적으로 업로드
         const res = await api.post("/upload", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
 
         if (res.data?.imageUrl) {
+          console.log(`✅ 업로드 완료 (${i + 1}/${filesToUpload.length}):`, res.data.imageUrl);
           uploadedUrls.push(res.data.imageUrl);
-          console.log(`✅ 업로드 완료: ${res.data.imageUrl}`);
         }
 
-        // 약간의 텀 (Cloudinary에서 순차 안정화를 위해)
-        await new Promise((r) => setTimeout(r, 300));
+        // ✅ 업로드 완료 후 약간 대기 (Cloudinary 응답 안정화)
+        await new Promise((resolve) => setTimeout(resolve, 800));
       }
 
       const existing = form.images.filter((img) => !img.startsWith("blob:"));
       const merged = Array.from(new Set([...existing, ...uploadedUrls]));
-      console.log("✅ 최종 업로드된 이미지들:", merged);
 
+      console.log("✅ 최종 업로드된 이미지들:", merged);
       setUploading(false);
       return merged;
     } catch (err) {
@@ -172,6 +172,7 @@ function Admin() {
         setProducts((prev) => [result.data, ...prev]);
       }
 
+      // ✅ 초기화
       setEditingId(null);
       setForm({
         name: "",
