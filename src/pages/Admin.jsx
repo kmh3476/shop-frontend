@@ -71,7 +71,6 @@ function Admin() {
     images: [],
     mainImage: "",
   });
-  const [files, setFiles] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [modalImages, setModalImages] = useState([]);
@@ -90,46 +89,66 @@ function Admin() {
     }
   };
 
-  // ✅ 여러 이미지 순차 업로드 (안정성 강화)
-  const handleImageUpload = async (filesToUpload = files) => {
-    if (!filesToUpload.length) {
-      return form.images.filter((img) => !img.startsWith("blob:"));
+  // ✅ 단일 업로드 함수 (Cloudinary용)
+  const uploadSingle = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const res = await api.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return res.data?.imageUrl || null;
+    } catch (err) {
+      console.error("❌ 단일 업로드 실패:", err);
+      return null;
+    }
+  };
+
+  // ✅ 여러 이미지 순차 업로드
+  const handleImageUpload = async (filesToUpload) => {
+    const uploadedUrls = [];
+    setUploading("🕓 이미지 업로드 중...");
+
+    for (let i = 0; i < filesToUpload.length; i++) {
+      const file = filesToUpload[i];
+      const url = await uploadSingle(file);
+      if (url) {
+        console.log(`✅ 업로드 완료 (${i + 1}/${filesToUpload.length}):`, url);
+        uploadedUrls.push(url);
+      }
+      await new Promise((r) => setTimeout(r, 500)); // Cloudinary 안정화 대기
     }
 
-    const uploadedUrls = [];
-    setUploading("🕓 이미지 업로드 시작...");
+    setUploading(false);
+    return uploadedUrls;
+  };
 
-    try {
-      for (let i = 0; i < filesToUpload.length; i++) {
-        const file = filesToUpload[i];
-        const formData = new FormData();
-        formData.append("image", file);
+  // ✅ 파일 선택 → 자동 업로드 (수정/추가 모두 지원)
+  const handleFileChange = async (e) => {
+    const selected = Array.from(e.target.files);
+    if (!selected.length) return;
 
-        setUploading(`🕓 업로드 중... (${i + 1}/${filesToUpload.length})`);
+    // 미리보기 추가
+    const previews = selected.map((f) => URL.createObjectURL(f));
+    setForm((prev) => ({
+      ...prev,
+      images: [...prev.images, ...previews],
+    }));
 
-        // ✅ 단일 업로드
-        const res = await api.post("/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-
-        if (res.data?.imageUrl) {
-          console.log(`✅ 업로드 완료 (${i + 1}/${filesToUpload.length}):`, res.data.imageUrl);
-          uploadedUrls.push(res.data.imageUrl);
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 700));
-      }
-
-      const existing = form.images.filter((img) => !img.startsWith("blob:"));
-      const merged = Array.from(new Set([...existing, ...uploadedUrls]));
-
-      console.log("✅ 최종 업로드된 이미지들:", merged);
-      setUploading(false);
-      return merged;
-    } catch (err) {
-      console.error("❌ 이미지 업로드 오류:", err);
-      setUploading(false);
-      return form.images.filter((img) => !img.startsWith("blob:"));
+    // 자동 업로드
+    const uploaded = await handleImageUpload(selected);
+    if (uploaded.length) {
+      setForm((prev) => {
+        const replaced = prev.images.map((img) =>
+          img.startsWith("blob:") ? uploaded.shift() || img : img
+        );
+        return {
+          ...prev,
+          images: replaced.filter(Boolean),
+          mainImage: prev.mainImage || replaced[0],
+        };
+      });
     }
   };
 
@@ -140,11 +159,8 @@ function Admin() {
       return;
     }
 
-    console.log("📤 상품 저장 시작 — 선택된 파일 개수:", files.length);
-    const mergedImages = await handleImageUpload([...files]); // 깊은 복사
-
-    const cleanImages = mergedImages
-      .filter((img) => img && !img.startsWith("blob:"))
+    const cleanImages = form.images
+      .filter((i) => i && i.startsWith("http"))
       .filter((v, i, arr) => arr.indexOf(v) === i);
 
     const mainImg =
@@ -162,37 +178,31 @@ function Admin() {
 
     try {
       setUploading("🕓 상품 저장 중...");
-
       let result;
+
       if (editingId) {
         result = await api.put(`/products/${editingId}`, productData);
         setProducts((prev) =>
           prev.map((p) => (p._id === editingId ? result.data : p))
         );
+        console.log("✅ 상품 수정 완료:", result.data);
       } else {
         result = await api.post("/products", productData);
-
-        // ✅ 업로드 후 DB 업데이트까지 여유시간 확보
-        await new Promise((r) => setTimeout(r, 1200));
+        await new Promise((r) => setTimeout(r, 1000)); // Cloudinary 반영 대기
         const refreshed = await api.get("/products");
         setProducts(refreshed.data);
+        console.log("✅ 상품 추가 완료:", result.data);
       }
 
-      console.log("✅ 상품 저장 완료:", result.data);
-
-      // ✅ 폼 초기화 (딜레이 후 안전하게)
-      setTimeout(() => {
-        setEditingId(null);
-        setForm({
-          name: "",
-          price: "",
-          description: "",
-          images: [],
-          mainImage: "",
-        });
-        setFiles([]);
-        setUploading(false);
-      }, 1000);
+      setEditingId(null);
+      setForm({
+        name: "",
+        price: "",
+        description: "",
+        images: [],
+        mainImage: "",
+      });
+      setUploading(false);
     } catch (err) {
       console.error("❌ 상품 저장 실패:", err);
       setUploading(false);
@@ -208,7 +218,6 @@ function Admin() {
       images: p.images || [],
       mainImage: p.mainImage || p.images?.[0] || "",
     });
-    setFiles([]);
   };
 
   const cancelEdit = () => {
@@ -220,17 +229,6 @@ function Admin() {
       images: [],
       mainImage: "",
     });
-    setFiles([]);
-  };
-
-  const handleFileChange = (e) => {
-    const selected = Array.from(e.target.files);
-    setFiles(selected);
-    const previews = selected.map((file) => URL.createObjectURL(file));
-    setForm((prev) => ({
-      ...prev,
-      images: [...prev.images, ...previews],
-    }));
   };
 
   const removeImage = (index) => {
@@ -248,6 +246,7 @@ function Admin() {
     try {
       await api.delete(`/products/${id}`);
       setProducts((prev) => prev.filter((p) => p._id !== id));
+      console.log("🗑 상품 삭제 완료:", id);
     } catch (err) {
       console.error("❌ 상품 삭제 실패:", err);
     }
@@ -356,57 +355,48 @@ function Admin() {
         {editingId && <button onClick={cancelEdit}>취소</button>}
       </div>
 
-      {/* 상품 목록 */}
       <h2 style={{ marginTop: "40px" }}>상품 목록</h2>
       <ul style={{ listStyle: "none", padding: 0 }}>
-        {products.map((p) => {
-          const thumbnail =
-            p.mainImage?.startsWith("http")
-              ? p.mainImage
-              : p.images?.find((img) => img?.startsWith("http")) ||
-                "https://placehold.co/100x100?text=No+Image";
-
-          return (
-            <li
-              key={p._id}
+        {products.map((p) => (
+          <li
+            key={p._id}
+            style={{
+              marginBottom: "20px",
+              padding: "10px",
+              border: "1px solid #ddd",
+              borderRadius: "10px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
+            <img
+              src={
+                p.mainImage ||
+                p.images?.[0] ||
+                "https://placehold.co/100x100?text=No+Image"
+              }
+              alt={p.name}
               style={{
-                marginBottom: "20px",
-                padding: "10px",
-                border: "1px solid #ddd",
-                borderRadius: "10px",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
+                width: "80px",
+                height: "80px",
+                objectFit: "cover",
+                borderRadius: "8px",
+                cursor: "pointer",
               }}
-            >
-              <img
-                src={thumbnail}
-                alt={p.name}
-                style={{
-                  width: "80px",
-                  height: "80px",
-                  objectFit: "cover",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                }}
-                onClick={() => {
-                  setModalImages(p.images?.length ? p.images : [thumbnail]);
-                  setModalIndex(0);
-                }}
-                onError={(e) =>
-                  (e.currentTarget.src =
-                    "https://placehold.co/100x100?text=No+Image")
-                }
-              />
-              <div style={{ flex: 1 }}>
-                <strong>{p.name}</strong> - {p.price}원 <br />
-                <small>{p.description}</small>
-              </div>
-              <button onClick={() => startEdit(p)}>✏️ 수정</button>
-              <button onClick={() => deleteProduct(p._id)}>🗑 삭제</button>
-            </li>
-          );
-        })}
+              onClick={() => {
+                setModalImages(p.images?.length ? p.images : [p.mainImage]);
+                setModalIndex(0);
+              }}
+            />
+            <div style={{ flex: 1 }}>
+              <strong>{p.name}</strong> - {p.price}원 <br />
+              <small>{p.description}</small>
+            </div>
+            <button onClick={() => startEdit(p)}>✏️ 수정</button>
+            <button onClick={() => deleteProduct(p._id)}>🗑 삭제</button>
+          </li>
+        ))}
       </ul>
 
       {modalImages.length > 0 && (
