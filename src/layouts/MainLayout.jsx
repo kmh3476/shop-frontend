@@ -3,27 +3,6 @@ import { Link } from "react-router-dom";
 function MainLayout() {
   return (
     <div className="flex flex-col min-h-screen relative">
-      {/* 🔹 상단 배경 헤더 */}
-      <header className="relative w-full h-[40vh] flex flex-col justify-center items-center text-center text-white overflow-hidden">
-        {/* 배경 이미지 */}
-        <img
-          src="/clothes-sample.png"
-          alt="Background"
-          className="absolute inset-0 w-full h-full object-cover z-0"
-        />
-
-        {/* 반투명 오버레이 */}
-        <div className="absolute inset-0 bg-black/40 z-10"></div>
-
-        {/* 로고 */}
-        <Link to="/" className="relative z-20 mt-[2vh]">
-          <img
-            src="/logo-wblue.png"
-            alt="Logo"
-            className="w-[20vw] max-w-[180px] min-w-[100px] object-contain hover:opacity-80 transition"
-          />
-        </Link>
-      </header>
 
 <header className="relative w-full h-[40vh] flex flex-col justify-center items-center text-center text-white overflow-hidden">
   {/* 🔹 배경 이미지 */}
