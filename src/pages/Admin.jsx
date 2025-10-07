@@ -90,29 +90,40 @@ function Admin() {
     }
   };
 
-  // ✅ 여러 이미지 업로드 (멀티 엔드포인트로)
+  // ✅ 여러 이미지 업로드 (한 장씩 순차 업로드)
   const handleImageUpload = async (filesToUpload = files) => {
     if (!filesToUpload.length) {
       return form.images.filter((img) => !img.startsWith("blob:"));
     }
 
-    setUploading(true);
+    const uploadedUrls = [];
+    setUploading("🕓 이미지 업로드 시작...");
+
     try {
-      const formData = new FormData();
-      filesToUpload.forEach((file) => formData.append("image", file));
+      for (let i = 0; i < filesToUpload.length; i++) {
+        const file = filesToUpload[i];
+        const formData = new FormData();
+        formData.append("image", file);
 
-      // 🔥 여기 핵심 수정 (/upload → /upload/multi)
-      const res = await api.post("/upload/multi", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+        setUploading(`🕓 업로드 중... (${i + 1}/${filesToUpload.length})`);
 
-      // ✅ 여러 장 배열 반환 확인
-      const uploadedUrls = res.data.imageUrls || [];
-      console.log("✅ 업로드된 URL들:", uploadedUrls);
+        // ✅ 개별 업로드 (단일 /upload)
+        const res = await api.post("/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
 
-      // ✅ 기존 이미지 유지 + 중복 제거
+        if (res.data?.imageUrl) {
+          uploadedUrls.push(res.data.imageUrl);
+          console.log(`✅ 업로드 완료: ${res.data.imageUrl}`);
+        }
+
+        // 약간의 텀 (Cloudinary에서 순차 안정화를 위해)
+        await new Promise((r) => setTimeout(r, 300));
+      }
+
       const existing = form.images.filter((img) => !img.startsWith("blob:"));
       const merged = Array.from(new Set([...existing, ...uploadedUrls]));
+      console.log("✅ 최종 업로드된 이미지들:", merged);
 
       setUploading(false);
       return merged;
@@ -269,7 +280,11 @@ function Admin() {
         />
         <input type="file" accept="image/*" multiple onChange={handleFileChange} />
 
-        {uploading && <p>🕓 이미지 업로드 중...</p>}
+        {uploading && (
+          <p style={{ color: "blue" }}>
+            {typeof uploading === "string" ? uploading : "🕓 이미지 업로드 중..."}
+          </p>
+        )}
 
         {/* 이미지 미리보기 */}
         <div
