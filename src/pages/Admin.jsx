@@ -90,33 +90,36 @@ function Admin() {
     }
   };
 
-  // ✅ 여러 이미지 업로드 (/upload/multi)
-  const handleImageUpload = async (filesToUpload = files) => {
-    if (!filesToUpload.length)
-      return form.images.filter((img) => !img.startsWith("blob:"));
+  // ✅ 여러 이미지 업로드 (멀티 엔드포인트로)
+const handleImageUpload = async (filesToUpload = files) => {
+  if (!filesToUpload.length) {
+    return form.images.filter((img) => !img.startsWith("blob:"));
+  }
 
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      filesToUpload.forEach((file) => formData.append("image", file));
+  setUploading(true);
+  try {
+    const formData = new FormData();
+    filesToUpload.forEach((file) => formData.append("image", file));
 
-      const res = await api.post("/upload/multi", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+    const res = await api.post("/upload/multi", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
 
-      const uploadedUrls = res.data.imageUrls || [];
-      const existing = form.images.filter((img) => !img.startsWith("blob:"));
-      const merged = Array.from(new Set([...existing, ...uploadedUrls]));
+    const uploadedUrls = res.data.imageUrls || [];
+    console.log("✅ 업로드된 URL:", uploadedUrls);
 
-      setUploading(false);
-      return merged;
-    } catch (err) {
-      console.error("❌ 이미지 업로드 오류:", err);
-      setUploading(false);
-      alert("이미지 업로드 중 오류가 발생했습니다.");
-      return form.images.filter((img) => !img.startsWith("blob:"));
-    }
-  };
+    const existing = form.images.filter((img) => !img.startsWith("blob:"));
+    const merged = Array.from(new Set([...existing, ...uploadedUrls]));
+
+    setUploading(false);
+    return merged;
+  } catch (err) {
+    console.error("❌ 이미지 업로드 오류:", err);
+    setUploading(false);
+    return form.images.filter((img) => !img.startsWith("blob:"));
+  }
+};
+
 
   // ✅ 상품 저장
   const saveProduct = async () => {
