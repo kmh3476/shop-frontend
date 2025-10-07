@@ -57,13 +57,13 @@ function Cart() {
 
   // ✅ 총합 계산 (수량 포함)
   const totalPrice = cart.reduce(
-    (sum, item) => sum + item.price * (item.quantity || 1),
+    (sum, item) => sum + (Number(item.price) || 0) * (item.quantity || 1),
     0
   );
 
   // ✅ 상품 클릭 시 상세 페이지 이동
   const goToDetail = (item) => {
-    if (item._id) navigate(`/product/${item._id}`);
+    if (item._id) navigate(`/products/${item._id}`); // ✅ 경로 수정됨
     else alert("상품 상세 정보를 찾을 수 없습니다.");
   };
 
@@ -109,7 +109,8 @@ function Cart() {
                   style={{ flex: 1, cursor: "pointer" }}
                   onClick={() => goToDetail(item)}
                 >
-                  <strong>{item.name}</strong> - {item.price}원
+                  <strong>{item.name}</strong> -{" "}
+                  {Number(item.price).toLocaleString()}원
                   <br />
                   {item.description && (
                     <small style={{ color: "#555" }}>{item.description}</small>
