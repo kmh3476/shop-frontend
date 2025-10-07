@@ -69,11 +69,15 @@ function ProductList() {
               onClick={() => navigate(`/products/${p._id}`)}
               className="border rounded-xl p-5 shadow hover:shadow-lg transition bg-white flex flex-col items-center cursor-pointer"
             >
-              {/* ✅ 이미지 표시 (Cloudinary + 로컬 모두 지원) */}
-              <img
+{/* ✅ 이미지 표시 (mainImage + images + 기존 필드 모두 지원) */}
+<img
   src={
-    p.image?.startsWith("http")
+    p.mainImage?.startsWith("http")
+      ? p.mainImage
+      : p.image?.startsWith("http")
       ? p.image
+      : p.images?.[0]?.startsWith("http")
+      ? p.images[0]
       : p.imageUrl?.startsWith("http")
       ? p.imageUrl
       : "https://placehold.co/250x200?text=No+Image"
@@ -84,6 +88,7 @@ function ProductList() {
     (e.target.src = "https://placehold.co/250x200?text=No+Image")
   }
 />
+
 
               <h2 className="text-lg font-semibold text-gray-800">{p.name}</h2>
               <p className="text-gray-500 text-sm mt-1 line-clamp-2">
