@@ -350,52 +350,58 @@ const handleImageUpload = async () => {
         {editingId && <button onClick={cancelEdit}>취소</button>}
       </div>
 
-      {/* ✅ 상품 목록 */}
-      <h2 style={{ marginTop: "40px" }}>상품 목록</h2>
-      <ul style={{ listStyle: "none", padding: 0 }}>
-        {products.map((p) => {
-          const thumbnail =
-            p.mainImage ||
-            (p.images && p.images[0]) ||
-            "https://placehold.co/100x100?text=No+Image";
-          return (
-            <li
-              key={p._id}
-              style={{
-                marginBottom: "20px",
-                padding: "10px",
-                border: "1px solid #ddd",
-                borderRadius: "10px",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-            >
-              <img
-                src={thumbnail}
-                alt={p.name}
-                style={{
-                  width: "80px",
-                  height: "80px",
-                  objectFit: "cover",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                }}
-                onClick={() => {
-                  setModalImages(p.images?.length ? p.images : [thumbnail]);
-                  setModalIndex(0);
-                }}
-              />
-              <div style={{ flex: 1 }}>
-                <strong>{p.name}</strong> - {p.price}원 <br />
-                <small>{p.description}</small>
-              </div>
-              <button onClick={() => startEdit(p)}>✏️ 수정</button>
-              <button onClick={() => deleteProduct(p._id)}>🗑 삭제</button>
-            </li>
-          );
-        })}
-      </ul>
+{/* ✅ 상품 목록 */}
+<h2 style={{ marginTop: "40px" }}>상품 목록</h2>
+<ul style={{ listStyle: "none", padding: 0 }}>
+  {products.map((p) => {
+    // ✅ 대표 이미지 우선순위 개선 (빈 문자열 방지)
+    const thumbnail =
+      (p.mainImage && p.mainImage.trim() !== "" && p.mainImage) ||
+      (p.images && p.images.length > 0 && p.images[0]) ||
+      "https://placehold.co/100x100?text=No+Image";
+
+    return (
+      <li
+        key={p._id}
+        style={{
+          marginBottom: "20px",
+          padding: "10px",
+          border: "1px solid #ddd",
+          borderRadius: "10px",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+        }}
+      >
+        <img
+          src={thumbnail}
+          alt={p.name}
+          style={{
+            width: "80px",
+            height: "80px",
+            objectFit: "cover",
+            borderRadius: "8px",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            setModalImages(p.images?.length ? p.images : [thumbnail]);
+            setModalIndex(0);
+          }}
+          onError={(e) => {
+            e.currentTarget.src = "https://placehold.co/100x100?text=No+Image";
+          }}
+        />
+        <div style={{ flex: 1 }}>
+          <strong>{p.name}</strong> - {p.price}원 <br />
+          <small>{p.description}</small>
+        </div>
+        <button onClick={() => startEdit(p)}>✏️ 수정</button>
+        <button onClick={() => deleteProduct(p._id)}>🗑 삭제</button>
+      </li>
+    );
+  })}
+</ul>
+
 
       {/* ✅ 다중 이미지 모달 */}
       {modalImages.length > 0 && (
