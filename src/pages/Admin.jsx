@@ -129,29 +129,32 @@ const handleImageUpload = async () => {
 
 
   const saveProduct = async () => {
-    if (!form.name || !form.price) {
-      alert("상품명과 가격은 필수입니다!");
-      return;
-    }
+  if (!form.name || !form.price) {
+    alert("상품명과 가격은 필수입니다!");
+    return;
+  }
 
-    const uploadedImages = await handleImageUpload();
+  const uploadedImages = await handleImageUpload();
 
-// ✅ blob: URL 제거 (업로드 안 된 미리보기 주소 제거)
-const cleanImages = [...form.images, ...uploadedImages].filter(
-  (img) => !img.startsWith("blob:")
-);
+  // ✅ 중복 제거 + blob 제거 + 공백 제거
+  const cleanImages = [...form.images, ...uploadedImages]
+    .filter((img) => img && !img.startsWith("blob:"))
+    .filter((v, i, arr) => arr.indexOf(v) === i);
 
-// ✅ 대표 이미지가 사라지지 않도록 처리
-const productData = {
-  name: form.name.trim(),
-  price: Number(form.price),
-  description: form.description.trim(),
-  images: cleanImages,
-  mainImage:
-    cleanImages.includes(form.mainImage)
-      ? form.mainImage
-      : cleanImages[0] || "https://placehold.co/250x200?text=No+Image",
-};
+  // ✅ 대표 이미지가 누락되지 않게, 중복 방지
+  const productData = {
+    name: form.name.trim(),
+    price: Number(form.price),
+    description: form.description.trim(),
+    images: cleanImages.filter((img) => img !== form.mainImage), // 중복 제거
+    mainImage:
+      form.mainImage && !form.mainImage.startsWith("blob:")
+        ? form.mainImage
+        : uploadedImages[0] ||
+          cleanImages[0] ||
+          "https://placehold.co/250x200?text=No+Image",
+  };
+
 
 
 
@@ -182,16 +185,17 @@ const productData = {
   };
 
   const startEdit = (p) => {
-    setEditingId(p._id);
-    setForm({
-      name: p.name,
-      price: p.price,
-      description: p.description,
-      images: p.images || [],
-      mainImage: p.mainImage || p.image || "",
-    });
-    setFiles([]);
-  };
+  setEditingId(p._id);
+  setForm({
+    name: p.name,
+    price: p.price,
+    description: p.description,
+    images: p.images || [],
+    mainImage: p.mainImage || p.images?.[0] || p.image || "", // ✅ 대표 이미지 확실히 불러오기
+  });
+  setFiles([]);
+};
+
 
   const cancelEdit = () => {
     setEditingId(null);
