@@ -16,15 +16,16 @@ function ImageModal({ imageUrl, onClose }) {
         className="relative flex justify-center items-center"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* ✅ 이미지 크기 60%로 조정 */}
+        {/* ✅ 이미지 크기 30%로 조정 */}
         <img
           src={imageUrl}
           alt="Product"
           className="rounded-lg shadow-2xl transition-transform duration-300 hover:scale-105"
           style={{
-            width: "min(60vw, 800px)", // 👉 화면의 60% 또는 최대 800px
+            width: "min(30vw, 600px)", // 👉 화면 너비의 30%, 최대 600px
+            minWidth: "300px",         // 👉 너무 작게 안 보이게 최소 크기 설정
             height: "auto",
-            maxHeight: "80vh", // 화면 넘치지 않게 세로 제한
+            maxHeight: "80vh",
             objectFit: "contain",
           }}
         />
@@ -38,6 +39,7 @@ function ImageModal({ imageUrl, onClose }) {
     </div>
   );
 }
+
 
 
 
