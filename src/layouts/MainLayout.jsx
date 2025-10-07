@@ -12,7 +12,7 @@ function MainLayout() {
     className="absolute inset-0 w-full h-full object-cover z-0"
   />
 
-  {/* 🔹 반투명 오버레이 (있으면 더 보기 좋음) */}
+  {/* 🔹 반투명 오버레이*/}
   <div className="absolute inset-0 bg-black/40 z-10"></div>
 
   {/* 🔹 헤더 내용 */}
