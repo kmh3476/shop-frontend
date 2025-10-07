@@ -96,30 +96,37 @@ function Admin() {
     }
   };
 
-  const handleImageUpload = async () => {
-    if (files.length === 0) return form.images;
-    setUploading(true);
+  // ✅ 여러 이미지 업로드
+const handleImageUpload = async () => {
+  if (files.length === 0) return form.images.filter((img) => !img.startsWith("blob:"));
+  setUploading(true);
 
-    try {
-      const uploadedUrls = [];
-      for (const file of files) {
-        const formData = new FormData();
-        formData.append("image", file);
-        const res = await api.post("/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        uploadedUrls.push(res.data.imageUrl);
-      }
+  try {
+    const uploadedUrls = [];
 
-      setUploading(false);
-      return [...form.images, ...uploadedUrls];
-    } catch (err) {
-      console.error("❌ 이미지 업로드 실패:", err);
-      alert("이미지 업로드에 실패했습니다.");
-      setUploading(false);
-      return form.images;
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const res = await api.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      uploadedUrls.push(res.data.imageUrl);
     }
-  };
+
+    setUploading(false);
+    // ✅ blob: URL 제거 후 Cloudinary URL만 병합
+    const existingValidImages = form.images.filter((img) => !img.startsWith("blob:"));
+    return [...existingValidImages, ...uploadedUrls];
+  } catch (err) {
+    console.error("❌ 이미지 업로드 실패:", err);
+    alert("이미지 업로드에 실패했습니다.");
+    setUploading(false);
+    return form.images.filter((img) => !img.startsWith("blob:"));
+  }
+};
+
 
   const saveProduct = async () => {
     if (!form.name || !form.price) {
@@ -129,15 +136,18 @@ function Admin() {
 
     const uploadedImages = await handleImageUpload();
     const productData = {
-      name: form.name.trim(),
-      price: Number(form.price),
-      description: form.description.trim(),
-      images: uploadedImages,
-      mainImage:
-        form.mainImage ||
-        uploadedImages[0] ||
+  name: form.name.trim(),
+  price: Number(form.price),
+  description: form.description.trim(),
+  // ✅ blob: (미리보기용) URL은 DB에 저장하지 않음
+  images: uploadedImages.filter((img) => !img.startsWith("blob:")),
+  mainImage:
+    form.mainImage && !form.mainImage.startsWith("blob:")
+      ? form.mainImage
+      : uploadedImages.find((img) => !img.startsWith("blob:")) ||
         "https://placehold.co/250x200?text=No+Image",
-    };
+};
+
 
     try {
       let result;
