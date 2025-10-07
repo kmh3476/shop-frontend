@@ -99,7 +99,7 @@ function ProductDetail() {
   // ✅ 리뷰 / 문의 상태
   const [reviews, setReviews] = useState([]);
   const [inquiries, setInquiries] = useState([]);
-  const [reviewInput, setReviewInput] = useState({ name: "", rating: 5, text: "" });
+  const [reviewInput, setReviewInput] = useState({ name: "", rating: 5, comment: "" });
   const [inquiryInput, setInquiryInput] = useState({ name: "", question: "" });
 
   useEffect(() => {
@@ -139,13 +139,20 @@ function ProductDetail() {
 
   // ✅ 리뷰 추가
   const handleAddReview = async () => {
-    if (!reviewInput.name || !reviewInput.text) return alert("이름과 내용을 입력해주세요.");
+    if (!reviewInput.name || !reviewInput.comment) return alert("이름과 내용을 입력해주세요.");
     try {
-      const res = await api.post(`/reviews`, { productId: id, ...reviewInput });
-      setReviews((prev) => [...prev, res.data]);
-      setReviewInput({ name: "", rating: 5, text: "" });
+      const payload = {
+        productId: id,
+        name: reviewInput.name,
+        rating: Number(reviewInput.rating),
+        comment: reviewInput.comment,
+      };
+      const res = await api.post(`/reviews`, payload);
+      setReviews((prev) => [res.data, ...prev]);
+      setReviewInput({ name: "", rating: 5, comment: "" });
     } catch (err) {
       console.error("❌ 리뷰 등록 실패:", err);
+      alert("리뷰 등록 중 오류가 발생했습니다.");
     }
   };
 
@@ -155,10 +162,11 @@ function ProductDetail() {
       return alert("이름과 문의 내용을 입력해주세요.");
     try {
       const res = await api.post(`/inquiries`, { productId: id, ...inquiryInput });
-      setInquiries((prev) => [...prev, res.data]);
+      setInquiries((prev) => [res.data, ...prev]);
       setInquiryInput({ name: "", question: "" });
     } catch (err) {
       console.error("❌ 문의 등록 실패:", err);
+      alert("문의 등록 중 오류가 발생했습니다.");
     }
   };
 
@@ -283,7 +291,7 @@ function ProductDetail() {
           ))}
         </div>
 
-        {/* ✅ 스크롤 가능한 섹션들 */}
+        {/* ✅ 섹션들 */}
         <div className="bg-white p-6 mt-2 rounded-lg shadow-sm space-y-16 leading-relaxed">
           {/* 상세정보 */}
           <section ref={detailRef}>
@@ -323,14 +331,11 @@ function ProductDetail() {
                 <p className="text-gray-600">아직 등록된 후기가 없습니다.</p>
               ) : (
                 reviews.map((r, i) => (
-                  <div
-                    key={i}
-                    className="border p-3 rounded-md bg-gray-50 text-sm"
-                  >
+                  <div key={i} className="border p-3 rounded-md bg-gray-50 text-sm">
                     <p className="font-semibold text-blue-600">
                       {r.name} ({r.rating}⭐)
                     </p>
-                    <p>{r.text}</p>
+                    <p>{r.comment}</p>
                   </div>
                 ))
               )}
@@ -365,9 +370,9 @@ function ProductDetail() {
                 placeholder="리뷰 내용을 입력해주세요."
                 className="w-full border p-2 rounded mt-2"
                 rows="3"
-                value={reviewInput.text}
+                value={reviewInput.comment}
                 onChange={(e) =>
-                  setReviewInput({ ...reviewInput, text: e.target.value })
+                  setReviewInput({ ...reviewInput, comment: e.target.value })
                 }
               ></textarea>
               <button
@@ -387,10 +392,7 @@ function ProductDetail() {
                 <p className="text-gray-600">아직 등록된 문의가 없습니다.</p>
               ) : (
                 inquiries.map((q, i) => (
-                  <div
-                    key={i}
-                    className="border p-3 rounded-md bg-gray-50 text-sm"
-                  >
+                  <div key={i} className="border p-3 rounded-md bg-gray-50 text-sm">
                     <p className="font-semibold text-gray-800">{q.name}</p>
                     <p>{q.question}</p>
                   </div>
