@@ -135,18 +135,24 @@ const handleImageUpload = async () => {
     }
 
     const uploadedImages = await handleImageUpload();
-    const productData = {
+
+// ✅ blob: URL 제거 (업로드 안 된 미리보기 주소 제거)
+const cleanImages = [...form.images, ...uploadedImages].filter(
+  (img) => !img.startsWith("blob:")
+);
+
+// ✅ 대표 이미지가 사라지지 않도록 처리
+const productData = {
   name: form.name.trim(),
   price: Number(form.price),
   description: form.description.trim(),
-  // ✅ blob: (미리보기용) URL은 DB에 저장하지 않음
-  images: uploadedImages.filter((img) => !img.startsWith("blob:")),
+  images: cleanImages,
   mainImage:
-    form.mainImage && !form.mainImage.startsWith("blob:")
+    cleanImages.includes(form.mainImage)
       ? form.mainImage
-      : uploadedImages.find((img) => !img.startsWith("blob:")) ||
-        "https://placehold.co/250x200?text=No+Image",
+      : cleanImages[0] || "https://placehold.co/250x200?text=No+Image",
 };
+
 
 
     try {
