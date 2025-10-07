@@ -27,11 +27,11 @@ function MainLayout() {
 
       {/* 🔹 중앙 배경 섹션 */}
       <img
-            src="/woodcard.png"
+            src="/woodcard.jpg"
             alt="background"
             className="relative w-full flex flex-col items-center justify-center text-center text-white py-24"
           />
-          
+
       {/* 🔹 추천 상품 섹션 */}
       <main className="flex flex-col flex-1 bg-white items-center justify-start p-12">
         <h2 className="text-2xl font-bold text-gray-800 mb-10">🥝 추천 상품</h2>
