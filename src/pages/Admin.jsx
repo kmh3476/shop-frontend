@@ -96,36 +96,40 @@ function Admin() {
     }
   };
 
-  // ✅ 여러 이미지 업로드
+// ✅ 여러 이미지 업로드 (완전 안정화)
 const handleImageUpload = async () => {
-  if (files.length === 0) return form.images.filter((img) => !img.startsWith("blob:"));
+  if (files.length === 0)
+    return form.images.filter((img) => !img.startsWith("blob:"));
+
   setUploading(true);
-
   try {
-    const uploadedUrls = [];
-
-    for (const file of files) {
+    // 여러 장 동시에 업로드 (속도 향상)
+    const uploadPromises = files.map(async (file) => {
       const formData = new FormData();
       formData.append("image", file);
-
       const res = await api.post("/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+      return res.data.imageUrl;
+    });
 
-      uploadedUrls.push(res.data.imageUrl);
-    }
+    const uploadedUrls = await Promise.all(uploadPromises);
+
+    // ✅ 기존 Cloudinary URL 유지 (blob 제거)
+    const validExisting = form.images.filter(
+      (img) => img && !img.startsWith("blob:")
+    );
 
     setUploading(false);
-    // ✅ blob: URL 제거 후 Cloudinary URL만 병합
-    const existingValidImages = form.images.filter((img) => !img.startsWith("blob:"));
-    return [...existingValidImages, ...uploadedUrls];
+    return [...validExisting, ...uploadedUrls];
   } catch (err) {
     console.error("❌ 이미지 업로드 실패:", err);
-    alert("이미지 업로드에 실패했습니다.");
+    alert("이미지 업로드 중 오류가 발생했습니다.");
     setUploading(false);
     return form.images.filter((img) => !img.startsWith("blob:"));
   }
 };
+
 
 
     const saveProduct = async () => {
@@ -354,10 +358,13 @@ const handleImageUpload = async () => {
 <h2 style={{ marginTop: "40px" }}>상품 목록</h2>
 <ul style={{ listStyle: "none", padding: 0 }}>
   {products.map((p) => {
-    // ✅ 대표 이미지 우선순위 개선 (빈 문자열 방지)
+    // ✅ 썸네일 우선순위 (mainImage → image → images[0])
     const thumbnail =
-      (p.mainImage && p.mainImage.trim() !== "" && p.mainImage) ||
-      (p.images && p.images.length > 0 && p.images[0]) ||
+      (p.mainImage && p.mainImage.startsWith("http") && p.mainImage) ||
+      (p.image && p.image.startsWith("http") && p.image) ||
+      (Array.isArray(p.images) &&
+        p.images.length > 0 &&
+        p.images.find((img) => img && img.startsWith("http"))) ||
       "https://placehold.co/100x100?text=No+Image";
 
     return (
@@ -384,12 +391,17 @@ const handleImageUpload = async () => {
             cursor: "pointer",
           }}
           onClick={() => {
-            setModalImages(p.images?.length ? p.images : [thumbnail]);
+            setModalImages(
+              Array.isArray(p.images) && p.images.length > 0
+                ? p.images
+                : [thumbnail]
+            );
             setModalIndex(0);
           }}
-          onError={(e) => {
-            e.currentTarget.src = "https://placehold.co/100x100?text=No+Image";
-          }}
+          onError={(e) =>
+            (e.currentTarget.src =
+              "https://placehold.co/100x100?text=No+Image")
+          }
         />
         <div style={{ flex: 1 }}>
           <strong>{p.name}</strong> - {p.price}원 <br />
@@ -401,6 +413,7 @@ const handleImageUpload = async () => {
     );
   })}
 </ul>
+
 
 
       {/* ✅ 다중 이미지 모달 */}
