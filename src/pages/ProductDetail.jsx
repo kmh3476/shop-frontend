@@ -1,12 +1,28 @@
 // 📁 src/pages/ProductDetail.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 
-// ✅ 이미지 확대 모달
-function ImageModal({ imageUrl, onClose }) {
-  if (!imageUrl) return null;
+// ✅ 이미지 확대 모달 (여러 장 지원)
+function ImageModal({ images, currentIndex, onClose, onNavigate }) {
+  if (!images || images.length === 0) return null;
+  const imageUrl = images[currentIndex];
+
+  // ✅ 키보드 화살표로 이동
+  const handleKey = useCallback(
+    (e) => {
+      if (e.key === "ArrowLeft") onNavigate("prev");
+      else if (e.key === "ArrowRight") onNavigate("next");
+      else if (e.key === "Escape") onClose();
+    },
+    [onNavigate, onClose]
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [handleKey]);
 
   return (
     <div
@@ -18,7 +34,7 @@ function ImageModal({ imageUrl, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <img
-          src={imageUrl}
+          src={imageUrl || noImage}
           alt="Product"
           className="rounded-lg shadow-2xl transition-transform duration-300 cursor-zoom-out"
           style={{
@@ -30,12 +46,43 @@ function ImageModal({ imageUrl, onClose }) {
           }}
           onError={(e) => (e.currentTarget.src = noImage)}
         />
+
+        {/* 닫기 버튼 */}
         <button
           className="absolute top-3 right-3 text-white bg-black/60 px-3 py-2 rounded-full hover:bg-black/80 transition"
           onClick={onClose}
         >
           ✖
         </button>
+
+        {/* 좌우 화살표 */}
+        {images.length > 1 && (
+          <>
+            <button
+              className="absolute left-5 text-white text-3xl bg-black/50 px-3 py-1 rounded-full hover:bg-black/70 transition"
+              onClick={(e) => {
+                e.stopPropagation();
+                onNavigate("prev");
+              }}
+            >
+              ←
+            </button>
+            <button
+              className="absolute right-5 text-white text-3xl bg-black/50 px-3 py-1 rounded-full hover:bg-black/70 transition"
+              onClick={(e) => {
+                e.stopPropagation();
+                onNavigate("next");
+              }}
+            >
+              →
+            </button>
+
+            {/* 인덱스 표시 */}
+            <div className="absolute bottom-5 text-white bg-black/40 px-3 py-1 rounded-lg text-sm">
+              {currentIndex + 1} / {images.length}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -45,8 +92,8 @@ function ProductDetail() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(null);
   const [mainImage, setMainImage] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(null); // ✅ 모달용 인덱스
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -54,7 +101,6 @@ function ProductDetail() {
         const res = await api.get(`/products/${id}`);
         const data = res.data;
 
-        // ✅ 여러 이미지 지원 + 이미지 정제
         const imageList =
           Array.isArray(data.images) && data.images.length > 0
             ? data.images.filter(Boolean)
@@ -69,9 +115,18 @@ function ProductDetail() {
         setLoading(false);
       }
     };
-
     fetchProduct();
   }, [id]);
+
+  // ✅ 모달 내 이미지 넘기기 함수
+  const handleNavigate = (direction) => {
+    setSelectedIndex((prev) => {
+      if (!product?.images?.length) return prev;
+      if (direction === "next") return (prev + 1) % product.images.length;
+      if (direction === "prev") return (prev - 1 + product.images.length) % product.images.length;
+      return prev;
+    });
+  };
 
   if (loading)
     return <p className="text-center mt-10 text-gray-600">불러오는 중...</p>;
@@ -93,7 +148,9 @@ function ProductDetail() {
           <img
             src={mainImage || noImage}
             alt={product.name}
-            onClick={() => setSelectedImage(mainImage)}
+            onClick={() =>
+              setSelectedIndex(product.images.indexOf(mainImage))
+            }
             onError={(e) => (e.currentTarget.src = noImage)}
             className="w-full h-[400px] object-cover cursor-zoom-in hover:opacity-90 transition"
           />
@@ -143,10 +200,14 @@ function ProductDetail() {
       </div>
 
       {/* ✅ 이미지 확대 모달 */}
-      <ImageModal
-        imageUrl={selectedImage}
-        onClose={() => setSelectedImage(null)}
-      />
+      {selectedIndex !== null && (
+        <ImageModal
+          images={product.images}
+          currentIndex={selectedIndex}
+          onClose={() => setSelectedIndex(null)}
+          onNavigate={handleNavigate}
+        />
+      )}
     </div>
   );
 }
