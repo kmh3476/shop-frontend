@@ -37,13 +37,13 @@ function Admin() {
     price: "",
     description: "",
     images: [],
+    mainImage: "", // ✅ 대표 이미지 추가
   });
   const [files, setFiles] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
-  // ✅ 상품 불러오기
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -64,8 +64,6 @@ function Admin() {
 
     try {
       const uploadedUrls = [];
-
-      // 순차 업로드 (Cloudinary API 안정성 ↑)
       for (const file of files) {
         const formData = new FormData();
         formData.append("image", file);
@@ -101,7 +99,10 @@ function Admin() {
       price: Number(form.price),
       description: form.description.trim(),
       images: uploadedImages,
-      imageUrl: uploadedImages[0] || form.images[0] || "", // 대표 이미지
+      mainImage:
+        form.mainImage ||
+        uploadedImages[0] ||
+        "https://placehold.co/250x200?text=No+Image", // ✅ 대표 이미지
     };
 
     try {
@@ -118,14 +119,20 @@ function Admin() {
 
       // ✅ 폼 초기화
       setEditingId(null);
-      setForm({ name: "", price: "", description: "", images: [] });
+      setForm({
+        name: "",
+        price: "",
+        description: "",
+        images: [],
+        mainImage: "",
+      });
       setFiles([]);
     } catch (err) {
       console.error("❌ 상품 저장 실패:", err);
     }
   };
 
-  // ✅ 수정 모드 진입
+  // ✅ 수정 모드
   const startEdit = (p) => {
     setEditingId(p._id);
     setForm({
@@ -133,22 +140,27 @@ function Admin() {
       price: p.price,
       description: p.description,
       images: p.images || [],
+      mainImage: p.mainImage || p.image || "", // ✅ 대표 이미지 불러오기
     });
     setFiles([]);
   };
 
-  // ✅ 수정 취소
   const cancelEdit = () => {
     setEditingId(null);
-    setForm({ name: "", price: "", description: "", images: [] });
+    setForm({
+      name: "",
+      price: "",
+      description: "",
+      images: [],
+      mainImage: "",
+    });
     setFiles([]);
   };
 
-  // ✅ 파일 선택 시 미리보기 추가
+  // ✅ 파일 선택
   const handleFileChange = (e) => {
     const selected = Array.from(e.target.files);
     setFiles(selected);
-
     const previewUrls = selected.map((file) => URL.createObjectURL(file));
     setForm((prev) => ({
       ...prev,
@@ -156,12 +168,16 @@ function Admin() {
     }));
   };
 
-  // ✅ 이미지 개별 삭제
   const removeImage = (index) => {
-    setForm((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index),
-    }));
+    const newImages = form.images.filter((_, i) => i !== index);
+    const newMain =
+      form.mainImage === form.images[index] ? newImages[0] || "" : form.mainImage;
+    setForm({ ...form, images: newImages, mainImage: newMain });
+  };
+
+  // ✅ 대표 이미지 선택
+  const setAsMainImage = (img) => {
+    setForm((prev) => ({ ...prev, mainImage: img }));
   };
 
   // ✅ 상품 삭제
@@ -208,7 +224,6 @@ function Admin() {
           onChange={(e) => setForm({ ...form, description: e.target.value })}
         />
 
-        {/* ✅ 여러 장 업로드 */}
         <input
           type="file"
           accept="image/*"
@@ -218,7 +233,7 @@ function Admin() {
 
         {uploading && <p>🕓 이미지 업로드 중...</p>}
 
-        {/* ✅ 미리보기 */}
+        {/* ✅ 이미지 미리보기 + 대표 설정 */}
         <div
           style={{
             display: "flex",
@@ -237,9 +252,11 @@ function Admin() {
                   height: "80px",
                   objectFit: "cover",
                   borderRadius: "6px",
+                  border:
+                    img === form.mainImage ? "3px solid blue" : "1px solid #ccc",
                   cursor: "pointer",
                 }}
-                onClick={() => setSelectedImage(img)}
+                onClick={() => setAsMainImage(img)}
               />
               <button
                 onClick={() => removeImage(idx)}
@@ -258,20 +275,21 @@ function Admin() {
               >
                 ✖
               </button>
+              {img === form.mainImage && (
+                <span
+                  style={{
+                    position: "absolute",
+                    bottom: "-18px",
+                    left: "0",
+                    fontSize: "12px",
+                    color: "blue",
+                  }}
+                >
+                  대표
+                </span>
+              )}
             </div>
           ))}
-          {form.images.length === 0 && (
-            <img
-              src={noImage}
-              alt="no"
-              style={{
-                width: "80px",
-                height: "80px",
-                objectFit: "cover",
-                borderRadius: "8px",
-              }}
-            />
-          )}
         </div>
 
         <button onClick={saveProduct}>
@@ -284,11 +302,10 @@ function Admin() {
       <h2 style={{ marginTop: "40px" }}>상품 목록</h2>
       <ul style={{ listStyle: "none", padding: 0 }}>
         {products.map((p) => {
-          const firstImage =
+          const thumbnail =
+            p.mainImage ||
             (p.images && p.images[0]) ||
-            p.imageUrl ||
             "https://placehold.co/100x100?text=No+Image";
-
           return (
             <li
               key={p._id}
@@ -303,7 +320,7 @@ function Admin() {
               }}
             >
               <img
-                src={firstImage}
+                src={thumbnail}
                 alt={p.name}
                 style={{
                   width: "80px",
@@ -312,9 +329,10 @@ function Admin() {
                   borderRadius: "8px",
                   cursor: "pointer",
                 }}
-                onClick={() => setSelectedImage(firstImage)}
+                onClick={() => setSelectedImage(thumbnail)}
                 onError={(e) =>
-                  (e.currentTarget.src = "https://placehold.co/100x100?text=No+Image")
+                  (e.currentTarget.src =
+                    "https://placehold.co/100x100?text=No+Image")
                 }
               />
               <div style={{ flex: 1 }}>
@@ -328,7 +346,6 @@ function Admin() {
         })}
       </ul>
 
-      {/* ✅ 이미지 확대 모달 */}
       <ImageModal
         imageUrl={selectedImage}
         onClose={() => setSelectedImage(null)}
