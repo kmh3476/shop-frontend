@@ -169,7 +169,11 @@ function Admin() {
         );
       } else {
         result = await api.post("/products", productData);
-        setProducts((prev) => [result.data, ...prev]);
+
+        // ✅ Cloudinary 업로드 후 DB 반영이 늦게 오는 문제 해결
+        await new Promise((r) => setTimeout(r, 1000));
+        const refreshed = await api.get("/products");
+        setProducts(refreshed.data);
       }
 
       // ✅ 초기화
