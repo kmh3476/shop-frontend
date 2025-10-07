@@ -26,16 +26,11 @@ function MainLayout() {
       </header>
 
       {/* 🔹 중앙 배경 섹션 */}
-      <section
-        className="relative w-full flex flex-col items-center justify-center text-center text-white py-24"
-        style={{
-          backgroundImage: "url('/woodcard.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        {/* 어두운 반투명 오버레이 (글자 가독성 향상용) */}
-        <div className="absolute inset-0 bg-black/40"></div>
+      <img
+            src="/woodcard.png"
+            alt="background"
+            className="relative w-full flex flex-col items-center justify-center text-center text-white py-24"
+          />
 
         {/* 내용 */}
         <div className="relative z-10">
