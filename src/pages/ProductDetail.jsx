@@ -4,25 +4,27 @@ import { useParams, Link } from "react-router-dom";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 
-// ✅ 이미지 모달 컴포넌트
+// ✅ 이미지 모달 (크게 보기 + 반응형 확대)
 function ImageModal({ imageUrl, onClose }) {
   if (!imageUrl) return null;
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50"
+      className="fixed inset-0 bg-black/80 flex justify-center items-center z-50"
       onClick={onClose}
     >
       <div
-        className="relative max-w-[90vw] max-h-[90vh] flex justify-center items-center"
+        className="relative flex justify-center items-center"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* ✅ 이미지: 창 크기에 맞게 자동 조정 + 확대 가능 */}
         <img
           src={imageUrl}
           alt="Product"
-          className="max-w-full max-h-full rounded-lg shadow-lg"
+          className="max-w-[95vw] max-h-[95vh] object-contain rounded-lg shadow-2xl transition-transform duration-300 hover:scale-105"
+          style={{ width: "auto", height: "auto" }}
         />
         <button
-          className="absolute top-2 right-2 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-70 transition"
+          className="absolute top-3 right-3 text-white bg-black/60 px-3 py-2 rounded-full hover:bg-black/80 transition"
           onClick={onClose}
         >
           ✖
@@ -36,7 +38,7 @@ function ProductDetail() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(null); // ✅ 추가: 클릭한 이미지 모달용
+  const [selectedImage, setSelectedImage] = useState(null); // ✅ 클릭 시 이미지 모달용
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -61,7 +63,7 @@ function ProductDetail() {
       ? product.image
       : product.imageUrl?.startsWith("http")
       ? product.imageUrl
-      : "https://placehold.co/400x300?text=No+Image";
+      : noImage;
 
   return (
     <div className="flex flex-col items-center py-10">
@@ -73,13 +75,13 @@ function ProductDetail() {
       </Link>
 
       <div className="max-w-2xl w-full bg-white shadow-md rounded-lg overflow-hidden">
-        {/* ✅ 이미지 클릭 시 모달 열기 */}
+        {/* ✅ 클릭 시 확대 모달 열기 */}
         <img
           src={imageSrc}
           alt={product.name}
           onClick={() => setSelectedImage(imageSrc)}
           onError={(e) => (e.currentTarget.src = noImage)}
-          className="w-full h-[350px] object-cover cursor-pointer hover:opacity-90 transition"
+          className="w-full h-[350px] object-cover cursor-zoom-in hover:opacity-90 transition"
         />
 
         <div className="p-6">
