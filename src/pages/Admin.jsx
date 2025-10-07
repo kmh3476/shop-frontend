@@ -2,17 +2,15 @@ import { useEffect, useState } from "react";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 
-// ✅ 다중 이미지 지원 모달 컴포넌트
+// ✅ 다중 이미지 모달
 function ImageModal({ images = [], startIndex = 0, onClose }) {
   const [current, setCurrent] = useState(startIndex);
-
   if (!images.length) return null;
 
   const handlePrev = (e) => {
     e.stopPropagation();
     setCurrent((prev) => (prev - 1 + images.length) % images.length);
   };
-
   const handleNext = (e) => {
     e.stopPropagation();
     setCurrent((prev) => (prev + 1) % images.length);
@@ -33,7 +31,6 @@ function ImageModal({ images = [], startIndex = 0, onClose }) {
           className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl transition"
           onError={(e) => (e.currentTarget.src = noImage)}
         />
-        {/* 닫기 버튼 */}
         <button
           className="absolute top-3 right-3 text-white bg-black/50 rounded-full px-3 py-1 hover:bg-black/70 transition"
           onClick={onClose}
@@ -78,8 +75,6 @@ function Admin() {
   const [files, setFiles] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
-
-  // ✅ 모달 관련 상태
   const [modalImages, setModalImages] = useState([]);
   const [modalIndex, setModalIndex] = useState(0);
 
@@ -96,7 +91,7 @@ function Admin() {
     }
   };
 
-  // ✅ 여러 이미지 업로드 (병렬 업로드)
+  // ✅ 여러 이미지 업로드 (한 번에 /upload/multi)
   const handleImageUpload = async (filesToUpload = files) => {
     if (!filesToUpload.length) {
       return form.images.filter((img) => !img.startsWith("blob:"));
@@ -104,22 +99,14 @@ function Admin() {
 
     setUploading(true);
     try {
-      const uploadPromises = filesToUpload.map((file) => {
-        const formData = new FormData();
-        formData.append("image", file);
-        return api
-          .post("/upload", formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          })
-          .then((res) => res.data.imageUrl)
-          .catch((err) => {
-            console.error("❌ 개별 이미지 업로드 실패:", err);
-            return null;
-          });
+      const formData = new FormData();
+      filesToUpload.forEach((file) => formData.append("image", file));
+
+      const res = await api.post("/upload/multi", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
-      const uploadedUrls = (await Promise.all(uploadPromises)).filter(Boolean);
-
+      const uploadedUrls = res.data.imageUrls || [];
       const existing = form.images.filter((img) => !img.startsWith("blob:"));
       const merged = [...existing, ...uploadedUrls];
 
@@ -141,7 +128,6 @@ function Admin() {
     }
 
     const uploadedImages = await handleImageUpload(files);
-
     const cleanImages = uploadedImages
       .filter((img) => img && !img.startsWith("blob:"))
       .filter((v, i, arr) => arr.indexOf(v) === i);
@@ -212,7 +198,7 @@ function Admin() {
     setFiles([]);
   };
 
-  // ✅ 파일 선택 (미리보기 포함)
+  // ✅ 파일 선택
   const handleFileChange = (e) => {
     const selected = Array.from(e.target.files);
     setFiles(selected);
@@ -231,7 +217,7 @@ function Admin() {
     setForm({ ...form, images: newImages, mainImage: newMain });
   };
 
-  // ✅ 대표 이미지 지정
+  // ✅ 대표 이미지 설정
   const setAsMainImage = (img) => {
     setForm((prev) => ({ ...prev, mainImage: img }));
   };
