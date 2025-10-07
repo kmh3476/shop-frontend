@@ -96,6 +96,12 @@ function ProductDetail() {
   const reviewRef = useRef(null);
   const inquiryRef = useRef(null);
 
+  // ✅ 리뷰 / 문의 상태
+  const [reviews, setReviews] = useState([]);
+  const [inquiries, setInquiries] = useState([]);
+  const [reviewInput, setReviewInput] = useState({ name: "", rating: 5, text: "" });
+  const [inquiryInput, setInquiryInput] = useState({ name: "", question: "" });
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -113,8 +119,48 @@ function ProductDetail() {
         setLoading(false);
       }
     };
+
+    const fetchExtras = async () => {
+      try {
+        const [reviewRes, inquiryRes] = await Promise.all([
+          api.get(`/reviews/${id}`),
+          api.get(`/inquiries/${id}`),
+        ]);
+        setReviews(reviewRes.data || []);
+        setInquiries(inquiryRes.data || []);
+      } catch (err) {
+        console.error("❌ 리뷰/문의 불러오기 실패:", err);
+      }
+    };
+
     fetchProduct();
+    fetchExtras();
   }, [id]);
+
+  // ✅ 리뷰 추가
+  const handleAddReview = async () => {
+    if (!reviewInput.name || !reviewInput.text) return alert("이름과 내용을 입력해주세요.");
+    try {
+      const res = await api.post(`/reviews`, { productId: id, ...reviewInput });
+      setReviews((prev) => [...prev, res.data]);
+      setReviewInput({ name: "", rating: 5, text: "" });
+    } catch (err) {
+      console.error("❌ 리뷰 등록 실패:", err);
+    }
+  };
+
+  // ✅ 문의 추가
+  const handleAddInquiry = async () => {
+    if (!inquiryInput.name || !inquiryInput.question)
+      return alert("이름과 문의 내용을 입력해주세요.");
+    try {
+      const res = await api.post(`/inquiries`, { productId: id, ...inquiryInput });
+      setInquiries((prev) => [...prev, res.data]);
+      setInquiryInput({ name: "", question: "" });
+    } catch (err) {
+      console.error("❌ 문의 등록 실패:", err);
+    }
+  };
 
   // ✅ 모달 이미지 넘기기
   const handleNavigate = (direction) => {
@@ -149,7 +195,6 @@ function ProductDetail() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // ✅ 탭 클릭 → 스무스 스크롤
   const scrollToSection = (ref) => {
     ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
@@ -240,9 +285,9 @@ function ProductDetail() {
 
         {/* ✅ 스크롤 가능한 섹션들 */}
         <div className="bg-white p-6 mt-2 rounded-lg shadow-sm space-y-16 leading-relaxed">
+          {/* 상세정보 */}
           <section ref={detailRef}>
             <h2 className="text-lg font-semibold mb-2">📋 상품 상세정보</h2>
-            <p>{product.description || "상품 상세정보가 없습니다."}</p>
             {product.images?.length > 0 && (
               <div className="flex flex-col items-center gap-6 mt-6">
                 {product.images.map((img, idx) => (
@@ -258,6 +303,7 @@ function ProductDetail() {
             )}
           </section>
 
+          {/* 사이즈 안내 */}
           <section ref={sizeRef}>
             <h2 className="text-lg font-semibold mb-2">📏 사이즈 & 구매안내</h2>
             <p>
@@ -269,14 +315,117 @@ function ProductDetail() {
             </p>
           </section>
 
+          {/* ✅ 상품 후기 */}
           <section ref={reviewRef}>
-            <h2 className="text-lg font-semibold mb-2">⭐ 상품 후기</h2>
-            <p className="text-gray-600">아직 등록된 후기가 없습니다.</p>
+            <h2 className="text-lg font-semibold mb-4">⭐ 상품 후기</h2>
+            <div className="space-y-3">
+              {reviews.length === 0 ? (
+                <p className="text-gray-600">아직 등록된 후기가 없습니다.</p>
+              ) : (
+                reviews.map((r, i) => (
+                  <div
+                    key={i}
+                    className="border p-3 rounded-md bg-gray-50 text-sm"
+                  >
+                    <p className="font-semibold text-blue-600">
+                      {r.name} ({r.rating}⭐)
+                    </p>
+                    <p>{r.text}</p>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* 후기 작성 */}
+            <div className="mt-5 border-t pt-4">
+              <h3 className="font-semibold mb-2">리뷰 작성하기</h3>
+              <input
+                type="text"
+                placeholder="이름"
+                className="border px-2 py-1 mr-2 rounded"
+                value={reviewInput.name}
+                onChange={(e) =>
+                  setReviewInput({ ...reviewInput, name: e.target.value })
+                }
+              />
+              <select
+                value={reviewInput.rating}
+                onChange={(e) =>
+                  setReviewInput({ ...reviewInput, rating: e.target.value })
+                }
+                className="border px-2 py-1 mr-2 rounded"
+              >
+                {[5, 4, 3, 2, 1].map((n) => (
+                  <option key={n} value={n}>
+                    {n}점
+                  </option>
+                ))}
+              </select>
+              <textarea
+                placeholder="리뷰 내용을 입력해주세요."
+                className="w-full border p-2 rounded mt-2"
+                rows="3"
+                value={reviewInput.text}
+                onChange={(e) =>
+                  setReviewInput({ ...reviewInput, text: e.target.value })
+                }
+              ></textarea>
+              <button
+                onClick={handleAddReview}
+                className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                등록
+              </button>
+            </div>
           </section>
 
+          {/* ✅ 상품 문의 */}
           <section ref={inquiryRef}>
-            <h2 className="text-lg font-semibold mb-2">💬 상품 문의</h2>
-            <p className="text-gray-600">상품 관련 문의를 남겨주세요.</p>
+            <h2 className="text-lg font-semibold mb-4">💬 상품 문의</h2>
+            <div className="space-y-3">
+              {inquiries.length === 0 ? (
+                <p className="text-gray-600">아직 등록된 문의가 없습니다.</p>
+              ) : (
+                inquiries.map((q, i) => (
+                  <div
+                    key={i}
+                    className="border p-3 rounded-md bg-gray-50 text-sm"
+                  >
+                    <p className="font-semibold text-gray-800">{q.name}</p>
+                    <p>{q.question}</p>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* 문의 작성 */}
+            <div className="mt-5 border-t pt-4">
+              <h3 className="font-semibold mb-2">상품 문의하기</h3>
+              <input
+                type="text"
+                placeholder="이름"
+                className="border px-2 py-1 mr-2 rounded"
+                value={inquiryInput.name}
+                onChange={(e) =>
+                  setInquiryInput({ ...inquiryInput, name: e.target.value })
+                }
+              />
+              <textarea
+                placeholder="문의 내용을 입력해주세요."
+                className="w-full border p-2 rounded mt-2"
+                rows="3"
+                value={inquiryInput.question}
+                onChange={(e) =>
+                  setInquiryInput({ ...inquiryInput, question: e.target.value })
+                }
+              ></textarea>
+              <button
+                onClick={handleAddInquiry}
+                className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                등록
+              </button>
+            </div>
           </section>
         </div>
       </div>
