@@ -91,35 +91,37 @@ function Admin() {
   };
 
   // ✅ 여러 이미지 업로드 (멀티 엔드포인트로)
-const handleImageUpload = async (filesToUpload = files) => {
-  if (!filesToUpload.length) {
-    return form.images.filter((img) => !img.startsWith("blob:"));
-  }
+  const handleImageUpload = async (filesToUpload = files) => {
+    if (!filesToUpload.length) {
+      return form.images.filter((img) => !img.startsWith("blob:"));
+    }
 
-  setUploading(true);
-  try {
-    const formData = new FormData();
-    filesToUpload.forEach((file) => formData.append("image", file));
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      filesToUpload.forEach((file) => formData.append("image", file));
 
-    const res = await api.post("/upload/multi", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+      // 🔥 여기 핵심 수정 (/upload → /upload/multi)
+      const res = await api.post("/upload/multi", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-    const uploadedUrls = res.data.imageUrls || [];
-    console.log("✅ 업로드된 URL:", uploadedUrls);
+      // ✅ 여러 장 배열 반환 확인
+      const uploadedUrls = res.data.imageUrls || [];
+      console.log("✅ 업로드된 URL들:", uploadedUrls);
 
-    const existing = form.images.filter((img) => !img.startsWith("blob:"));
-    const merged = Array.from(new Set([...existing, ...uploadedUrls]));
+      // ✅ 기존 이미지 유지 + 중복 제거
+      const existing = form.images.filter((img) => !img.startsWith("blob:"));
+      const merged = Array.from(new Set([...existing, ...uploadedUrls]));
 
-    setUploading(false);
-    return merged;
-  } catch (err) {
-    console.error("❌ 이미지 업로드 오류:", err);
-    setUploading(false);
-    return form.images.filter((img) => !img.startsWith("blob:"));
-  }
-};
-
+      setUploading(false);
+      return merged;
+    } catch (err) {
+      console.error("❌ 이미지 업로드 오류:", err);
+      setUploading(false);
+      return form.images.filter((img) => !img.startsWith("blob:"));
+    }
+  };
 
   // ✅ 상품 저장
   const saveProduct = async () => {
