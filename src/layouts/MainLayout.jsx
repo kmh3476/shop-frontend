@@ -25,7 +25,30 @@ function MainLayout() {
         </Link>
       </header>
 
-      {/* 🔹 배경 밑 섹션 */}
+      {/* 🔹 중앙 배경 섹션 */}
+      <section
+        className="relative w-full flex flex-col items-center justify-center text-center text-white py-24"
+        style={{
+          backgroundImage: "url('/woodcard.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* 어두운 반투명 오버레이 (글자 가독성 향상용) */}
+        <div className="absolute inset-0 bg-black/40"></div>
+
+        {/* 내용 */}
+        <div className="relative z-10">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 drop-shadow-lg">
+            자연의 감성을 담은 디자인
+          </h1>
+          <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto drop-shadow">
+            따뜻한 우드 감성과 함께하는 새로운 스타일을 만나보세요.
+          </p>
+        </div>
+      </section>
+
+      {/* 🔹 추천 상품 섹션 */}
       <main className="flex flex-col flex-1 bg-white items-center justify-start p-12">
         <h2 className="text-2xl font-bold text-gray-800 mb-10">🥝 추천 상품</h2>
 
