@@ -1,24 +1,20 @@
 import { useEffect, useState } from "react";
-import noImage from "../assets/no-image.png"; // ✅ 기본 이미지 추가
+import { useNavigate } from "react-router-dom";
+import noImage from "../assets/no-image.png"; // 기본 이미지
 
 function Cart() {
   const [cart, setCart] = useState(() => {
     const saved = localStorage.getItem("cart");
     return saved ? JSON.parse(saved) : [];
   });
+  const navigate = useNavigate();
 
   // ✅ localStorage 동기화
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-  // ✅ 장바구니 아이템 삭제
-  const removeFromCart = (index) => {
-    const newCart = cart.filter((_, i) => i !== index);
-    setCart(newCart);
-  };
-
-  // ✅ 상품 이미지 가져오기 (대표 > 첫번째 > 기본 이미지)
+  // ✅ 상품 이미지 결정
   const getImageUrl = (item) => {
     if (item.mainImage?.startsWith("http")) return item.mainImage;
     if (Array.isArray(item.images) && item.images.length > 0) {
@@ -28,8 +24,48 @@ function Cart() {
     return noImage;
   };
 
-  // ✅ 총합 계산
-  const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
+  // ✅ 수량 증가
+  const increaseQty = (index) => {
+    const updated = [...cart];
+    updated[index].quantity = (updated[index].quantity || 1) + 1;
+    setCart(updated);
+  };
+
+  // ✅ 수량 감소
+  const decreaseQty = (index) => {
+    const updated = [...cart];
+    if (updated[index].quantity > 1) {
+      updated[index].quantity -= 1;
+      setCart(updated);
+    } else {
+      removeFromCart(index);
+    }
+  };
+
+  // ✅ 아이템 제거
+  const removeFromCart = (index) => {
+    const newCart = cart.filter((_, i) => i !== index);
+    setCart(newCart);
+  };
+
+  // ✅ 전체 삭제
+  const clearCart = () => {
+    if (window.confirm("장바구니를 모두 비우시겠습니까?")) {
+      setCart([]);
+    }
+  };
+
+  // ✅ 총합 계산 (수량 포함)
+  const totalPrice = cart.reduce(
+    (sum, item) => sum + item.price * (item.quantity || 1),
+    0
+  );
+
+  // ✅ 상품 클릭 시 상세 페이지 이동
+  const goToDetail = (item) => {
+    if (item._id) navigate(`/product/${item._id}`);
+    else alert("상품 상세 정보를 찾을 수 없습니다.");
+  };
 
   return (
     <div style={{ padding: "20px" }}>
@@ -53,7 +89,7 @@ function Cart() {
                   borderRadius: "10px",
                 }}
               >
-                {/* ✅ 상품 이미지 */}
+                {/* ✅ 상품 이미지 (클릭 시 상세페이지 이동) */}
                 <img
                   src={getImageUrl(item)}
                   alt={item.name}
@@ -62,12 +98,17 @@ function Cart() {
                     height: "80px",
                     objectFit: "cover",
                     borderRadius: "8px",
+                    cursor: "pointer",
                   }}
+                  onClick={() => goToDetail(item)}
                   onError={(e) => (e.currentTarget.src = noImage)}
                 />
 
                 {/* ✅ 상품 정보 */}
-                <div style={{ flex: 1 }}>
+                <div
+                  style={{ flex: 1, cursor: "pointer" }}
+                  onClick={() => goToDetail(item)}
+                >
                   <strong>{item.name}</strong> - {item.price}원
                   <br />
                   {item.description && (
@@ -75,7 +116,38 @@ function Cart() {
                   )}
                 </div>
 
-                {/* ✅ 삭제 버튼 */}
+                {/* ✅ 수량 조절 */}
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <button
+                    onClick={() => decreaseQty(index)}
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      border: "1px solid #aaa",
+                      borderRadius: "50%",
+                      background: "white",
+                      cursor: "pointer",
+                    }}
+                  >
+                    −
+                  </button>
+                  <span>{item.quantity || 1}</span>
+                  <button
+                    onClick={() => increaseQty(index)}
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      border: "1px solid #aaa",
+                      borderRadius: "50%",
+                      background: "white",
+                      cursor: "pointer",
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
+
+                {/* ✅ 개별 삭제 */}
                 <button
                   onClick={() => removeFromCart(index)}
                   style={{
@@ -93,7 +165,30 @@ function Cart() {
             ))}
           </ul>
 
-          <h3 style={{ marginTop: "20px" }}>총 금액: {totalPrice}원</h3>
+          {/* ✅ 총합 및 전체삭제 */}
+          <div
+            style={{
+              marginTop: "30px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <h3>총 금액: {totalPrice.toLocaleString()}원</h3>
+            <button
+              onClick={clearCart}
+              style={{
+                backgroundColor: "#444",
+                color: "white",
+                border: "none",
+                padding: "8px 16px",
+                borderRadius: "8px",
+                cursor: "pointer",
+              }}
+            >
+              🧹 전체 비우기
+            </button>
+          </div>
         </div>
       )}
     </div>
