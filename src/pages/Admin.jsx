@@ -90,7 +90,7 @@ function Admin() {
     }
   };
 
-  // ✅ 여러 이미지 순차 업로드 (안정성 보강)
+  // ✅ 여러 이미지 순차 업로드 (안정성 강화)
   const handleImageUpload = async (filesToUpload = files) => {
     if (!filesToUpload.length) {
       return form.images.filter((img) => !img.startsWith("blob:"));
@@ -107,7 +107,7 @@ function Admin() {
 
         setUploading(`🕓 업로드 중... (${i + 1}/${filesToUpload.length})`);
 
-        // ✅ 각 파일을 순차적으로 업로드
+        // ✅ 단일 업로드
         const res = await api.post("/upload", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
@@ -117,8 +117,7 @@ function Admin() {
           uploadedUrls.push(res.data.imageUrl);
         }
 
-        // ✅ 업로드 완료 후 약간 대기 (Cloudinary 응답 안정화)
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        await new Promise((resolve) => setTimeout(resolve, 700));
       }
 
       const existing = form.images.filter((img) => !img.startsWith("blob:"));
@@ -141,7 +140,8 @@ function Admin() {
       return;
     }
 
-    const mergedImages = await handleImageUpload(files);
+    console.log("📤 상품 저장 시작 — 선택된 파일 개수:", files.length);
+    const mergedImages = await handleImageUpload([...files]); // 깊은 복사
 
     const cleanImages = mergedImages
       .filter((img) => img && !img.startsWith("blob:"))
@@ -161,6 +161,8 @@ function Admin() {
     };
 
     try {
+      setUploading("🕓 상품 저장 중...");
+
       let result;
       if (editingId) {
         result = await api.put(`/products/${editingId}`, productData);
@@ -170,28 +172,33 @@ function Admin() {
       } else {
         result = await api.post("/products", productData);
 
-        // ✅ Cloudinary 업로드 후 DB 반영이 늦게 오는 문제 해결
-        await new Promise((r) => setTimeout(r, 1000));
+        // ✅ 업로드 후 DB 업데이트까지 여유시간 확보
+        await new Promise((r) => setTimeout(r, 1200));
         const refreshed = await api.get("/products");
         setProducts(refreshed.data);
       }
 
-      // ✅ 초기화
-      setEditingId(null);
-      setForm({
-        name: "",
-        price: "",
-        description: "",
-        images: [],
-        mainImage: "",
-      });
-      setFiles([]);
+      console.log("✅ 상품 저장 완료:", result.data);
+
+      // ✅ 폼 초기화 (딜레이 후 안전하게)
+      setTimeout(() => {
+        setEditingId(null);
+        setForm({
+          name: "",
+          price: "",
+          description: "",
+          images: [],
+          mainImage: "",
+        });
+        setFiles([]);
+        setUploading(false);
+      }, 1000);
     } catch (err) {
       console.error("❌ 상품 저장 실패:", err);
+      setUploading(false);
     }
   };
 
-  // ✅ 수정 시작
   const startEdit = (p) => {
     setEditingId(p._id);
     setForm({
@@ -204,7 +211,6 @@ function Admin() {
     setFiles([]);
   };
 
-  // ✅ 취소
   const cancelEdit = () => {
     setEditingId(null);
     setForm({
@@ -217,7 +223,6 @@ function Admin() {
     setFiles([]);
   };
 
-  // ✅ 파일 선택 시 미리보기 추가
   const handleFileChange = (e) => {
     const selected = Array.from(e.target.files);
     setFiles(selected);
@@ -228,7 +233,6 @@ function Admin() {
     }));
   };
 
-  // ✅ 이미지 삭제
   const removeImage = (index) => {
     const newImages = form.images.filter((_, i) => i !== index);
     const newMain =
@@ -236,11 +240,9 @@ function Admin() {
     setForm({ ...form, images: newImages, mainImage: newMain });
   };
 
-  // ✅ 대표 이미지 설정
   const setAsMainImage = (img) =>
     setForm((prev) => ({ ...prev, mainImage: img }));
 
-  // ✅ 상품 삭제
   const deleteProduct = async (id) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
     try {
@@ -256,7 +258,6 @@ function Admin() {
       <h1>📦 관리자 페이지</h1>
       <h2>{editingId ? "상품 수정" : "상품 추가"}</h2>
 
-      {/* 상품 입력폼 */}
       <div
         style={{
           display: "flex",
@@ -291,7 +292,6 @@ function Admin() {
           </p>
         )}
 
-        {/* 이미지 미리보기 */}
         <div
           style={{
             display: "flex",
@@ -409,7 +409,6 @@ function Admin() {
         })}
       </ul>
 
-      {/* 다중 이미지 모달 */}
       {modalImages.length > 0 && (
         <ImageModal
           images={modalImages}
