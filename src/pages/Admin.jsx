@@ -38,7 +38,6 @@ function ImageModal({ images = [], startIndex = 0, onClose }) {
           ✖
         </button>
 
-        {/* 이전/다음 버튼 */}
         {images.length > 1 && (
           <>
             <button
@@ -91,11 +90,10 @@ function Admin() {
     }
   };
 
-  // ✅ 여러 이미지 업로드 (한 번에 /upload/multi)
+  // ✅ 여러 이미지 업로드 (/upload/multi)
   const handleImageUpload = async (filesToUpload = files) => {
-    if (!filesToUpload.length) {
+    if (!filesToUpload.length)
       return form.images.filter((img) => !img.startsWith("blob:"));
-    }
 
     setUploading(true);
     try {
@@ -108,12 +106,12 @@ function Admin() {
 
       const uploadedUrls = res.data.imageUrls || [];
       const existing = form.images.filter((img) => !img.startsWith("blob:"));
-      const merged = [...existing, ...uploadedUrls];
+      const merged = Array.from(new Set([...existing, ...uploadedUrls]));
 
       setUploading(false);
       return merged;
     } catch (err) {
-      console.error("❌ 이미지 업로드 중 오류:", err);
+      console.error("❌ 이미지 업로드 오류:", err);
       setUploading(false);
       alert("이미지 업로드 중 오류가 발생했습니다.");
       return form.images.filter((img) => !img.startsWith("blob:"));
@@ -127,8 +125,9 @@ function Admin() {
       return;
     }
 
-    const uploadedImages = await handleImageUpload(files);
-    const cleanImages = uploadedImages
+    const mergedImages = await handleImageUpload(files);
+
+    const cleanImages = mergedImages
       .filter((img) => img && !img.startsWith("blob:"))
       .filter((v, i, arr) => arr.indexOf(v) === i);
 
@@ -157,7 +156,6 @@ function Admin() {
         setProducts((prev) => [result.data, ...prev]);
       }
 
-      // ✅ 폼 초기화
       setEditingId(null);
       setForm({
         name: "",
@@ -180,7 +178,7 @@ function Admin() {
       price: p.price,
       description: p.description,
       images: p.images || [],
-      mainImage: p.mainImage || p.images?.[0] || p.image || "",
+      mainImage: p.mainImage || p.images?.[0] || "",
     });
     setFiles([]);
   };
@@ -198,14 +196,14 @@ function Admin() {
     setFiles([]);
   };
 
-  // ✅ 파일 선택
+  // ✅ 파일 선택 시 미리보기 추가
   const handleFileChange = (e) => {
     const selected = Array.from(e.target.files);
     setFiles(selected);
-    const previewUrls = selected.map((file) => URL.createObjectURL(file));
+    const previews = selected.map((file) => URL.createObjectURL(file));
     setForm((prev) => ({
       ...prev,
-      images: [...prev.images, ...previewUrls],
+      images: [...prev.images, ...previews],
     }));
   };
 
@@ -218,9 +216,8 @@ function Admin() {
   };
 
   // ✅ 대표 이미지 설정
-  const setAsMainImage = (img) => {
+  const setAsMainImage = (img) =>
     setForm((prev) => ({ ...prev, mainImage: img }));
-  };
 
   // ✅ 상품 삭제
   const deleteProduct = async (id) => {
@@ -238,7 +235,7 @@ function Admin() {
       <h1>📦 관리자 페이지</h1>
       <h2>{editingId ? "상품 수정" : "상품 추가"}</h2>
 
-      {/* ✅ 상품 입력폼 */}
+      {/* 상품 입력폼 */}
       <div
         style={{
           display: "flex",
@@ -269,7 +266,7 @@ function Admin() {
 
         {uploading && <p>🕓 이미지 업로드 중...</p>}
 
-        {/* ✅ 이미지 미리보기 */}
+        {/* 이미지 미리보기 */}
         <div
           style={{
             display: "flex",
@@ -334,17 +331,15 @@ function Admin() {
         {editingId && <button onClick={cancelEdit}>취소</button>}
       </div>
 
-      {/* ✅ 상품 목록 */}
+      {/* 상품 목록 */}
       <h2 style={{ marginTop: "40px" }}>상품 목록</h2>
       <ul style={{ listStyle: "none", padding: 0 }}>
         {products.map((p) => {
           const thumbnail =
-            (p.mainImage && p.mainImage.startsWith("http") && p.mainImage) ||
-            (p.image && p.image.startsWith("http") && p.image) ||
-            (Array.isArray(p.images) &&
-              p.images.length > 0 &&
-              p.images.find((img) => img && img.startsWith("http"))) ||
-            "https://placehold.co/100x100?text=No+Image";
+            p.mainImage?.startsWith("http")
+              ? p.mainImage
+              : p.images?.find((img) => img?.startsWith("http")) ||
+                "https://placehold.co/100x100?text=No+Image";
 
           return (
             <li
@@ -370,11 +365,7 @@ function Admin() {
                   cursor: "pointer",
                 }}
                 onClick={() => {
-                  setModalImages(
-                    Array.isArray(p.images) && p.images.length > 0
-                      ? p.images
-                      : [thumbnail]
-                  );
+                  setModalImages(p.images?.length ? p.images : [thumbnail]);
                   setModalIndex(0);
                 }}
                 onError={(e) =>
@@ -393,7 +384,7 @@ function Admin() {
         })}
       </ul>
 
-      {/* ✅ 다중 이미지 모달 */}
+      {/* 다중 이미지 모달 */}
       {modalImages.length > 0 && (
         <ImageModal
           images={modalImages}
