@@ -25,12 +25,21 @@ function MainLayout() {
         </Link>
       </header>
 
-      {/* 🔹 중앙 배경 섹션 */}
-      <img
-            src="/woodcard.jpg"
-            alt="background"
-            className="relative flex flex-col items-center justify-center text-center py-20 px-6 bg-fixed bg-center bg-cover"
-          />
+<header className="relative w-full h-[40vh] flex flex-col justify-center items-center text-center text-white overflow-hidden">
+  {/* 🔹 배경 이미지 */}
+  <img
+    src="/woodcard.jpg"
+    alt="background"
+    className="absolute inset-0 w-full h-full object-cover z-0"
+  />
+
+  {/* 🔹 반투명 오버레이 (있으면 더 보기 좋음) */}
+  <div className="absolute inset-0 bg-black/40 z-10"></div>
+
+  {/* 🔹 헤더 내용 */}
+    <div className="relative z-20">
+  </div>
+</header>
 
       {/* 🔹 추천 상품 섹션 */}
       <main className="flex flex-col flex-1 bg-white items-center justify-start p-12">
