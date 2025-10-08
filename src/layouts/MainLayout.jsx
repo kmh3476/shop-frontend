@@ -2,28 +2,46 @@ import { Link } from "react-router-dom";
 
 function MainLayout() {
   return (
-    <div className="flex flex-col min-h-screen relative text-white bg-transparent">
+    <div
+      className="flex flex-col min-h-screen relative text-white bg-transparent items-center"
+      style={{
+        minWidth: "1280px", // ✅ PC 기준 가로 고정
+        overflowX: "hidden",
+      }}
+    >
       {/* 🔹 상단 여백 섹션 */}
-      <div className="h-[5vh] bg-white"></div>
+      <div className="h-[5vh] bg-white w-full"></div>
 
-      {/* 🔹 중간 배경 섹션 (woodcard 중앙에 위치, 비율 유지하면서 살짝 확대) */}
-      <header className="relative w-full h-[80vh] flex flex-col justify-center items-center text-center overflow-hidden">
+      {/* 🔹 중간 배경 섹션 (woodcard 중앙 배치, 적절한 비율로 조정) */}
+      <header
+        className="relative flex flex-col justify-center items-center text-center overflow-hidden"
+        style={{
+          width: "1280px",
+          height: "75vh", // ✅ 적당한 세로 크기
+          margin: "0 auto",
+        }}
+      >
         {/* 배경 이미지 */}
         <img
           src="/woodcard.jpg"
           alt="background"
-          className="absolute inset-0 w-full h-full object-contain z-0 scale-[1.15]"
+          className="absolute inset-0 object-contain z-0"
           style={{
-            objectPosition: "center -80px", // 🔸 살짝 위로 올림
+            width: "115%",
+            height: "115%",
+            objectPosition: "center -40px", // 🔸 살짝 위로
+            left: "50%",
+            transform: "translateX(-50%)",
           }}
         />
 
+        {/* 배경 위 내용 */}
         <div className="relative z-20"></div>
       </header>
 
-      {/* 🔹 추천 상품 섹션 (위치 조정 + 로고 포함) */}
+      {/* 🔹 추천 상품 섹션 (배경 위에 오버레이처럼 위치) */}
       <main
-        className="flex flex-col flex-1 items-center justify-start relative z-30 -mt-[46rem]"
+        className="flex flex-col items-center justify-start relative z-30 -mt-[40rem]"
         style={{
           backgroundColor: "transparent",
         }}
@@ -32,15 +50,22 @@ function MainLayout() {
         <img
           src="/logo-wblue.png"
           alt="onyou logo"
-          className="w-[220px] mb-8 opacity-95 hover:opacity-100 transition drop-shadow-lg"
+          className="w-[260px] mb-8 opacity-95 hover:opacity-100 transition drop-shadow-lg"
         />
 
+        {/* 제목 */}
         <h2 className="text-2xl font-bold text-white mb-10 drop-shadow-lg">
           🥝 추천 상품
         </h2>
 
-        {/* 🔸 추천 상품 카드 목록 */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl w-full">
+        {/* 🔸 상품 카드 영역 */}
+        <section
+          className="grid grid-cols-3 gap-8"
+          style={{
+            maxWidth: "1150px",
+            width: "100%",
+          }}
+        >
           {/* 카드 1 */}
           <div className="border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300">
             <img
@@ -115,7 +140,7 @@ function MainLayout() {
       </main>
 
       {/* 🔹 푸터 */}
-      <footer className="py-4 text-black text-sm border-t border-gray-300 w-full text-center bg-white">
+      <footer className="py-4 text-black text-sm border-t border-gray-300 w-full text-center bg-white mt-20">
         © 2025 onyou
       </footer>
     </div>

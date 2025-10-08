@@ -2,14 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 🌐 기본 스타일 재정의 */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: #222;
+  background-color: #fff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -17,20 +17,25 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ✅ PC 해상도 고정 */
+html,
+body {
+  min-width: 1280px; /* 항상 1280px 이상 */
+  overflow-x: hidden;
+  background-color: #ffffff;
+}
+
+/* ✅ 기본 링크 스타일 */
 a {
   font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+  color: #2563eb; /* Tailwind blue-600 */
+  text-decoration: none;
 }
 a:hover {
-  color: #535bf2;
+  color: #1e40af; /* Tailwind blue-800 */
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
+/* ✅ 기본 버튼 스타일 */
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -39,26 +44,47 @@ button {
   font-weight: 500;
   font-family: inherit;
   background-color: #1a1a1a;
+  color: white;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.25s ease;
 }
 button:hover {
-  border-color: #646cff;
+  background-color: #333;
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 3px solid #60a5fa; /* Tailwind blue-400 */
+  outline-offset: 2px;
 }
 
+/* ✅ 라이트 모드 대응 (선택적 유지) */
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
+    color: #111827; /* Tailwind gray-900 */
     background-color: #ffffff;
   }
+
   a:hover {
-    color: #747bff;
+    color: #3b82f6; /* Tailwind blue-500 */
   }
+
   button {
-    background-color: #f9f9f9;
+    background-color: #111827;
+  }
+}
+
+/* ✅ Tailwind 요소 커스텀 유틸리티 */
+@layer utilities {
+  .text-shadow {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
