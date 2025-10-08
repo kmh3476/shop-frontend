@@ -9,7 +9,7 @@ function MainLayout() {
           @media (max-width: 1280px) {
             header {
               width: 100% !important;
-              height: 70vh !important;
+              height: auto !important; /* ✅ 고정 높이 제거 */
             }
             .card-grid {
               grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -28,7 +28,7 @@ function MainLayout() {
           @media (max-width: 768px) {
             header {
               width: 100% !important;
-              height: 60vh !important;
+              height: auto !important; /* ✅ 고정 높이 제거 */
             }
             .overlay-section {
               position: relative !important;
@@ -76,15 +76,15 @@ function MainLayout() {
       {/* 🔹 배경 이미지 섹션 */}
       <header
         className="relative flex flex-col justify-center items-center text-center overflow-hidden w-full"
-        style={{ height: "80vh" }} // ✅ 배경을 약간 더 크게
+        style={{ minHeight: "100vh" }} // ✅ 화면 전체 높이 (잘림 방지)
       >
-        {/* ✅ 배경이 양옆 여백 없이 꽉 차도록 변경 */}
+        {/* ✅ 배경 이미지: 잘리지 않게 contain 적용 */}
         <img
           src="/woodcard.jpg"
           alt="background"
-          className="absolute inset-0 w-full h-full object-cover z-0"
+          className="absolute inset-0 w-full h-full object-contain z-0 bg-black"
           style={{
-            objectPosition: "center -10px", // 🔸 살짝 위로
+            objectPosition: "center center",
           }}
         />
 
