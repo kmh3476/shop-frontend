@@ -16,7 +16,7 @@ function MainLayout() {
               gap: 1.5rem !important;
             }
             .overlay-section {
-              top: 60% !important;
+              top: 58% !important;
               transform: translate(-50%, -50%) !important;
             }
             .logo {
@@ -56,17 +56,18 @@ function MainLayout() {
         className="relative flex flex-col justify-center items-center text-center overflow-hidden w-full max-w-[1280px] mx-auto"
         style={{ height: "75vh" }}
       >
+        {/* ✅ object-cover 로 변경 (비율 유지하며 자동 축소/확대) */}
         <img
           src="/woodcard.jpg"
           alt="background"
-          className="absolute inset-0 w-full h-full object-contain z-0 scale-[0.9]"
+          className="absolute inset-0 w-full h-full object-cover z-0 scale-[0.9]"
           style={{
-            objectPosition: "center -20px",
+            objectPosition: "center -30px",
           }}
         />
 
-        {/* ✅ 로고 + 추천상품 + 카드 (중앙에 배치) */}
-        <div className="overlay-section absolute top-[75%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full flex flex-col items-center z-30 px-6">
+        {/* ✅ 로고 + 추천상품 + 카드 (조금 더 위로) */}
+        <div className="overlay-section absolute top-[65%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full flex flex-col items-center z-30 px-6">
           {/* 로고 */}
           <img
             src="/logo-wblue.png"
