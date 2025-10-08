@@ -6,10 +6,10 @@ function MainLayout() {
       className="flex flex-col min-h-[100vh] relative text-white items-center overflow-x-hidden"
       style={{
         backgroundImage: "url('/woodcard.jpg')",
-        backgroundSize: "contain", // ✅ 비율 유지
+        backgroundSize: "contain", // ✅ 원본 비율 유지
         backgroundRepeat: "no-repeat",
         backgroundPosition: "center top",
-        backgroundColor: "white", // ✅ 여백 부분 검정 처리
+        backgroundColor: "white",
       }}
     >
       <style>
@@ -18,15 +18,14 @@ function MainLayout() {
           @media (max-width: 1280px) {
             header {
               width: 100% !important;
-              height: 70vh !important;
+              height: auto !important;
             }
             .card-grid {
-              grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-              gap: 1.5rem !important;
+              flex-wrap: nowrap !important;
+              gap: 1rem !important;
             }
             .overlay-section {
-              top: 60% !important;
-              transform: translate(-50%, -50%) !important;
+              margin-top: 20rem !important;
             }
             .logo {
               width: 200px !important;
@@ -41,22 +40,11 @@ function MainLayout() {
             }
             .overlay-section {
               position: relative !important;
-              top: 0 !important;
-              left: 0 !important;
-              transform: none !important;
-              margin-top: 2rem;
-            }
-            .card-grid {
-              grid-template-columns: 1fr !important;
-              gap: 1.25rem !important;
-            }
-            .logo {
-              width: 160px !important;
+              margin-top: 3rem !important;
             }
             .product-card {
+              width: 100% !important;
               transform: scale(0.9);
-              width: 90% !important;
-              margin: 0 auto;
             }
             .product-card h3 {
               font-size: 1rem !important;
@@ -82,22 +70,27 @@ function MainLayout() {
       <header
         className="relative flex flex-col justify-center items-center text-center overflow-hidden w-full"
         style={{
-          paddingBottom: "", // ✅ 푸터 전까지 여백 확보
+          flexGrow: 1,
         }}
       >
         {/* ✅ 중앙 콘텐츠 */}
-<div className="overlay-section relative z-30 w-full flex flex-col items-center px-8 mt-[550px]">
-
-
+        <div className="overlay-section relative z-30 w-full flex flex-col items-center px-8 mt-[600px]">
           {/* 제목 */}
-          <h2 className="text-2xl font-bold text-black mb-2 drop-shadow-lg text-center">
+          <h2 className="text-2xl font-bold text-black mb-3 drop-shadow-lg text-center">
             🥝 추천 상품
           </h2>
 
           {/* 카드 목록 */}
-          <section className="card-grid grid grid-cols-3 gap-8 w-full max-w-[1000px]">
+          <section className="card-grid flex justify-center items-stretch gap-6 w-full max-w-[1100px] flex-nowrap">
             {/* 카드 1 */}
-            <div className="product-card border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300 h-[300px]">
+            <div
+              className="product-card border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300 flex-shrink-0"
+              style={{
+                width: "30%",
+                minWidth: "250px",
+                height: "300px",
+              }}
+            >
               <img
                 src="/clothes-sample2.png"
                 alt="Sample1"
@@ -120,7 +113,14 @@ function MainLayout() {
             </div>
 
             {/* 카드 2 */}
-            <div className="product-card border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300 h-[300px]">
+            <div
+              className="product-card border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300 flex-shrink-0"
+              style={{
+                width: "30%",
+                minWidth: "250px",
+                height: "300px",
+              }}
+            >
               <img
                 src="/clothes-sample3.jpg"
                 alt="Sample2"
@@ -143,7 +143,14 @@ function MainLayout() {
             </div>
 
             {/* 카드 3 */}
-            <div className="product-card border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300 h-[300px]">
+            <div
+              className="product-card border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300 flex-shrink-0"
+              style={{
+                width: "30%",
+                minWidth: "250px",
+                height: "300px",
+              }}
+            >
               <img
                 src="/gorani.jpg"
                 alt="Sample3"
@@ -171,7 +178,7 @@ function MainLayout() {
       </header>
 
       {/* 🔹 푸터 */}
-      <footer className="py-4 text-black text-sm border-t border-gray-300 w-full text-center bg-white bg-opacity-1000 mt-auto">
+      <footer className="py-4 text-black text-sm border-t border-gray-300 w-full text-center bg-white mt-auto">
         © 2025 onyou
       </footer>
     </div>
