@@ -39,10 +39,32 @@ function MainLayout() {
             }
             .card-grid {
               grid-template-columns: 1fr !important;
-              gap: 1.25rem !important;
+              gap: 1rem !important;
             }
             .logo {
               width: 160px !important;
+            }
+
+            /* ✅ 카드 크기 축소 */
+            .product-card {
+              transform: scale(0.9);
+              width: 90% !important;
+              margin: 0 auto;
+            }
+
+            /* ✅ 카드 내부 텍스트 및 버튼 축소 */
+            .product-card h3 {
+              font-size: 1rem !important;
+            }
+            .product-card p {
+              font-size: 0.875rem !important;
+            }
+            .product-card button {
+              padding: 0.4em 0.8em !important;
+              font-size: 0.75rem !important;
+            }
+            .product-card img {
+              height: 7rem !important;
             }
           }
         `}
@@ -56,7 +78,7 @@ function MainLayout() {
         className="relative flex flex-col justify-center items-center text-center overflow-hidden w-full max-w-[1280px] mx-auto"
         style={{ height: "75vh" }}
       >
-        {/* ✅ object-cover 로 변경 (비율 유지하며 자동 축소/확대) */}
+        {/* ✅ object-cover로 비율 유지 */}
         <img
           src="/woodcard.jpg"
           alt="background"
@@ -66,7 +88,7 @@ function MainLayout() {
           }}
         />
 
-        {/* ✅ 로고 + 추천상품 + 카드 (조금 더 위로) */}
+        {/* ✅ 로고 + 추천상품 + 카드 */}
         <div className="overlay-section absolute top-[65%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full flex flex-col items-center z-30 px-6">
           {/* 로고 */}
           <img
@@ -83,7 +105,7 @@ function MainLayout() {
           {/* 카드 목록 */}
           <section className="card-grid grid grid-cols-3 gap-8 w-full max-w-[1150px]">
             {/* 카드 1 */}
-            <div className="border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300">
+            <div className="product-card border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300">
               <img
                 src="/clothes-sample2.png"
                 alt="Sample1"
@@ -106,7 +128,7 @@ function MainLayout() {
             </div>
 
             {/* 카드 2 */}
-            <div className="border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300">
+            <div className="product-card border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300">
               <img
                 src="/clothes-sample3.jpg"
                 alt="Sample2"
@@ -129,7 +151,7 @@ function MainLayout() {
             </div>
 
             {/* 카드 3 */}
-            <div className="border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300">
+            <div className="product-card border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300">
               <img
                 src="/gorani.jpg"
                 alt="Sample3"
