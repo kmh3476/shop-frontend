@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 function MainLayout() {
   return (
     <div className="flex flex-col min-h-screen relative text-white bg-transparent items-center overflow-x-hidden">
-      {/* ✅ Tailwind + CSS로 반응형 비율 자동 조정 */}
+      {/* ✅ Tailwind + CSS로 반응형 조정 */}
       <style>
         {`
           @media (max-width: 1280px) {
@@ -39,30 +39,30 @@ function MainLayout() {
       {/* 🔹 상단 여백 섹션 */}
       <div className="h-[5vh] bg-white w-full"></div>
 
-      {/* 🔹 중간 배경 섹션 (PC + 모바일 대응) */}
+      {/* 🔹 배경 섹션 (적당히 축소된 woodcard) */}
       <header
         className="relative flex flex-col justify-center items-center text-center overflow-hidden w-full max-w-[1280px] mx-auto"
         style={{
-          height: "80vh",
+          height: "75vh",
         }}
       >
-        {/* ✅ 배경 이미지 (화면 비율 따라 자동 확장/축소) */}
+        {/* ✅ 배경 이미지 (object-contain + scale로 축소) */}
         <img
           src="/woodcard.jpg"
           alt="background"
-          className="absolute inset-0 w-full h-full object-cover z-0"
+          className="absolute inset-0 w-full h-full object-contain z-0 scale-[0.9]"
           style={{
-            objectPosition: "center -40px",
+            objectPosition: "center -20px", // 살짝 위로
           }}
         />
 
-        {/* ✅ 추천상품 섹션 — 배경 위 오버레이 */}
-        <div className="absolute bottom-[-10rem] left-1/2 transform -translate-x-1/2 w-full flex flex-col items-center z-30">
+        {/* ✅ 추천상품 섹션 (배경 위로 오버레이) */}
+        <div className="absolute bottom-[-8rem] left-1/2 transform -translate-x-1/2 w-full flex flex-col items-center z-30">
           {/* 로고 */}
           <img
             src="/logo-wblue.png"
             alt="onyou logo"
-            className="logo w-[260px] mb-8 opacity-95 hover:opacity-100 transition drop-shadow-lg"
+            className="logo w-[240px] mb-8 opacity-95 hover:opacity-100 transition drop-shadow-lg"
           />
 
           {/* 제목 */}
@@ -70,7 +70,7 @@ function MainLayout() {
             🥝 추천 상품
           </h2>
 
-          {/* ✅ 상품 카드 섹션 */}
+          {/* 상품 카드 섹션 */}
           <section
             className="card-grid grid grid-cols-3 gap-8 px-6 w-full max-w-[1150px]"
           >
