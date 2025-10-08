@@ -7,21 +7,41 @@ function MainLayout() {
       style={{
         minWidth: "1280px", // ✅ PC 기준 가로 고정
         overflowX: "hidden",
+        transformOrigin: "top center",
       }}
     >
+      {/* ✅ 모바일 화면에서 자동 축소 적용 */}
+      <style>
+        {`
+          @media (max-width: 1280px) {
+            body {
+              overflow-x: auto;
+            }
+            div[style*="minWidth: 1280px"] {
+              transform: scale(0.85);
+              min-width: 100vw !important;
+            }
+          }
+          @media (max-width: 768px) {
+            div[style*="minWidth: 1280px"] {
+              transform: scale(0.75);
+            }
+          }
+        `}
+      </style>
+
       {/* 🔹 상단 여백 섹션 */}
       <div className="h-[5vh] bg-white w-full"></div>
 
-      {/* 🔹 중간 배경 섹션 (woodcard 중앙 배치, 적절한 비율로 조정) */}
+      {/* 🔹 중간 배경 섹션 */}
       <header
         className="relative flex flex-col justify-center items-center text-center overflow-hidden"
         style={{
           width: "1280px",
-          height: "75vh", // ✅ 적당한 세로 크기
+          height: "75vh",
           margin: "0 auto",
         }}
       >
-        {/* 배경 이미지 */}
         <img
           src="/woodcard.jpg"
           alt="background"
@@ -29,17 +49,15 @@ function MainLayout() {
           style={{
             width: "115%",
             height: "115%",
-            objectPosition: "center -40px", // 🔸 살짝 위로
+            objectPosition: "center -40px",
             left: "50%",
             transform: "translateX(-50%)",
           }}
         />
-
-        {/* 배경 위 내용 */}
         <div className="relative z-20"></div>
       </header>
 
-      {/* 🔹 추천 상품 섹션 (배경 위에 오버레이처럼 위치) */}
+      {/* 🔹 추천 상품 섹션 */}
       <main
         className="flex flex-col items-center justify-start relative z-30 -mt-[40rem]"
         style={{
@@ -58,7 +76,7 @@ function MainLayout() {
           🥝 추천 상품
         </h2>
 
-        {/* 🔸 상품 카드 영역 */}
+        {/* 상품 카드 섹션 */}
         <section
           className="grid grid-cols-3 gap-8"
           style={{
