@@ -9,11 +9,7 @@ function MainLayout() {
           @media (max-width: 1280px) {
             header {
               width: 100% !important;
-              height: auto !important; /* ✅ 고정 높이 제거 */
-            }
-            .card-grid {
-              grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-              gap: 1.5rem !important;
+              height: auto !important;
             }
             .overlay-section {
               top: 60% !important;
@@ -28,7 +24,7 @@ function MainLayout() {
           @media (max-width: 768px) {
             header {
               width: 100% !important;
-              height: auto !important; /* ✅ 고정 높이 제거 */
+              height: auto !important;
             }
             .overlay-section {
               position: relative !important;
@@ -37,34 +33,25 @@ function MainLayout() {
               transform: none !important;
               margin-top: 2rem;
             }
-            .card-grid {
-              grid-template-columns: 1fr !important;
-              gap: 1.25rem !important;
-            }
-            .logo {
-              width: 160px !important;
-            }
 
             /* ✅ 카드 크기 축소 */
             .product-card {
-              transform: scale(0.9);
-              width: 90% !important;
-              margin: 0 auto;
+              transform: scale(0.8);
+              width: 100% !important;
             }
 
-            /* ✅ 카드 내부 텍스트 및 버튼 축소 */
             .product-card h3 {
-              font-size: 1rem !important;
+              font-size: 0.9rem !important;
             }
             .product-card p {
-              font-size: 0.875rem !important;
+              font-size: 0.8rem !important;
             }
             .product-card button {
-              padding: 0.4em 0.8em !important;
-              font-size: 0.75rem !important;
+              padding: 0.35em 0.7em !important;
+              font-size: 0.7rem !important;
             }
             .product-card img {
-              height: 7rem !important;
+              height: 6.5rem !important;
             }
           }
         `}
@@ -76,13 +63,13 @@ function MainLayout() {
       {/* 🔹 배경 이미지 섹션 */}
       <header
         className="relative flex flex-col justify-center items-center text-center overflow-hidden w-full"
-        style={{ minHeight: "100vh" }} // ✅ 화면 전체 높이 (잘림 방지)
+        style={{ minHeight: "100vh" }}
       >
         {/* ✅ 배경 이미지: 잘리지 않게 contain 적용 */}
         <img
           src="/woodcard.jpg"
           alt="background"
-          className="absolute inset-0 w-full h-full object-contain z-0 bg-black"
+          className="absolute inset-0 w-full h-full object-contain z-0 bg-white"
           style={{
             objectPosition: "center center",
           }}
@@ -102,10 +89,10 @@ function MainLayout() {
             🥝 추천 상품
           </h2>
 
-          {/* 카드 목록 */}
-          <section className="card-grid grid grid-cols-3 gap-8 w-full max-w-[1150px]">
+          {/* ✅ 카드 목록 (flex로 변경, 줄바꿈 없음) */}
+          <section className="card-grid flex justify-center items-stretch gap-6 w-full max-w-[1150px] overflow-x-hidden">
             {/* 카드 1 */}
-            <div className="product-card border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300">
+            <div className="product-card flex-1 min-w-[0] border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300">
               <img
                 src="/clothes-sample2.png"
                 alt="Sample1"
@@ -128,7 +115,7 @@ function MainLayout() {
             </div>
 
             {/* 카드 2 */}
-            <div className="product-card border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300">
+            <div className="product-card flex-1 min-w-[0] border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300">
               <img
                 src="/clothes-sample3.jpg"
                 alt="Sample2"
@@ -151,7 +138,7 @@ function MainLayout() {
             </div>
 
             {/* 카드 3 */}
-            <div className="product-card border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300">
+            <div className="product-card flex-1 min-w-[0] border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300">
               <img
                 src="/gorani.jpg"
                 alt="Sample3"
