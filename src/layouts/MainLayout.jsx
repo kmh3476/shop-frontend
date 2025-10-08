@@ -2,28 +2,35 @@ import { Link } from "react-router-dom";
 
 function MainLayout() {
   return (
-    <div
-      className="flex flex-col min-h-screen relative text-white bg-transparent items-center"
-      style={{
-        minWidth: "1280px", // ✅ PC 기준 가로 고정
-        overflowX: "hidden",
-        transformOrigin: "top center",
-      }}
-    >
-      {/* ✅ 모바일 자동 축소 (비율 유지) */}
+    <div className="flex flex-col min-h-screen relative text-white bg-transparent items-center overflow-x-hidden">
+      {/* ✅ Tailwind + CSS로 반응형 비율 자동 조정 */}
       <style>
         {`
           @media (max-width: 1280px) {
-            div[style*="minWidth: 1280px"] {
-              transform: scale(0.85);
-              transform-origin: top center;
-              min-width: 100vw !important;
+            header {
+              width: 100% !important;
+              height: 70vh !important;
+            }
+            .card-grid {
+              grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+              gap: 1.5rem !important;
+            }
+            .logo {
+              width: 200px !important;
             }
           }
+
           @media (max-width: 768px) {
-            div[style*="minWidth: 1280px"] {
-              transform: scale(0.75);
-              min-width: 100vw !important;
+            header {
+              width: 100% !important;
+              height: 60vh !important;
+            }
+            .card-grid {
+              grid-template-columns: 1fr !important;
+              gap: 1.25rem !important;
+            }
+            .logo {
+              width: 160px !important;
             }
           }
         `}
@@ -32,47 +39,40 @@ function MainLayout() {
       {/* 🔹 상단 여백 섹션 */}
       <div className="h-[5vh] bg-white w-full"></div>
 
-      {/* 🔹 중간 배경 섹션 */}
+      {/* 🔹 중간 배경 섹션 (PC + 모바일 대응) */}
       <header
-        className="relative flex flex-col justify-center items-center text-center overflow-hidden"
+        className="relative flex flex-col justify-center items-center text-center overflow-hidden w-full max-w-[1280px] mx-auto"
         style={{
-          width: "100%",
-          height: "80vh", // 살짝 커져서 비율 유지
-          margin: "0 auto",
-          maxWidth: "1280px",
+          height: "80vh",
         }}
       >
-        {/* ✅ 배경 이미지 (비율 자동 유지) */}
+        {/* ✅ 배경 이미지 (화면 비율 따라 자동 확장/축소) */}
         <img
           src="/woodcard.jpg"
           alt="background"
           className="absolute inset-0 w-full h-full object-cover z-0"
           style={{
-            objectPosition: "center -50px", // 위로 살짝 올림
+            objectPosition: "center -40px",
           }}
         />
 
-        {/* ✅ 추천상품 섹션을 배경 위로 올림 */}
+        {/* ✅ 추천상품 섹션 — 배경 위 오버레이 */}
         <div className="absolute bottom-[-10rem] left-1/2 transform -translate-x-1/2 w-full flex flex-col items-center z-30">
           {/* 로고 */}
           <img
             src="/logo-wblue.png"
             alt="onyou logo"
-            className="w-[260px] mb-8 opacity-95 hover:opacity-100 transition drop-shadow-lg"
+            className="logo w-[260px] mb-8 opacity-95 hover:opacity-100 transition drop-shadow-lg"
           />
 
           {/* 제목 */}
-          <h2 className="text-2xl font-bold text-white mb-10 drop-shadow-lg">
+          <h2 className="text-2xl font-bold text-white mb-10 drop-shadow-lg text-center">
             🥝 추천 상품
           </h2>
 
-          {/* 상품 카드 섹션 */}
+          {/* ✅ 상품 카드 섹션 */}
           <section
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 px-6"
-            style={{
-              maxWidth: "1150px",
-              width: "100%",
-            }}
+            className="card-grid grid grid-cols-3 gap-8 px-6 w-full max-w-[1150px]"
           >
             {/* 카드 1 */}
             <div className="border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300">
