@@ -16,7 +16,7 @@ function MainLayout() {
               gap: 1.5rem !important;
             }
             .overlay-section {
-              top: 58% !important;
+              top: 60% !important;
               transform: translate(-50%, -50%) !important;
             }
             .logo {
@@ -39,7 +39,7 @@ function MainLayout() {
             }
             .card-grid {
               grid-template-columns: 1fr !important;
-              gap: 1rem !important;
+              gap: 1.25rem !important;
             }
             .logo {
               width: 160px !important;
@@ -75,26 +75,26 @@ function MainLayout() {
 
       {/* 🔹 배경 이미지 섹션 */}
       <header
-        className="relative flex flex-col justify-center items-center text-center overflow-hidden w-full max-w-[1280px] mx-auto"
-        style={{ height: "75vh" }}
+        className="relative flex flex-col justify-center items-center text-center overflow-hidden w-full"
+        style={{ height: "80vh" }} // ✅ 배경을 약간 더 크게
       >
-        {/* ✅ object-cover로 비율 유지 */}
+        {/* ✅ 배경이 양옆 여백 없이 꽉 차도록 변경 */}
         <img
           src="/woodcard.jpg"
           alt="background"
-          className="absolute inset-0 w-full h-full object-cover z-0 scale-[0.9]"
+          className="absolute inset-0 w-full h-full object-cover z-0"
           style={{
-            objectPosition: "center -30px",
+            objectPosition: "center -10px", // 🔸 살짝 위로
           }}
         />
 
-        {/* ✅ 로고 + 추천상품 + 카드 */}
-        <div className="overlay-section absolute top-[65%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full flex flex-col items-center z-30 px-6">
+        {/* ✅ 중앙 콘텐츠 */}
+        <div className="overlay-section absolute top-[58%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full flex flex-col items-center z-30 px-6">
           {/* 로고 */}
           <img
             src="/logo-wblue.png"
             alt="onyou logo"
-            className="logo w-[240px] mb-8 opacity-95 hover:opacity-100 transition drop-shadow-lg"
+            className="logo w-[260px] mb-8 opacity-95 hover:opacity-100 transition drop-shadow-lg"
           />
 
           {/* 제목 */}
