@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 function MainLayout() {
   return (
     <div className="flex flex-col min-h-screen relative text-white bg-transparent items-center overflow-x-hidden">
-      {/* ✅ Tailwind + CSS로 반응형 조정 */}
       <style>
         {`
+          /* 🔸 반응형 조정 */
           @media (max-width: 1280px) {
             header {
               width: 100% !important;
@@ -15,15 +15,27 @@ function MainLayout() {
               grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
               gap: 1.5rem !important;
             }
+            .overlay-section {
+              top: 60% !important;
+              transform: translate(-50%, -50%) !important;
+            }
             .logo {
               width: 200px !important;
             }
           }
 
+          /* 🔸 모바일용 */
           @media (max-width: 768px) {
             header {
               width: 100% !important;
               height: 60vh !important;
+            }
+            .overlay-section {
+              position: relative !important;
+              top: 0 !important;
+              left: 0 !important;
+              transform: none !important;
+              margin-top: 2rem;
             }
             .card-grid {
               grid-template-columns: 1fr !important;
@@ -36,28 +48,25 @@ function MainLayout() {
         `}
       </style>
 
-      {/* 🔹 상단 여백 섹션 */}
+      {/* 🔹 상단 여백 */}
       <div className="h-[5vh] bg-white w-full"></div>
 
-      {/* 🔹 배경 섹션 (적당히 축소된 woodcard) */}
+      {/* 🔹 배경 이미지 섹션 */}
       <header
         className="relative flex flex-col justify-center items-center text-center overflow-hidden w-full max-w-[1280px] mx-auto"
-        style={{
-          height: "75vh",
-        }}
+        style={{ height: "75vh" }}
       >
-        {/* ✅ 배경 이미지 (object-contain + scale로 축소) */}
         <img
           src="/woodcard.jpg"
           alt="background"
           className="absolute inset-0 w-full h-full object-contain z-0 scale-[0.9]"
           style={{
-            objectPosition: "center -20px", // 살짝 위로
+            objectPosition: "center -20px",
           }}
         />
 
-        {/* ✅ 추천상품 섹션 (배경 위로 오버레이) */}
-        <div className="absolute bottom-[-8rem] left-1/2 transform -translate-x-1/2 w-full flex flex-col items-center z-30">
+        {/* ✅ 로고 + 추천상품 + 카드 (중앙에 배치) */}
+        <div className="overlay-section absolute top-[75%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full flex flex-col items-center z-30 px-6">
           {/* 로고 */}
           <img
             src="/logo-wblue.png"
@@ -70,10 +79,8 @@ function MainLayout() {
             🥝 추천 상품
           </h2>
 
-          {/* 상품 카드 섹션 */}
-          <section
-            className="card-grid grid grid-cols-3 gap-8 px-6 w-full max-w-[1150px]"
-          >
+          {/* 카드 목록 */}
+          <section className="card-grid grid grid-cols-3 gap-8 w-full max-w-[1150px]">
             {/* 카드 1 */}
             <div className="border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300">
               <img
