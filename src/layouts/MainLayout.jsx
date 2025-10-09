@@ -23,7 +23,7 @@ function MainLayout() {
       </section>
 
       {/* 🔸 추천상품 Section (위쪽으로 약간 올림) */}
-      <section className="flex flex-col items-center justify-center py-[8vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[12vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)] transition-all duration-500">
+      <section className="flex flex-col items-center justify-center py-[8vh] px-6 bg-white text-black relative -mt-[30vh] md:-mt-[12vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)] transition-all duration-500">
         {/* ✅ -mt 추가로 배경 위로 끌어올림 + 위쪽 곡선처럼 자연스럽게 */}
         <motion.h2
           className="text-3xl font-bold mb-5 drop-shadow-sm"
