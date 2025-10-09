@@ -46,13 +46,14 @@ function MainLayout() {
     </motion.div>
   );
 
-  // ✅ 일반 카드
+  // ✅ 일반 상품 카드 (세로로 좀 더 길게 / 모바일에선 가로 작게 세로 길게)
   const ProductCard = ({ i }) => (
     <motion.div
-      className="border border-gray-100 rounded-2xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
+      className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
       whileHover={{ scale: 1.02 }}
     >
-      <div className="w-full h-[220px] overflow-hidden">
+      {/* 이미지 비율 조정 */}
+      <div className="w-full h-[300px] sm:h-[320px] md:h-[340px] overflow-hidden">
         <img
           src={
             i % 3 === 1
@@ -65,14 +66,18 @@ function MainLayout() {
           className="w-full h-full object-cover"
         />
       </div>
-      <div className="p-3">
-        <h3 className="font-medium text-sm mb-1 text-gray-800">상품명 {i}</h3>
-        <p className="text-xs text-gray-500">모던한 감각의 아이템</p>
+      <div className="p-4 md:p-5 flex flex-col justify-between h-[120px]">
+        <div>
+          <h3 className="font-medium text-base mb-1 text-gray-800">
+            상품명 {i}
+          </h3>
+          <p className="text-sm text-gray-500">모던한 감각의 아이템</p>
+        </div>
       </div>
     </motion.div>
   );
 
-  // ✅ 베스트 상품 (상의, 하의, 자켓이 가로로 나열)
+  // ✅ 베스트 상품 (가로로 [상의][하의][자켓], 모바일은 스와이프)
   const BestSection = () => {
     const categories = ["상의", "하의", "자켓"];
 
@@ -88,19 +93,19 @@ function MainLayout() {
           🌟 베스트 상품
         </motion.h2>
 
-        {/* ✅ 상의/하의/자켓을 가로로 배치 */}
+        {/* ✅ 가로 배치 + 모바일에서 스와이프 */}
         <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex gap-8 min-w-[1100px]">
+          <div className="flex gap-6 min-w-[1000px] sm:min-w-[1100px] md:min-w-[1200px]">
             {categories.map((cat, idx) => (
               <div
                 key={idx}
-                className="flex-shrink-0 w-[300px] sm:w-[340px] md:w-[380px]"
+                className="flex-shrink-0 w-[240px] sm:w-[280px] md:w-[360px]"
               >
                 <h3 className="text-2xl font-semibold mb-5 text-gray-800 text-center">
                   {cat}
                 </h3>
 
-                {/* 각 카테고리 안의 상품 3개 */}
+                {/* 세로로 카드 3개 */}
                 <div className="flex flex-col gap-6">
                   {[1, 2, 3].map((i) => (
                     <ProductCard key={i} i={i + idx * 3} />
@@ -208,7 +213,7 @@ function MainLayout() {
       <SlideSection title="👖 하의" />
       <SlideSection title="🧥 코디 추천" />
 
-      {/* 🔸 베스트 상품 (가로로 구성된 3개 세트) */}
+      {/* 🔸 베스트 상품 */}
       <BestSection />
 
       {/* 🔸 브랜드 스토리 */}
