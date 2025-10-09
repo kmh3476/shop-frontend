@@ -6,31 +6,37 @@ import "swiper/css/pagination";
 import { motion } from "framer-motion";
 
 function MainLayout() {
-  // 🔸 공용 상품 카드 컴포넌트
+  // 🔸 상품 카드 (공용)
   const ProductCard = ({ i }) => (
     <motion.div
-      className="border border-gray-200 rounded-2xl shadow-md hover:shadow-xl overflow-hidden bg-gray-50 transition-transform hover:-translate-y-2"
+      className="border border-gray-200 rounded-2xl shadow-md hover:shadow-xl overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-2 hover:scale-[1.02]"
       whileHover={{ scale: 1.02 }}
     >
-      <img
-        src={
-          i % 3 === 1
-            ? "/clothes-sample2.png"
-            : i % 3 === 2
-            ? "/clothes-sample3.jpg"
-            : "/gorani.jpg"
-        }
-        alt={`sample-${i}`}
-        className="w-full h-72 object-cover"
-      />
-      <div className="p-5">
-        <h3 className="font-semibold text-lg mb-1">상품명 {i}</h3>
-        <p className="text-sm text-gray-600 mb-4">간단한 설명 문구가 들어갑니다.</p>
+      <div className="w-full h-80 overflow-hidden">
+        <img
+          src={
+            i % 3 === 1
+              ? "/clothes-sample2.png"
+              : i % 3 === 2
+              ? "/clothes-sample3.jpg"
+              : "/gorani.jpg"
+          }
+          alt={`sample-${i}`}
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <div className="p-5 flex flex-col justify-between h-[180px]">
+        <div>
+          <h3 className="font-semibold text-lg mb-1 text-gray-800">상품명 {i}</h3>
+          <p className="text-sm text-gray-500 mb-4">
+            자연스러움과 감각을 담은 상품입니다.
+          </p>
+        </div>
         <div className="flex space-x-2">
-          <button className="px-3 py-1 bg-black text-white text-sm rounded hover:bg-gray-800 transition">
+          <button className="flex-1 py-2 bg-black text-white text-sm rounded hover:bg-gray-800 transition">
             바로가기
           </button>
-          <button className="px-3 py-1 bg-gray-800 text-white text-sm rounded hover:bg-gray-700 transition">
+          <button className="flex-1 py-2 bg-gray-800 text-white text-sm rounded hover:bg-gray-700 transition">
             장바구니
           </button>
         </div>
@@ -38,7 +44,7 @@ function MainLayout() {
     </motion.div>
   );
 
-  // 🔸 공용 슬라이드 섹션 컴포넌트
+  // 🔸 슬라이드 섹션 (공용 — 자동 슬라이드 없음)
   const SlideSection = ({ title }) => (
     <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black">
       <motion.h2
@@ -52,16 +58,12 @@ function MainLayout() {
       </motion.h2>
 
       <Swiper
-        modules={[Autoplay, Navigation, Pagination]}
+        modules={[Navigation, Pagination]}
         spaceBetween={20}
         slidesPerView={1.2}
         navigation
         pagination={{ clickable: true }}
-        autoplay={{
-          delay: 5000,
-          disableOnInteraction: false,
-        }}
-        loop={true}
+        loop={false}
         breakpoints={{
           640: { slidesPerView: 2.2 },
           1024: { slidesPerView: 4 },
@@ -93,7 +95,7 @@ function MainLayout() {
         <div className="absolute inset-0 bg-black/10" />
       </section>
 
-      {/* 🔸 추천상품 Section */}
+      {/* 🔸 추천상품 (자동 슬라이드 유지) */}
       <section className="flex flex-col items-center justify-center py-[8vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)] transition-all duration-500">
         <motion.h2
           className="text-3xl font-bold mb-8 drop-shadow-sm"
@@ -132,14 +134,14 @@ function MainLayout() {
         </div>
       </section>
 
-      {/* 🔸 추가 슬라이드 섹션들 */}
+      {/* 🔸 추가 섹션 (자동 슬라이드 없음) */}
       <SlideSection title="🌿 NEW ITEM" />
       <SlideSection title="👕 상의" />
       <SlideSection title="👖 하의" />
       <SlideSection title="🧥 코디 추천" />
       <SlideSection title="🍂 이달의 계절 룩" />
 
-      {/* 🔸 브랜드 스토리 Section */}
+      {/* 🔸 브랜드 스토리 */}
       <section
         className="flex flex-col items-center justify-center py-[15vh] px-6 text-center bg-gray-100"
         style={{
@@ -164,8 +166,7 @@ function MainLayout() {
         >
           ONYOU는 심플하지만 감각적인 디자인을 통해 일상 속의 편안함을 추구합니다.
           <br />
-          자연, 색감, 질감에서 영감을 받아 제작된 제품들은 당신의 일상을 새롭게
-          만듭니다.
+          자연, 색감, 질감에서 영감을 받아 제작된 제품들은 당신의 일상을 새롭게 만듭니다.
         </motion.p>
       </section>
 
