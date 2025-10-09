@@ -6,13 +6,13 @@ import "swiper/css/pagination";
 import { motion } from "framer-motion";
 
 function MainLayout() {
-  // ✅ 추천상품 전용 카드 (크고 시선 집중형)
+  // ✅ 추천상품 전용 카드 (더 크게)
   const FeaturedCard = ({ i }) => (
     <motion.div
       className="border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-2 hover:scale-[1.05]"
       whileHover={{ scale: 1.05 }}
     >
-      <div className="w-full h-[460px] overflow-hidden">
+      <div className="w-full h-[520px] overflow-hidden">
         <img
           src={
             i % 3 === 1
@@ -25,14 +25,16 @@ function MainLayout() {
           className="w-full h-full object-cover"
         />
       </div>
-      <div className="p-6 flex flex-col justify-between h-[220px]">
+      <div className="p-6 flex flex-col justify-between h-[240px]">
         <div>
-          <h3 className="font-semibold text-2xl mb-1 text-gray-800">추천 상품 {i}</h3>
+          <h3 className="font-semibold text-2xl mb-2 text-gray-800">
+            추천 상품 {i}
+          </h3>
           <p className="text-sm text-gray-500 mb-4">
             감각적인 디자인으로 완성된 이번 시즌 베스트.
           </p>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex space-x-3">
           <button className="flex-1 py-3 bg-black text-white text-sm rounded-lg hover:bg-gray-800 transition">
             바로가기
           </button>
@@ -44,13 +46,13 @@ function MainLayout() {
     </motion.div>
   );
 
-  // ✅ 일반 카드 (상품용)
+  // ✅ 일반 카드
   const ProductCard = ({ i }) => (
     <motion.div
       className="border border-gray-100 rounded-2xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
       whileHover={{ scale: 1.02 }}
     >
-      <div className="w-full h-[280px] overflow-hidden">
+      <div className="w-full h-[220px] overflow-hidden">
         <img
           src={
             i % 3 === 1
@@ -64,18 +66,16 @@ function MainLayout() {
         />
       </div>
       <div className="p-3">
-        <h3 className="font-medium text-base mb-1 text-gray-800">상품명 {i}</h3>
-        <div className="flex items-center space-x-2">
-          <p className="text-lg font-semibold text-black">49,700</p>
-          <span className="text-red-500 text-sm font-bold">30%</span>
-        </div>
+        <h3 className="font-medium text-sm mb-1 text-gray-800">상품명 {i}</h3>
+        <p className="text-xs text-gray-500">모던한 감각의 아이템</p>
       </div>
     </motion.div>
   );
 
-  // ✅ 베스트 상품 (4x3 그리드)
+  // ✅ 베스트 상품 (세로 3줄 x 가로 4)
   const BestSection = () => {
     const categories = ["상의", "하의", "자켓"];
+
     return (
       <section className="w-full max-w-[1300px] mx-auto px-6 py-[12vh] bg-white text-black">
         <motion.h2
@@ -88,23 +88,29 @@ function MainLayout() {
           🌟 베스트 상품
         </motion.h2>
 
-        {categories.map((cat, idx) => (
-          <div key={idx} className="mb-[10vh]">
-            <h3 className="text-2xl font-semibold mb-6 text-gray-800">{cat}</h3>
+        <div className="flex flex-col gap-[12vh]">
+          {categories.map((cat, idx) => (
+            <div key={idx} className="w-full">
+              <h3 className="text-2xl font-semibold mb-6 text-gray-800">{cat}</h3>
 
-            {/* 🔸 PC: 4x3 그리드 / Mobile: 반응형 자동 줄바꿈 */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
-                <ProductCard key={i + idx * 12} i={i + idx * 12} />
-              ))}
+              {/* ✅ 가로 스크롤 가능한 4개씩 줄 구성 */}
+              <div className="overflow-x-auto scrollbar-hide">
+                <div className="grid grid-cols-4 gap-6 min-w-[800px] sm:min-w-[1000px] md:min-w-[1200px]">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="flex-shrink-0">
+                      <ProductCard i={i + idx * 4} />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </section>
     );
   };
 
-  // ✅ 일반 슬라이드 섹션
+  // ✅ 일반 상품 슬라이드 섹션
   const SlideSection = ({ title }) => (
     <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black">
       <motion.h2
@@ -193,12 +199,12 @@ function MainLayout() {
         </div>
       </section>
 
-      {/* 🔸 일반 상품 섹션 */}
+      {/* 🔸 일반 상품 */}
       <SlideSection title="👕 상의" />
       <SlideSection title="👖 하의" />
       <SlideSection title="🧥 코디 추천" />
 
-      {/* 🔸 베스트 상품 (4x3 그리드) */}
+      {/* 🔸 베스트 상품 */}
       <BestSection />
 
       {/* 🔸 브랜드 스토리 */}
