@@ -12,7 +12,7 @@ function MainLayout() {
       className="border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-2 hover:scale-[1.05]"
       whileHover={{ scale: 1.05 }}
     >
-      <div className="w-full h-[520px] sm:h-[460px] overflow-hidden">
+      <div className="w-full h-[480px] sm:h-[520px] overflow-hidden">
         <img
           src={
             i % 3 === 1
@@ -46,14 +46,14 @@ function MainLayout() {
     </motion.div>
   );
 
-  // ✅ 일반 상품 카드 (베스트 상품 느낌으로 수정)
+  // ✅ 일반 상품 카드 (비율 수정)
   const ProductCard = ({ i }) => (
     <motion.div
       className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
       whileHover={{ scale: 1.02 }}
     >
-      {/* ✅ 비율 고정 (세로형 카드) */}
-      <div className="overflow-hidden w-full aspect-[3/4] mx-auto">
+      {/* ✅ 비율 고정 (모바일은 세로로 길게) */}
+      <div className="overflow-hidden w-full aspect-[4/5] sm:aspect-[3/4] mx-auto">
         <img
           src={
             i % 3 === 1
@@ -77,7 +77,7 @@ function MainLayout() {
 
   // ✅ 베스트 상품 섹션
   const BestSection = () => {
-    const categories = ["상의", "하의", "자켓"];
+    const categories = ["상의", "하의", "자켓", "코디"];
 
     return (
       <section className="w-full max-w-[1300px] mx-auto px-6 py-[12vh] bg-white text-black">
@@ -107,7 +107,7 @@ function MainLayout() {
                       key={i}
                       className="border border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform hover:-translate-y-1"
                     >
-                      <div className="w-full aspect-[3/4] overflow-hidden">
+                      <div className="w-full aspect-[4/5] sm:aspect-[3/4] overflow-hidden">
                         <img
                           src={
                             i % 3 === 1
@@ -137,7 +137,7 @@ function MainLayout() {
     );
   };
 
-  // ✅ 일반 슬라이드 (베스트 카드 느낌으로 정리)
+  // ✅ 일반 슬라이드 (비율 + 반응형 조정)
   const SlideSection = ({ title }) => (
     <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black">
       <motion.h2
@@ -150,15 +150,14 @@ function MainLayout() {
         {title}
       </motion.h2>
 
-      {/* ✅ Swiper 수정 */}
       <Swiper
         modules={[Navigation, Pagination]}
-        spaceBetween={20}
-        slidesPerView={1} // 모바일은 1장
+        spaceBetween={16}
+        slidesPerView={1.2}
         navigation
         pagination={{ clickable: true }}
         breakpoints={{
-          480: { slidesPerView: 1.1 },
+          480: { slidesPerView: 1.5 },
           640: { slidesPerView: 2 },
           1024: { slidesPerView: 3 },
           1280: { slidesPerView: 4 },
@@ -205,7 +204,7 @@ function MainLayout() {
           <Swiper
             modules={[Autoplay, Navigation, Pagination]}
             spaceBetween={40}
-            slidesPerView={1.1}
+            slidesPerView={1.2}
             navigation
             pagination={{ clickable: true }}
             autoplay={{
