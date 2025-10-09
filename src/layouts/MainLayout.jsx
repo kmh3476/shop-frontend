@@ -6,13 +6,13 @@ import "swiper/css/pagination";
 import { motion } from "framer-motion";
 
 function MainLayout() {
-  // 🔸 상품 카드 (공용)
-  const ProductCard = ({ i }) => (
+  // ✅ 추천상품 전용 카드 (크고 시선 집중형)
+  const FeaturedCard = ({ i }) => (
     <motion.div
-      className="border border-gray-200 rounded-2xl shadow-md hover:shadow-xl overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-2 hover:scale-[1.02]"
-      whileHover={{ scale: 1.02 }}
+      className="border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-2 hover:scale-[1.03]"
+      whileHover={{ scale: 1.03 }}
     >
-      <div className="w-full h-80 overflow-hidden">
+      <div className="w-full h-[420px] overflow-hidden">
         <img
           src={
             i % 3 === 1
@@ -25,18 +25,18 @@ function MainLayout() {
           className="w-full h-full object-cover"
         />
       </div>
-      <div className="p-5 flex flex-col justify-between h-[180px]">
+      <div className="p-6 flex flex-col justify-between h-[200px]">
         <div>
-          <h3 className="font-semibold text-lg mb-1 text-gray-800">상품명 {i}</h3>
+          <h3 className="font-semibold text-xl mb-1 text-gray-800">추천 상품 {i}</h3>
           <p className="text-sm text-gray-500 mb-4">
-            자연스러움과 감각을 담은 상품입니다.
+            감각적인 디자인으로 완성된 이번 시즌 베스트.
           </p>
         </div>
         <div className="flex space-x-2">
-          <button className="flex-1 py-2 bg-black text-white text-sm rounded hover:bg-gray-800 transition">
+          <button className="flex-1 py-3 bg-black text-white text-sm rounded-lg hover:bg-gray-800 transition">
             바로가기
           </button>
-          <button className="flex-1 py-2 bg-gray-800 text-white text-sm rounded hover:bg-gray-700 transition">
+          <button className="flex-1 py-3 bg-gray-800 text-white text-sm rounded-lg hover:bg-gray-700 transition">
             장바구니
           </button>
         </div>
@@ -44,7 +44,33 @@ function MainLayout() {
     </motion.div>
   );
 
-  // 🔸 슬라이드 섹션 (공용 — 자동 슬라이드 없음)
+  // ✅ 일반 슬라이드 카드 (깔끔형)
+  const ProductCard = ({ i }) => (
+    <motion.div
+      className="border border-gray-100 rounded-2xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.01]"
+      whileHover={{ scale: 1.01 }}
+    >
+      <div className="w-full h-[300px] overflow-hidden">
+        <img
+          src={
+            i % 3 === 1
+              ? "/clothes-sample2.png"
+              : i % 3 === 2
+              ? "/clothes-sample3.jpg"
+              : "/gorani.jpg"
+          }
+          alt={`sample-${i}`}
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <div className="p-4">
+        <h3 className="font-medium text-base mb-1 text-gray-800">상품명 {i}</h3>
+        <p className="text-sm text-gray-500">간결하고 모던한 디자인</p>
+      </div>
+    </motion.div>
+  );
+
+  // ✅ 일반 슬라이드 섹션 (수동 슬라이드)
   const SlideSection = ({ title }) => (
     <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black">
       <motion.h2
@@ -81,7 +107,7 @@ function MainLayout() {
 
   return (
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden">
-      {/* 🔸 Hero Section */}
+      {/* 🔸 배경영역 */}
       <section
         className="relative flex flex-col items-center justify-center w-full min-h-[110vh]"
         style={{
@@ -89,13 +115,12 @@ function MainLayout() {
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center",
-          backgroundAttachment: "scroll",
         }}
       >
         <div className="absolute inset-0 bg-black/10" />
       </section>
 
-      {/* 🔸 추천상품 (자동 슬라이드 유지) */}
+      {/* 🔸 추천 상품 */}
       <section className="flex flex-col items-center justify-center py-[8vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)] transition-all duration-500">
         <motion.h2
           className="text-3xl font-bold mb-8 drop-shadow-sm"
@@ -110,8 +135,8 @@ function MainLayout() {
         <div className="w-full max-w-[1200px]">
           <Swiper
             modules={[Autoplay, Navigation, Pagination]}
-            spaceBetween={20}
-            slidesPerView={1.2}
+            spaceBetween={30}
+            slidesPerView={1.1}
             navigation
             pagination={{ clickable: true }}
             autoplay={{
@@ -120,21 +145,21 @@ function MainLayout() {
             }}
             loop={true}
             breakpoints={{
-              640: { slidesPerView: 2.2 },
-              1024: { slidesPerView: 3.2 },
+              640: { slidesPerView: 1.8 },
+              1024: { slidesPerView: 3 },
             }}
             className="pb-12"
           >
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <SwiperSlide key={i}>
-                <ProductCard i={i} />
+                <FeaturedCard i={i} />
               </SwiperSlide>
             ))}
           </Swiper>
         </div>
       </section>
 
-      {/* 🔸 추가 섹션 (자동 슬라이드 없음) */}
+      {/* 🔸 나머지 섹션 */}
       <SlideSection title="🌿 NEW ITEM" />
       <SlideSection title="👕 상의" />
       <SlideSection title="👖 하의" />
