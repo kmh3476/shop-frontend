@@ -12,7 +12,7 @@ function MainLayout() {
       className="border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-2 hover:scale-[1.05]"
       whileHover={{ scale: 1.05 }}
     >
-      <div className="w-full h-[520px] sm:h-[460px] xs:h-[420px] overflow-hidden">
+      <div className="w-full h-[520px] sm:h-[460px] overflow-hidden">
         <img
           src={
             i % 3 === 1
@@ -46,14 +46,14 @@ function MainLayout() {
     </motion.div>
   );
 
-  // ✅ 일반 상품 카드 (모바일 세로형)
+  // ✅ 일반 상품 카드 (베스트 상품 느낌으로 수정)
   const ProductCard = ({ i }) => (
     <motion.div
       className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
       whileHover={{ scale: 1.02 }}
     >
-      {/* 모바일에서는 세로로 긴 비율, 데스크탑에서는 적당한 비율 */}
-      <div className="overflow-hidden w-full h-[480px] sm:h-[420px] md:h-[400px] mx-auto">
+      {/* 세로 중심 비율 */}
+      <div className="overflow-hidden w-full h-[360px] sm:h-[380px] md:h-[400px] lg:h-[420px] mx-auto">
         <img
           src={
             i % 3 === 1
@@ -66,18 +66,16 @@ function MainLayout() {
           className="w-full h-full object-cover object-center"
         />
       </div>
-      <div className="p-4 md:p-5 flex flex-col justify-between h-[120px]">
-        <div>
-          <h3 className="font-medium text-base mb-1 text-gray-800">
-            상품명 {i}
-          </h3>
-          <p className="text-sm text-gray-500">모던한 감각의 아이템</p>
-        </div>
+      <div className="p-4 text-center">
+        <h3 className="font-medium text-gray-800 text-base mb-1">
+          상품명 {i}
+        </h3>
+        <p className="text-sm text-gray-500">#데일리룩 #심플핏</p>
       </div>
     </motion.div>
   );
 
-  // ✅ 베스트 상품 (작게 / 모바일은 세로형)
+  // ✅ 베스트 상품 섹션
   const BestSection = () => {
     const categories = ["상의", "하의", "자켓"];
 
@@ -93,26 +91,23 @@ function MainLayout() {
           🌟 베스트 상품
         </motion.h2>
 
-        {/* ✅ 카테고리 3개 가로 스크롤 */}
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex gap-8 min-w-[900px] md:min-w-[1200px]">
             {categories.map((cat, idx) => (
               <div
                 key={idx}
-                className="flex-shrink-0 w-[220px] sm:w-[260px] md:w-[320px]"
+                className="flex-shrink-0 w-[220px] sm:w-[260px] md:w-[300px]"
               >
                 <h3 className="text-xl font-semibold mb-5 text-gray-800 text-center">
                   {cat}
                 </h3>
-
-                {/* 세로 카드 3개 */}
                 <div className="flex flex-col gap-4">
                   {[1, 2, 3].map((i) => (
                     <motion.div
                       key={i}
                       className="border border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform hover:-translate-y-1"
                     >
-                      <div className="w-full h-[300px] sm:h-[260px] overflow-hidden">
+                      <div className="w-full h-[300px] sm:h-[280px] overflow-hidden">
                         <img
                           src={
                             i % 3 === 1
@@ -142,7 +137,7 @@ function MainLayout() {
     );
   };
 
-  // ✅ 일반 슬라이드 섹션
+  // ✅ 일반 슬라이드 (베스트 카드 느낌으로 정리)
   const SlideSection = ({ title }) => (
     <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black">
       <motion.h2
@@ -158,13 +153,12 @@ function MainLayout() {
       <Swiper
         modules={[Navigation, Pagination]}
         spaceBetween={20}
-        slidesPerView={1.3}
+        slidesPerView={1.4}
         navigation
         pagination={{ clickable: true }}
-        loop={false}
         breakpoints={{
-          480: { slidesPerView: 1.5 },
-          640: { slidesPerView: 2.2 },
+          480: { slidesPerView: 1.6 },
+          640: { slidesPerView: 2.4 },
           1024: { slidesPerView: 4 },
         }}
         className="pb-12"
@@ -180,7 +174,7 @@ function MainLayout() {
 
   return (
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden">
-      {/* 🔸 배경 */}
+      {/* 🔸 메인 배경 */}
       <section
         className="relative flex flex-col items-center justify-center w-full min-h-[110vh]"
         style={{
@@ -194,7 +188,7 @@ function MainLayout() {
       </section>
 
       {/* 🔸 추천 상품 */}
-      <section className="flex flex-col items-center justify-center py-[10vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)] transition-all duration-500">
+      <section className="flex flex-col items-center justify-center py-[10vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
         <motion.h2
           className="text-4xl font-bold mb-10 drop-shadow-sm"
           initial={{ opacity: 0, y: 40 }}
@@ -216,7 +210,7 @@ function MainLayout() {
               delay: 4500,
               disableOnInteraction: false,
             }}
-            loop={true}
+            loop
             breakpoints={{
               640: { slidesPerView: 1.8 },
               1024: { slidesPerView: 3 },
@@ -232,7 +226,7 @@ function MainLayout() {
         </div>
       </section>
 
-      {/* 🔸 일반 상품 섹션 */}
+      {/* 🔸 일반 상품 */}
       <SlideSection title="👕 상의" />
       <SlideSection title="👖 하의" />
       <SlideSection title="🧥 코디 추천" />
