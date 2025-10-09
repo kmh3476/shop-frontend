@@ -8,23 +8,23 @@ import { motion } from "framer-motion";
 function MainLayout() {
   return (
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden">
-      {/* 🔸 Hero Section (배경 유지 / 모바일 스크롤 허용) */}
+      {/* 🔸 Hero Section */}
       <section
-        className="relative flex flex-col items-center justify-center w-full min-h-[110vh]" // ✅ 약간 줄임
+        className="relative flex flex-col items-center justify-center w-full min-h-[110vh]"
         style={{
           backgroundImage: "url('/woodcard.jpg')",
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center",
-          backgroundAttachment: "scroll", // ✅ fixed → scroll (모바일 스크롤 가능)
+          backgroundAttachment: "scroll", // ✅ 모바일 스크롤 허용
         }}
       >
         <div className="absolute inset-0 bg-black/10" />
       </section>
 
-      {/* 🔸 추천상품 Section (위쪽으로 약간 올림) */}
-      <section className="flex flex-col items-center justify-center py-[8vh] px-6 bg-white text-black relative -mt-[30vh] md:-mt-[12vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)] transition-all duration-500">
-        {/* ✅ -mt 추가로 배경 위로 끌어올림 + 위쪽 곡선처럼 자연스럽게 */}
+      {/* 🔸 추천상품 Section (더 위로 올림) */}
+      <section className="flex flex-col items-center justify-center py-[8vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)] transition-all duration-500">
+        {/* ✅ -mt 값 크게 조정 → 배경 위로 더 올라오게 */}
         <motion.h2
           className="text-3xl font-bold mb-5 drop-shadow-sm"
           initial={{ opacity: 0, y: 40 }}
