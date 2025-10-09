@@ -1,9 +1,14 @@
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 import { motion } from "framer-motion";
 
 function MainLayout() {
   return (
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden">
-      {/* 🔸 Hero Section (배경 이미지만 유지) */}
+      {/* 🔸 Hero Section */}
       <section
         className="relative flex flex-col items-center justify-center w-full min-h-[100vh]"
         style={{
@@ -17,8 +22,8 @@ function MainLayout() {
         <div className="absolute inset-0 bg-black/10" />
       </section>
 
-      {/* 🔸 추천상품 Section */}
-      <section className="flex flex-col items-center justify-center py-[12vh] px-6 bg-white text-black relative overflow-hidden">
+      {/* 🔸 추천상품 Section (Swiper 슬라이드 적용) */}
+      <section className="flex flex-col items-center justify-center py-[12vh] px-6 bg-white text-black relative">
         <motion.h2
           className="text-3xl font-bold mb-10 drop-shadow-sm"
           initial={{ opacity: 0, y: 40 }}
@@ -29,58 +34,62 @@ function MainLayout() {
           🥝 추천 상품
         </motion.h2>
 
-        {/* 🔸 카드 애니메이션 (밑에서 위로 순차 등장) */}
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 max-w-[1100px] w-full"
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, amount: 0.2 }}
-          variants={{
-            hidden: {},
-            show: {
-              transition: {
-                staggerChildren: 0.2,
-              },
-            },
-          }}
-        >
-          {[1, 2, 3].map((i) => (
-            <motion.div
-              key={i}
-              variants={{
-                hidden: { opacity: 0, y: 60 },
-                show: { opacity: 1, y: 0, transition: { duration: 0.8 } },
-              }}
-              className="border border-gray-200 rounded-2xl shadow-md hover:shadow-xl overflow-hidden bg-gray-50 transition-transform hover:-translate-y-2"
-            >
-              <img
-                src={
-                  i === 1
-                    ? "/clothes-sample2.png"
-                    : i === 2
-                    ? "/clothes-sample3.jpg"
-                    : "/gorani.jpg"
-                }
-                alt={`sample-${i}`}
-                className="w-full h-60 object-cover"
-              />
-              <div className="p-5">
-                <h3 className="font-semibold text-lg mb-1">제목 {i}</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  이 섹션의 부제목을 입력할 수 있습니다.
-                </p>
-                <div className="flex space-x-2">
-                  <button className="px-3 py-1 bg-black text-white text-sm rounded hover:bg-gray-800 transition">
-                    버튼
-                  </button>
-                  <button className="px-3 py-1 bg-gray-800 text-white text-sm rounded hover:bg-gray-700 transition">
-                    보조 버튼
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+        <div className="w-full max-w-[1200px]">
+          <Swiper
+            modules={[Autoplay, Navigation, Pagination]}
+            spaceBetween={20}
+            slidesPerView={1.2}
+            navigation
+            pagination={{ clickable: true }}
+            autoplay={{
+              delay: 10000, // 🔹 10초마다 자동 전환
+              disableOnInteraction: false,
+            }}
+            loop={true}
+            breakpoints={{
+              640: { slidesPerView: 2.2 },
+              1024: { slidesPerView: 3.2 },
+            }}
+            className="pb-12"
+          >
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <SwiperSlide key={i}>
+                <motion.div
+                  className="border border-gray-200 rounded-2xl shadow-md hover:shadow-xl overflow-hidden bg-gray-50 transition-transform hover:-translate-y-2"
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <img
+                    src={
+                      i === 1
+                        ? "/clothes-sample2.png"
+                        : i === 2
+                        ? "/clothes-sample3.jpg"
+                        : i === 3
+                        ? "/gorani.jpg"
+                        : "/clothes-sample2.png"
+                    }
+                    alt={`sample-${i}`}
+                    className="w-full h-72 object-cover"
+                  />
+                  <div className="p-5">
+                    <h3 className="font-semibold text-lg mb-1">추천 상품 {i}</h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      이 섹션의 부제목을 입력할 수 있습니다.
+                    </p>
+                    <div className="flex space-x-2">
+                      <button className="px-3 py-1 bg-black text-white text-sm rounded hover:bg-gray-800 transition">
+                        바로가기
+                      </button>
+                      <button className="px-3 py-1 bg-gray-800 text-white text-sm rounded hover:bg-gray-700 transition">
+                        장바구니
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
       </section>
 
       {/* 🔸 브랜드 스토리 Section */}
