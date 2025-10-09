@@ -10,12 +10,13 @@ function MainLayout() {
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden">
       {/* 🔸 Hero Section */}
       <section
-        className="relative flex flex-col items-center justify-center w-full h-auto py-[10vh]"
+        className="relative flex flex-col items-center justify-center w-full min-h-[120vh]" // ✅ 세로 길이 살짝 늘림
         style={{
           backgroundImage: "url('/woodcard.jpg')",
-          backgroundSize: "contain", // ✅ 전체가 보이게
+          backgroundSize: "cover", // ✅ 원본 그대로 꽉 차게
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center",
+          backgroundAttachment: "fixed",
         }}
       >
         <div className="absolute inset-0 bg-black/10" />
