@@ -242,7 +242,6 @@ function MainLayout() {
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
-        {/**/}
       >
         <motion.h2
           className="text-3xl font-bold text-black mb-4"
