@@ -52,7 +52,7 @@ function MainLayout() {
       className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
       whileHover={{ scale: 1.02 }}
     >
-      <div className="w-full h-[320px] sm:h-[360px] md:h-[400px] overflow-hidden">
+      <div className="overflow-hidden w-full sm:w-full h-[420px] sm:h-[360px] md:h-[400px] mx-auto">
         <img
           src={
             i % 3 === 1
@@ -62,7 +62,7 @@ function MainLayout() {
               : "/gorani.jpg"
           }
           alt={`sample-${i}`}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-center"
         />
       </div>
       <div className="p-4 md:p-5 flex flex-col justify-between h-[120px]">
@@ -76,7 +76,7 @@ function MainLayout() {
     </motion.div>
   );
 
-  // ✅ 베스트 상품 (작고 간결하게)
+  // ✅ 베스트 상품 (작고 간결하게 / 모바일에서도 세로 길게)
   const BestSection = () => {
     const categories = ["상의", "하의", "자켓"];
 
@@ -94,11 +94,11 @@ function MainLayout() {
 
         {/* ✅ 가로로 카테고리 3개 (상의, 하의, 자켓) */}
         <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex gap-8 min-w-[1000px] md:min-w-[1200px]">
+          <div className="flex gap-8 min-w-[900px] md:min-w-[1200px]">
             {categories.map((cat, idx) => (
               <div
                 key={idx}
-                className="flex-shrink-0 w-[280px] sm:w-[320px] md:w-[360px]"
+                className="flex-shrink-0 w-[220px] sm:w-[280px] md:w-[360px]"
               >
                 <h3 className="text-xl font-semibold mb-5 text-gray-800 text-center">
                   {cat}
@@ -111,17 +111,19 @@ function MainLayout() {
                       key={i}
                       className="border border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform hover:-translate-y-1"
                     >
-                      <img
-                        src={
-                          i % 3 === 1
-                            ? "/clothes-sample2.png"
-                            : i % 3 === 2
-                            ? "/clothes-sample3.jpg"
-                            : "/gorani.jpg"
-                        }
-                        alt={`best-${i}`}
-                        className="w-full h-[180px] object-cover"
-                      />
+                      <div className="w-full h-[280px] sm:h-[240px] overflow-hidden">
+                        <img
+                          src={
+                            i % 3 === 1
+                              ? "/clothes-sample2.png"
+                              : i % 3 === 2
+                              ? "/clothes-sample3.jpg"
+                              : "/gorani.jpg"
+                          }
+                          alt={`best-${i}`}
+                          className="w-full h-full object-cover object-center"
+                        />
+                      </div>
                       <div className="p-3 text-center">
                         <h4 className="text-sm font-medium text-gray-800 mb-1">
                           {cat} 상품 {i}
@@ -155,7 +157,7 @@ function MainLayout() {
       <Swiper
         modules={[Navigation, Pagination]}
         spaceBetween={20}
-        slidesPerView={1.5}
+        slidesPerView={1.3}
         navigation
         pagination={{ clickable: true }}
         loop={false}
