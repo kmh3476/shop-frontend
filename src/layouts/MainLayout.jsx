@@ -52,8 +52,8 @@ function MainLayout() {
       className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
       whileHover={{ scale: 1.02 }}
     >
-      {/* ✅ 비율 고정 (모바일은 세로로 길게) */}
-      <div className="overflow-hidden w-full aspect-[4/5] sm:aspect-[3/4] mx-auto">
+      {/* ✅ 비율 고정 (모바일은 세로로 길게, 가로는 줄임) */}
+      <div className="overflow-hidden w-full aspect-[3/5] sm:aspect-[3/4] mx-auto">
         <img
           src={
             i % 3 === 1
@@ -137,7 +137,7 @@ function MainLayout() {
     );
   };
 
-  // ✅ 일반 슬라이드 (비율 + 반응형 조정)
+  // ✅ 일반 슬라이드 (모바일에서 2.2~2.5장 보이게 조정)
   const SlideSection = ({ title }) => (
     <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black">
       <motion.h2
@@ -153,14 +153,17 @@ function MainLayout() {
       <Swiper
         modules={[Navigation, Pagination]}
         spaceBetween={16}
-        slidesPerView={1.2}
+        slidesPerView={2.2}
         navigation
         pagination={{ clickable: true }}
+        centeredSlides={false}
         breakpoints={{
-          480: { slidesPerView: 1.5 },
-          640: { slidesPerView: 2 },
-          1024: { slidesPerView: 3 },
-          1280: { slidesPerView: 4 },
+          360: { slidesPerView: 2.2 },
+          480: { slidesPerView: 2.4 },
+          640: { slidesPerView: 2.6 },
+          768: { slidesPerView: 3 },
+          1024: { slidesPerView: 4 },
+          1280: { slidesPerView: 5 },
         }}
         className="pb-12"
       >
