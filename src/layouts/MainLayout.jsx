@@ -8,24 +8,25 @@ import { motion } from "framer-motion";
 function MainLayout() {
   return (
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden">
-      {/* 🔸 Hero Section */}
+      {/* 🔸 Hero Section (배경 유지 / 모바일 스크롤 허용) */}
       <section
-        className="relative flex flex-col items-center justify-center w-full min-h-[120vh]" // ✅ 세로 길이 살짝 늘림
+        className="relative flex flex-col items-center justify-center w-full min-h-[110vh]" // ✅ 약간 줄임
         style={{
           backgroundImage: "url('/woodcard.jpg')",
-          backgroundSize: "cover", // ✅ 원본 그대로 꽉 차게
+          backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center",
-          backgroundAttachment: "fixed",
+          backgroundAttachment: "scroll", // ✅ fixed → scroll (모바일 스크롤 가능)
         }}
       >
         <div className="absolute inset-0 bg-black/10" />
       </section>
 
-      {/* 🔸 추천상품 Section (Swiper 슬라이드 적용) */}
-      <section className="flex flex-col items-center justify-center py-[12vh] px-6 bg-white text-black relative">
+      {/* 🔸 추천상품 Section (위쪽으로 약간 올림) */}
+      <section className="flex flex-col items-center justify-center py-[8vh] px-6 bg-white text-black relative -mt-[10vh] md:-mt-[12vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)] transition-all duration-500">
+        {/* ✅ -mt 추가로 배경 위로 끌어올림 + 위쪽 곡선처럼 자연스럽게 */}
         <motion.h2
-          className="text-3xl font-bold mb-6 drop-shadow-sm" // 🔹 카드와 글자 간격 줄임
+          className="text-3xl font-bold mb-5 drop-shadow-sm"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
@@ -42,7 +43,7 @@ function MainLayout() {
             navigation
             pagination={{ clickable: true }}
             autoplay={{
-              delay: 5000, // ✅ 5초마다 자동 전환
+              delay: 5000,
               disableOnInteraction: false,
             }}
             loop={true}
