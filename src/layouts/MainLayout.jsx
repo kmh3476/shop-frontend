@@ -46,14 +46,13 @@ function MainLayout() {
     </motion.div>
   );
 
-  // ✅ 일반 상품 카드 (세로로 좀 더 길게 / 모바일에선 가로 작게 세로 길게)
+  // ✅ 일반 상품 카드 (모바일은 세로 길고 가로 짧게)
   const ProductCard = ({ i }) => (
     <motion.div
       className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
       whileHover={{ scale: 1.02 }}
     >
-      {/* 이미지 비율 조정 */}
-      <div className="w-full h-[300px] sm:h-[320px] md:h-[340px] overflow-hidden">
+      <div className="w-full h-[320px] sm:h-[360px] md:h-[400px] overflow-hidden">
         <img
           src={
             i % 3 === 1
@@ -77,7 +76,7 @@ function MainLayout() {
     </motion.div>
   );
 
-  // ✅ 베스트 상품 (가로로 [상의][하의][자켓], 모바일은 스와이프)
+  // ✅ 베스트 상품 (작고 간결하게)
   const BestSection = () => {
     const categories = ["상의", "하의", "자켓"];
 
@@ -93,22 +92,43 @@ function MainLayout() {
           🌟 베스트 상품
         </motion.h2>
 
-        {/* ✅ 가로 배치 + 모바일에서 스와이프 */}
+        {/* ✅ 가로로 카테고리 3개 (상의, 하의, 자켓) */}
         <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex gap-6 min-w-[1000px] sm:min-w-[1100px] md:min-w-[1200px]">
+          <div className="flex gap-8 min-w-[1000px] md:min-w-[1200px]">
             {categories.map((cat, idx) => (
               <div
                 key={idx}
-                className="flex-shrink-0 w-[240px] sm:w-[280px] md:w-[360px]"
+                className="flex-shrink-0 w-[280px] sm:w-[320px] md:w-[360px]"
               >
-                <h3 className="text-2xl font-semibold mb-5 text-gray-800 text-center">
+                <h3 className="text-xl font-semibold mb-5 text-gray-800 text-center">
                   {cat}
                 </h3>
 
                 {/* 세로로 카드 3개 */}
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-4">
                   {[1, 2, 3].map((i) => (
-                    <ProductCard key={i} i={i + idx * 3} />
+                    <motion.div
+                      key={i}
+                      className="border border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform hover:-translate-y-1"
+                    >
+                      <img
+                        src={
+                          i % 3 === 1
+                            ? "/clothes-sample2.png"
+                            : i % 3 === 2
+                            ? "/clothes-sample3.jpg"
+                            : "/gorani.jpg"
+                        }
+                        alt={`best-${i}`}
+                        className="w-full h-[180px] object-cover"
+                      />
+                      <div className="p-3 text-center">
+                        <h4 className="text-sm font-medium text-gray-800 mb-1">
+                          {cat} 상품 {i}
+                        </h4>
+                        <p className="text-xs text-gray-500">#인기템</p>
+                      </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
@@ -135,13 +155,13 @@ function MainLayout() {
       <Swiper
         modules={[Navigation, Pagination]}
         spaceBetween={20}
-        slidesPerView={2.2}
+        slidesPerView={1.5}
         navigation
         pagination={{ clickable: true }}
         loop={false}
         breakpoints={{
-          640: { slidesPerView: 3 },
-          1024: { slidesPerView: 5 },
+          640: { slidesPerView: 2.2 },
+          1024: { slidesPerView: 4 },
         }}
         className="pb-12"
       >
