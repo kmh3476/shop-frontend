@@ -1,153 +1,116 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 function MainLayout() {
-  const [scale, setScale] = useState(1);
-
-  useEffect(() => {
-    const updateScale = () => {
-      const baseWidth = 1920; // 기준 화면 너비
-      const newScale = Math.min(window.innerWidth / baseWidth, 1);
-      setScale(newScale);
-    };
-
-    updateScale();
-    window.addEventListener("resize", updateScale);
-    return () => window.removeEventListener("resize", updateScale);
-  }, []);
-
   return (
-    <div
-      className="flex justify-center bg-white overflow-hidden"
-      style={{
-        width: "100%",
-        minHeight: "100vh",
-      }}
-    >
-      {/* ✅ 전체 레이아웃에 배경 + scale 적용 */}
-      <div
-        className="flex flex-col items-center text-white relative"
+    <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden">
+      {/* 🔸 Hero Section (배경 이미지) */}
+      <section
+        className="relative flex flex-col items-center justify-center w-full min-h-[100vh]"
         style={{
           backgroundImage: "url('/woodcard.jpg')",
-          backgroundSize: "contain", // 배경도 같이 축소됨
+          backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
-          backgroundPosition: "center top",
-          backgroundColor: "white",
-          transform: `scale(${scale})`,
-          transformOrigin: "top center",
-          width: "1920px", // 기준 해상도
-          minHeight: "100vh",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
         }}
       >
-        <div className="h-[5vh] bg-transparent w-full"></div>
+        <div className="absolute inset-0 bg-black/10" /> {/* 어두운 오버레이 */}
+        <div className="relative z-10 flex flex-col items-center justify-center text-center px-6">
+          <h1 className="text-5xl md:text-6xl font-extrabold drop-shadow-lg mb-4 text-black">
+            ONYOU COLLECTION
+          </h1>
+          <p className="text-lg md:text-xl text-black opacity-80 max-w-[600px]">
+            자연스럽고 감각적인 디자인의 새로운 패션 라인
+          </p>
+        </div>
+      </section>
 
-        <header className="relative flex flex-col justify-center items-center text-center overflow-hidden w-full">
-          <div className="overlay-section relative z-30 w-full flex flex-col items-center px-8 mt-[600px]">
-            <h2 className="text-2xl font-bold text-black mb-3 drop-shadow-lg text-center">
-              🥝 추천 상품
-            </h2>
+      {/* 🔸 추천상품 Section */}
+      <section className="flex flex-col items-center justify-center py-[8vh] px-6 bg-white text-black">
+        <motion.h2
+          className="text-3xl font-bold mb-6 drop-shadow-sm"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+        >
+          🥝 추천 상품
+        </motion.h2>
 
-            <section className="card-grid flex justify-center items-stretch gap-6 w-full max-w-[1100px] flex-nowrap">
-              {/* 카드 1 */}
-              <div
-                className="product-card border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300 flex-shrink-0"
-                style={{
-                  width: "30%",
-                  minWidth: "250px",
-                  height: "300px",
-                }}
-              >
-                <img
-                  src="/clothes-sample2.png"
-                  alt="Sample1"
-                  className="w-full h-40 object-cover"
-                />
-                <div className="p-4 text-black">
-                  <h3 className="font-semibold text-lg drop-shadow-md">제목</h3>
-                  <p className="text-sm mt-1 opacity-100 drop-shadow-sm">
-                    이 섹션의 부제목을 입력할 수 있습니다
-                  </p>
-                  <div className="mt-4 flex space-x-2">
-                    <button className="px-3 py-1 bg-black text-white text-sm rounded hover:bg-gray-800 transition">
-                      버튼
-                    </button>
-                    <button className="px-3 py-1 bg-black text-white text-sm rounded hover:bg-gray-800 transition">
-                      보조 버튼
-                    </button>
-                  </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-[1100px] w-full">
+          {[1, 2, 3].map((i) => (
+            <motion.div
+              key={i}
+              className="border border-gray-200 rounded-2xl shadow-md hover:shadow-xl overflow-hidden bg-gray-50 transition transform hover:-translate-y-2"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: i * 0.15 }}
+              viewport={{ once: true }}
+            >
+              <img
+                src={
+                  i === 1
+                    ? "/clothes-sample2.png"
+                    : i === 2
+                    ? "/clothes-sample3.jpg"
+                    : "/gorani.jpg"
+                }
+                alt={`sample-${i}`}
+                className="w-full h-60 object-cover"
+              />
+              <div className="p-5">
+                <h3 className="font-semibold text-lg mb-1">제목 {i}</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  이 섹션의 부제목을 입력할 수 있습니다.
+                </p>
+                <div className="flex space-x-2">
+                  <button className="px-3 py-1 bg-black text-white text-sm rounded hover:bg-gray-800 transition">
+                    버튼
+                  </button>
+                  <button className="px-3 py-1 bg-gray-800 text-white text-sm rounded hover:bg-gray-700 transition">
+                    보조 버튼
+                  </button>
                 </div>
               </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
 
-              {/* 카드 2 */}
-              <div
-                className="product-card border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300 flex-shrink-0"
-                style={{
-                  width: "30%",
-                  minWidth: "250px",
-                  height: "300px",
-                }}
-              >
-                <img
-                  src="/clothes-sample3.jpg"
-                  alt="Sample2"
-                  className="w-full h-40 object-cover"
-                />
-                <div className="p-4 text-black">
-                  <h3 className="font-semibold text-lg drop-shadow-md">제목</h3>
-                  <p className="text-sm mt-1 opacity-100 drop-shadow-sm">
-                    이 섹션의 부제목을 입력할 수 있습니다
-                  </p>
-                  <div className="mt-4 flex space-x-2">
-                    <button className="px-3 py-1 bg-black text-white text-sm rounded hover:bg-gray-800 transition">
-                      버튼
-                    </button>
-                    <button className="px-3 py-1 bg-black text-white text-sm rounded hover:bg-gray-800 transition">
-                      보조 버튼
-                    </button>
-                  </div>
-                </div>
-              </div>
+      {/* 🔸 About Section (선택사항 — 4XR 느낌 강화용) */}
+      <section
+        className="flex flex-col items-center justify-center py-[15vh] px-6 text-center bg-gray-100"
+        style={{
+          backgroundImage: "url('/texture.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <motion.h2
+          className="text-3xl font-bold text-black mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          브랜드 스토리
+        </motion.h2>
+        <motion.p
+          className="max-w-[700px] text-gray-700 leading-relaxed"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
+        >
+          ONYOU는 심플하지만 감각적인 디자인을 통해 일상 속의 편안함을 추구합니다.
+          <br />
+          자연, 색감, 질감에서 영감을 받아 제작된 제품들은 당신의 일상을 새롭게
+          만듭니다.
+        </motion.p>
+      </section>
 
-              {/* 카드 3 */}
-              <div
-                className="product-card border border-gray-400 rounded-xl shadow-lg hover:shadow-2xl transition overflow-hidden bg-gray-300 flex-shrink-0"
-                style={{
-                  width: "30%",
-                  minWidth: "250px",
-                  height: "300px",
-                }}
-              >
-                <img
-                  src="/gorani.jpg"
-                  alt="Sample3"
-                  className="w-full h-40 object-cover"
-                />
-                <div className="p-4 text-black">
-                  <h3 className="font-semibold text-lg drop-shadow-md">
-                    야생고라니
-                  </h3>
-                  <p className="text-sm mt-1 opacity-100 drop-shadow-sm">
-                    이 섹션의 부제목을 입력할 수 있습니다
-                  </p>
-                  <div className="mt-4 flex space-x-2">
-                    <button className="px-3 py-1 bg-black text-white text-sm rounded hover:bg-gray-800 transition">
-                      버튼
-                    </button>
-                    <button className="px-3 py-1 bg-black text-white text-sm rounded hover:bg-gray-800 transition">
-                      보조 버튼
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
-        </header>
-
-        {/* ✅ 이제 푸터도 scale 내부로 이동 */}
-        <footer className="py-4 text-black text-sm border-t border-gray-300 w-full text-center bg-white mt-auto">
-          © 2025 onyou
-        </footer>
-      </div>
+      {/* 🔸 Footer */}
+      <footer className="py-6 text-black text-sm border-t border-gray-300 w-full text-center bg-white">
+        © 2025 ONYOU — All rights reserved.
+      </footer>
     </div>
   );
 }
