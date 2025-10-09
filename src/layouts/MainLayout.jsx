@@ -44,13 +44,13 @@ function MainLayout() {
     </motion.div>
   );
 
-  // ✅ 일반 카드
+  // ✅ 일반 카드 (상품용)
   const ProductCard = ({ i }) => (
     <motion.div
       className="border border-gray-100 rounded-2xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
       whileHover={{ scale: 1.02 }}
     >
-      <div className="w-full h-[220px] overflow-hidden">
+      <div className="w-full h-[280px] overflow-hidden">
         <img
           src={
             i % 3 === 1
@@ -64,16 +64,18 @@ function MainLayout() {
         />
       </div>
       <div className="p-3">
-        <h3 className="font-medium text-sm mb-1 text-gray-800">상품명 {i}</h3>
-        <p className="text-xs text-gray-500">모던한 감각의 아이템</p>
+        <h3 className="font-medium text-base mb-1 text-gray-800">상품명 {i}</h3>
+        <div className="flex items-center space-x-2">
+          <p className="text-lg font-semibold text-black">49,700</p>
+          <span className="text-red-500 text-sm font-bold">30%</span>
+        </div>
       </div>
     </motion.div>
   );
 
-  // ✅ 세로 3줄 × 각 줄은 가로 슬라이드 (상의, 하의, 자켓)
+  // ✅ 베스트 상품 (4x3 그리드)
   const BestSection = () => {
     const categories = ["상의", "하의", "자켓"];
-
     return (
       <section className="w-full max-w-[1300px] mx-auto px-6 py-[12vh] bg-white text-black">
         <motion.h2
@@ -86,32 +88,18 @@ function MainLayout() {
           🌟 베스트 상품
         </motion.h2>
 
-        <div className="flex flex-col gap-[10vh]">
-          {categories.map((cat, idx) => (
-            <div key={idx} className="w-full">
-              <h3 className="text-2xl font-semibold mb-6 text-gray-800">{cat}</h3>
+        {categories.map((cat, idx) => (
+          <div key={idx} className="mb-[10vh]">
+            <h3 className="text-2xl font-semibold mb-6 text-gray-800">{cat}</h3>
 
-              <Swiper
-                modules={[Pagination, Navigation]}
-                spaceBetween={20}
-                slidesPerView={1.5}
-                navigation
-                pagination={{ clickable: true }}
-                breakpoints={{
-                  640: { slidesPerView: 2.5 },
-                  1024: { slidesPerView: 4 },
-                }}
-                className="pb-10"
-              >
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <SwiperSlide key={i}>
-                    <ProductCard i={i + idx * 6} />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
+            {/* 🔸 PC: 4x3 그리드 / Mobile: 반응형 자동 줄바꿈 */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
+                <ProductCard key={i + idx * 12} i={i + idx * 12} />
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </section>
     );
   };
@@ -210,7 +198,7 @@ function MainLayout() {
       <SlideSection title="👖 하의" />
       <SlideSection title="🧥 코디 추천" />
 
-      {/* 🔸 베스트 상품 (세로 3줄, 각 줄 가로 슬라이드) */}
+      {/* 🔸 베스트 상품 (4x3 그리드) */}
       <BestSection />
 
       {/* 🔸 브랜드 스토리 */}
