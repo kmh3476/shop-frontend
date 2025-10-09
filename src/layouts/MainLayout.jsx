@@ -6,7 +6,7 @@ function MainLayout() {
 
   useEffect(() => {
     const updateScale = () => {
-      const baseWidth = 1920; // 기준 화면 너비
+      const baseWidth = 1920; // 기준 너비
       const newScale = Math.min(window.innerWidth / baseWidth, 1);
       setScale(newScale);
     };
@@ -18,29 +18,30 @@ function MainLayout() {
 
   return (
     <div
-      className="flex flex-col min-h-[100vh] relative text-white items-center overflow-x-hidden"
+      className="flex flex-col min-h-screen relative text-white items-center overflow-x-hidden bg-white"
       style={{
-        backgroundImage: "url('/woodcard.jpg')",
-        backgroundSize: "cover", // ✅ 화면 전체 채움
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "center top",
         backgroundColor: "white",
-        transform: `scale(${scale})`,
-        transformOrigin: "top center", // ✅ 위쪽 중앙 기준으로 축소
         width: "100%",
-        height: `${100 / scale}vh`, // ✅ 스케일 적용 후 높이 자동 보정
+        overflow: "hidden",
       }}
     >
-      <div className="w-full flex flex-col items-center">
-        {/* 상단 여백 */}
+      {/* ✅ 배경 포함 전체를 scale 처리하는 컨테이너 */}
+      <div
+        style={{
+          backgroundImage: "url('/woodcard.jpg')",
+          backgroundSize: "contain", // ✅ 이제 축소 시 같이 줄어듦
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center top",
+          transform: `scale(${scale})`,
+          transformOrigin: "top center",
+          width: "1920px", // ✅ 기준 크기 고정
+          minHeight: "100vh",
+        }}
+        className="flex flex-col items-center"
+      >
         <div className="h-[5vh] bg-transparent w-full"></div>
 
-        <header
-          className="relative flex flex-col justify-center items-center text-center overflow-hidden w-full"
-          style={{
-            flexGrow: 1,
-          }}
-        >
+        <header className="relative flex flex-col justify-center items-center text-center overflow-hidden w-full">
           <div className="overlay-section relative z-30 w-full flex flex-col items-center px-8 mt-[600px]">
             <h2 className="text-2xl font-bold text-black mb-3 drop-shadow-lg text-center">
               🥝 추천 상품
