@@ -7,58 +7,53 @@ import ProductList from "./pages/ProductList";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 
-// ✅ 네비게이션 컴포넌트 분리
+// ✅ 햄버거 메뉴 컴포넌트
 function Navigation() {
   const location = useLocation();
-
-  // ✅ 홈("/")에서는 배경 아래쪽에 배치되게 (absolute → relative)
   const isHome = location.pathname === "/";
 
   return (
-    <nav
+    <div
       style={{
-        padding: "12px 20px",
-        backgroundColor: isHome ? "transparent" : "#f9fafb",
-        borderBottom: isHome ? "none" : "1px solid #ddd",
-        display: "flex",
-        justifyContent: "center",
-        gap: "20px",
-        position: isHome ? "relative" : "sticky",
-        top: 0,
-        zIndex: 50,
+        position: "fixed",
+        top: "20px",
+        right: "24px",
+        zIndex: 100,
+        backgroundColor: isHome ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.9)",
+        borderRadius: "12px",
+        padding: "10px 14px",
+        backdropFilter: "blur(6px)",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+        cursor: "pointer",
       }}
     >
-      <Link
-        to="/products"
+      <div
         style={{
-          textDecoration: "none",
-          color: isHome ? "white" : "#2563eb",
-          fontWeight: "bold",
+          width: "24px",
+          height: "2px",
+          backgroundColor: isHome ? "white" : "#333",
+          marginBottom: "5px",
+          borderRadius: "2px",
         }}
-      >
-        🛍 상품목록
-      </Link>
-      <Link
-        to="/cart"
+      />
+      <div
         style={{
-          textDecoration: "none",
-          color: isHome ? "white" : "#2563eb",
-          fontWeight: "bold",
+          width: "24px",
+          height: "2px",
+          backgroundColor: isHome ? "white" : "#333",
+          marginBottom: "5px",
+          borderRadius: "2px",
         }}
-      >
-        🛒 장바구니
-      </Link>
-      <Link
-        to="/admin"
+      />
+      <div
         style={{
-          textDecoration: "none",
-          color: isHome ? "white" : "#2563eb",
-          fontWeight: "bold",
+          width: "24px",
+          height: "2px",
+          backgroundColor: isHome ? "white" : "#333",
+          borderRadius: "2px",
         }}
-      >
-        ⚙ 관리자
-      </Link>
-    </nav>
+      />
+    </div>
   );
 }
 
@@ -71,19 +66,13 @@ function App() {
         <Route
           path="/"
           element={
-            <>
+            <div style={{ position: "relative" }}>
+              {/* 🔹 배경(메인화면) */}
               <MainLayout />
-              {/* ✅ 배경 밑으로 네비게이션 배치 */}
-              <div
-                style={{
-                  marginTop: "-80px",
-                  position: "relative",
-                  zIndex: 10,
-                }}
-              >
-                <Navigation />
-              </div>
-            </>
+
+              {/* ✅ 햄버거 메뉴 */}
+              <Navigation />
+            </div>
           }
         />
 
@@ -109,7 +98,7 @@ function App() {
             <div style={{ padding: "40px", textAlign: "center" }}>
               <h2>🚫 페이지를 찾을 수 없습니다.</h2>
               <Link
-                to="/products"
+                to="/"
                 style={{
                   marginTop: "10px",
                   display: "inline-block",
@@ -117,7 +106,7 @@ function App() {
                   textDecoration: "underline",
                 }}
               >
-                상품목록으로 이동
+                홈으로 이동
               </Link>
             </div>
           }

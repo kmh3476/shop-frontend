@@ -128,7 +128,15 @@ function MainLayout() {
         }}
       >
         <div className="absolute inset-0 bg-black/10" />
-      </section>
+
+      {/* ✅ 메뉴 바 (배경 밑, 추천상품 위) */}
+      <nav className="w-full bg-white shadow-md z-10">
+        <ul className="max-w-[1200px] mx-auto flex justify-center gap-10 py-5 text-gray-800 font-semibold text-lg font-['Pretendard']">
+          <li className="hover:text-black cursor-pointer transition">상품목록</li>
+          <li className="hover:text-black cursor-pointer transition">장바구니</li>
+          <li className="hover:text-black cursor-pointer transition">관리자</li>
+        </ul>
+      </nav>
 
       {/* 🔸 추천 상품 */}
       <section className="flex flex-col items-center justify-center py-[10vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
@@ -136,7 +144,7 @@ function MainLayout() {
           className="text-5xl md:text-6xl font-extrabold mb-12 drop-shadow-sm tracking-tight text-gray-900"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
           viewport={{ once: true }}
         >
           🥝 추천 상품
