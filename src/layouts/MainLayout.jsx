@@ -6,7 +6,7 @@ function MainLayout() {
 
   useEffect(() => {
     const updateScale = () => {
-      const baseWidth = 1920; // 기준 너비
+      const baseWidth = 1920; // 기준 화면 너비
       const newScale = Math.min(window.innerWidth / baseWidth, 1);
       setScale(newScale);
     };
@@ -18,26 +18,26 @@ function MainLayout() {
 
   return (
     <div
-      className="flex flex-col min-h-screen relative text-white items-center overflow-x-hidden bg-white"
+      className="flex justify-center bg-white overflow-hidden"
       style={{
-        backgroundColor: "white",
         width: "100%",
-        overflow: "hidden",
+        minHeight: "100vh",
       }}
     >
-      {/* ✅ 배경 포함 전체를 scale 처리하는 컨테이너 */}
+      {/* ✅ 전체 레이아웃에 배경 + scale 적용 */}
       <div
+        className="flex flex-col items-center text-white relative"
         style={{
           backgroundImage: "url('/woodcard.jpg')",
-          backgroundSize: "contain", // ✅ 이제 축소 시 같이 줄어듦
+          backgroundSize: "contain", // 배경도 같이 축소됨
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center top",
+          backgroundColor: "white",
           transform: `scale(${scale})`,
           transformOrigin: "top center",
-          width: "1920px", // ✅ 기준 크기 고정
+          width: "1920px", // 기준 해상도
           minHeight: "100vh",
         }}
-        className="flex flex-col items-center"
       >
         <div className="h-[5vh] bg-transparent w-full"></div>
 
@@ -143,6 +143,7 @@ function MainLayout() {
           </div>
         </header>
 
+        {/* ✅ 이제 푸터도 scale 내부로 이동 */}
         <footer className="py-4 text-black text-sm border-t border-gray-300 w-full text-center bg-white mt-auto">
           © 2025 onyou
         </footer>
