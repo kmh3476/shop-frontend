@@ -52,8 +52,8 @@ function MainLayout() {
       className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
       whileHover={{ scale: 1.02 }}
     >
-      {/* 세로 중심 비율 */}
-      <div className="overflow-hidden w-full h-[360px] sm:h-[380px] md:h-[400px] lg:h-[420px] mx-auto">
+      {/* ✅ 비율 고정 (세로형 카드) */}
+      <div className="overflow-hidden w-full aspect-[3/4] mx-auto">
         <img
           src={
             i % 3 === 1
@@ -107,7 +107,7 @@ function MainLayout() {
                       key={i}
                       className="border border-gray-200 rounded-xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform hover:-translate-y-1"
                     >
-                      <div className="w-full h-[300px] sm:h-[280px] overflow-hidden">
+                      <div className="w-full aspect-[3/4] overflow-hidden">
                         <img
                           src={
                             i % 3 === 1
@@ -150,16 +150,18 @@ function MainLayout() {
         {title}
       </motion.h2>
 
+      {/* ✅ Swiper 수정 */}
       <Swiper
         modules={[Navigation, Pagination]}
         spaceBetween={20}
-        slidesPerView={1.4}
+        slidesPerView={1} // 모바일은 1장
         navigation
         pagination={{ clickable: true }}
         breakpoints={{
-          480: { slidesPerView: 1.6 },
-          640: { slidesPerView: 2.4 },
-          1024: { slidesPerView: 4 },
+          480: { slidesPerView: 1.1 },
+          640: { slidesPerView: 2 },
+          1024: { slidesPerView: 3 },
+          1280: { slidesPerView: 4 },
         }}
         className="pb-12"
       >
