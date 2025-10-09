@@ -128,6 +128,7 @@ function MainLayout() {
         }}
       >
         <div className="absolute inset-0 bg-black/10" />
+      </section>
 
       {/* ✅ 메뉴 바 (배경 밑, 추천상품 위) */}
       <nav className="w-full bg-white shadow-md z-10">
