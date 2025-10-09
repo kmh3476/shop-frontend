@@ -10,13 +10,12 @@ function MainLayout() {
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden">
       {/* 🔸 Hero Section */}
       <section
-        className="relative flex flex-col items-center justify-center w-full min-h-[100vh]"
+        className="relative flex flex-col items-center justify-center w-full h-auto py-[10vh]"
         style={{
           backgroundImage: "url('/woodcard.jpg')",
-          backgroundSize: "cover",
+          backgroundSize: "contain", // ✅ 전체가 보이게
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center",
-          backgroundAttachment: "fixed",
         }}
       >
         <div className="absolute inset-0 bg-black/10" />
@@ -25,7 +24,7 @@ function MainLayout() {
       {/* 🔸 추천상품 Section (Swiper 슬라이드 적용) */}
       <section className="flex flex-col items-center justify-center py-[12vh] px-6 bg-white text-black relative">
         <motion.h2
-          className="text-3xl font-bold mb-10 drop-shadow-sm"
+          className="text-3xl font-bold mb-6 drop-shadow-sm" // 🔹 카드와 글자 간격 줄임
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
@@ -42,7 +41,7 @@ function MainLayout() {
             navigation
             pagination={{ clickable: true }}
             autoplay={{
-              delay: 10000, // 🔹 10초마다 자동 전환
+              delay: 5000, // ✅ 5초마다 자동 전환
               disableOnInteraction: false,
             }}
             loop={true}
