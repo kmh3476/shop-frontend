@@ -6,7 +6,7 @@ import "swiper/css/pagination";
 import { motion } from "framer-motion";
 
 function MainLayout() {
-  // ✅ 추천상품 전용 카드 (정사각형 이미지로 변경)
+  // ✅ 추천상품 전용 카드 (정사각형 + 폰트 개선)
   const FeaturedCard = ({ i }) => (
     <motion.div
       className="border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-2 hover:scale-[1.05]"
@@ -27,20 +27,20 @@ function MainLayout() {
         />
       </div>
 
-      <div className="p-6 flex flex-col justify-between h-[240px]">
+      <div className="p-6 flex flex-col justify-between h-[240px] font-['Pretendard']">
         <div>
-          <h3 className="font-semibold text-2xl mb-2 text-gray-800">
+          <h3 className="font-bold text-3xl mb-3 text-gray-900 tracking-tight">
             추천 상품 {i}
           </h3>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-base text-gray-500 mb-4 leading-relaxed">
             감각적인 디자인으로 완성된 이번 시즌 베스트.
           </p>
         </div>
         <div className="flex space-x-3">
-          <button className="flex-1 py-3 bg-black text-white text-sm rounded-lg hover:bg-gray-800 transition">
+          <button className="flex-1 py-3 bg-black text-white text-base font-semibold rounded-lg hover:bg-gray-800 transition">
             바로가기
           </button>
-          <button className="flex-1 py-3 bg-gray-800 text-white text-sm rounded-lg hover:bg-gray-700 transition">
+          <button className="flex-1 py-3 bg-gray-800 text-white text-base font-semibold rounded-lg hover:bg-gray-700 transition">
             장바구니
           </button>
         </div>
@@ -48,7 +48,7 @@ function MainLayout() {
     </motion.div>
   );
 
-  // ✅ 일반 상품 카드 (비율 유지)
+  // ✅ 일반 상품 카드 (폰트 향상)
   const ProductCard = ({ i }) => (
     <motion.div
       className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
@@ -67,8 +67,8 @@ function MainLayout() {
           className="w-full h-full object-cover object-center"
         />
       </div>
-      <div className="p-4 text-center">
-        <h3 className="font-medium text-gray-800 text-base mb-1">
+      <div className="p-5 text-center font-['Pretendard']">
+        <h3 className="font-semibold text-gray-800 text-lg mb-1">
           상품명 {i}
         </h3>
         <p className="text-sm text-gray-500">#데일리룩 #심플핏</p>
@@ -76,14 +76,14 @@ function MainLayout() {
     </motion.div>
   );
 
-  // ✅ 일반 슬라이드 (모바일에서 2.2~2.5장 보이게)
+  // ✅ 일반 슬라이드 섹션 (폰트 확대)
   const SlideSection = ({ title }) => (
-    <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black">
+    <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black font-['Pretendard']">
       <motion.h2
-        className="text-2xl font-bold mb-8 drop-shadow-sm"
+        className="text-4xl md:text-5xl font-extrabold mb-10 drop-shadow-sm tracking-tight text-gray-900"
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+        transition={{ duration: 0.8, ease: 'easeOut' }}
         viewport={{ once: true }}
       >
         {title}
@@ -116,7 +116,7 @@ function MainLayout() {
   );
 
   return (
-    <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden">
+    <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden font-['Pretendard']">
       {/* 🔸 메인 배경 */}
       <section
         className="relative flex flex-col items-center justify-center w-full min-h-[110vh]"
@@ -133,10 +133,10 @@ function MainLayout() {
       {/* 🔸 추천 상품 */}
       <section className="flex flex-col items-center justify-center py-[10vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
         <motion.h2
-          className="text-4xl font-bold mb-10 drop-shadow-sm"
+          className="text-5xl md:text-6xl font-extrabold mb-12 drop-shadow-sm tracking-tight text-gray-900"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
           viewport={{ once: true }}
         >
           🥝 추천 상품
@@ -178,7 +178,7 @@ function MainLayout() {
 
       {/* 🔸 브랜드 스토리 */}
       <section
-        className="flex flex-col items-center justify-center py-[15vh] px-6 text-center bg-gray-100"
+        className="flex flex-col items-center justify-center py-[15vh] px-6 text-center bg-gray-100 font-['Pretendard']"
         style={{
           backgroundImage: "url('/texture.jpg')",
           backgroundSize: "cover",
@@ -186,7 +186,7 @@ function MainLayout() {
         }}
       >
         <motion.h2
-          className="text-3xl font-bold text-black mb-4"
+          className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -194,7 +194,7 @@ function MainLayout() {
           브랜드 스토리
         </motion.h2>
         <motion.p
-          className="max-w-[700px] text-gray-700 leading-relaxed"
+          className="max-w-[700px] text-gray-700 leading-relaxed text-lg md:text-xl font-light"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.8 }}
@@ -206,7 +206,7 @@ function MainLayout() {
       </section>
 
       {/* 🔸 Footer */}
-      <footer className="py-6 text-black text-sm border-t border-gray-300 w-full text-center bg-white">
+      <footer className="py-6 text-black text-sm border-t border-gray-300 w-full text-center bg-white font-light tracking-tight">
         © 2025 ONYOU — All rights reserved.
       </footer>
     </div>
