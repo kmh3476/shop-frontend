@@ -105,7 +105,7 @@ function MainLayout() {
     </section>
   );
 
-  // ✅ 베스트 상품 (그리드형 5x2)
+  // ✅ 베스트 상품 (PC: 4x3 그리드 / 모바일: 가로 스크롤)
   const BestSection = () => (
     <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black">
       <motion.h2
@@ -118,32 +118,37 @@ function MainLayout() {
         ⭐ 베스트 상품
       </motion.h2>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-        {[...Array(10)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg bg-white overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
-            whileHover={{ scale: 1.02 }}
-          >
-            <div className="w-full h-[220px] overflow-hidden">
-              <img
-                src={
-                  i % 3 === 1
-                    ? "/clothes-sample2.png"
-                    : i % 3 === 2
-                    ? "/clothes-sample3.jpg"
-                    : "/gorani.jpg"
-                }
-                alt={`best-${i}`}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="p-3 text-center">
-              <h3 className="text-sm font-medium text-gray-800">베스트 상품 {i + 1}</h3>
-              <p className="text-xs text-gray-500 mt-1">이번 시즌 인기 아이템</p>
-            </div>
-          </motion.div>
-        ))}
+      {/* ✅ 모바일: 가로 스크롤 / PC: 4x3 그리드 */}
+      <div className="overflow-x-auto md:overflow-visible">
+        <div className="flex md:grid md:grid-cols-4 md:gap-6 gap-4 w-max md:w-auto px-1">
+          {[...Array(12)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="min-w-[180px] md:min-w-0 border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg bg-white overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
+              whileHover={{ scale: 1.02 }}
+            >
+              <div className="w-full h-[220px] overflow-hidden">
+                <img
+                  src={
+                    i % 3 === 1
+                      ? "/clothes-sample2.png"
+                      : i % 3 === 2
+                      ? "/clothes-sample3.jpg"
+                      : "/gorani.jpg"
+                  }
+                  alt={`best-${i}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="p-3 text-center">
+                <h3 className="text-sm font-medium text-gray-800">
+                  베스트 상품 {i + 1}
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">이번 시즌 인기 아이템</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );
