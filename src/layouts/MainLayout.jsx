@@ -105,9 +105,9 @@ function MainLayout() {
     </section>
   );
 
-  // ✅ 베스트 섹션 (그리드형)
+  // ✅ 베스트 상품 (그리드형 5x2)
   const BestSection = () => (
-    <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-gray-50 text-black">
+    <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black">
       <motion.h2
         className="text-2xl font-bold mb-8 drop-shadow-sm text-center"
         initial={{ opacity: 0, y: 40 }}
@@ -115,29 +115,32 @@ function MainLayout() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         viewport={{ once: true }}
       >
-        🌟 베스트
+        ⭐ 베스트 상품
       </motion.h2>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+        {[...Array(10)].map((_, i) => (
           <motion.div
             key={i}
-            className="border border-gray-200 bg-white rounded-xl shadow-sm hover:shadow-md overflow-hidden transition-transform duration-300 hover:-translate-y-1"
+            className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg bg-white overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
+            whileHover={{ scale: 1.02 }}
           >
-            <img
-              src={
-                i % 3 === 1
-                  ? "/clothes-sample2.png"
-                  : i % 3 === 2
-                  ? "/clothes-sample3.jpg"
-                  : "/gorani.jpg"
-              }
-              alt={`best-${i}`}
-              className="w-full h-[280px] object-cover"
-            />
-            <div className="p-4">
-              <h3 className="text-base font-semibold mb-1 text-gray-800">베스트 상품 {i}</h3>
-              <p className="text-sm text-gray-500">이번 시즌 인기 아이템</p>
+            <div className="w-full h-[220px] overflow-hidden">
+              <img
+                src={
+                  i % 3 === 1
+                    ? "/clothes-sample2.png"
+                    : i % 3 === 2
+                    ? "/clothes-sample3.jpg"
+                    : "/gorani.jpg"
+                }
+                alt={`best-${i}`}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="p-3 text-center">
+              <h3 className="text-sm font-medium text-gray-800">베스트 상품 {i + 1}</h3>
+              <p className="text-xs text-gray-500 mt-1">이번 시즌 인기 아이템</p>
             </div>
           </motion.div>
         ))}
@@ -199,13 +202,11 @@ function MainLayout() {
         </div>
       </section>
 
-      {/* 🔸 나머지 섹션 */}
+      {/* 🔸 다른 섹션 */}
       <SlideSection title="🌿 NEW ITEM" />
       <SlideSection title="👕 상의" />
       <SlideSection title="👖 하의" />
       <SlideSection title="🧥 코디 추천" />
-
-      {/* 🔸 베스트 (이달의 계절 룩 → 베스트) */}
       <BestSection />
 
       {/* 🔸 브랜드 스토리 */}
