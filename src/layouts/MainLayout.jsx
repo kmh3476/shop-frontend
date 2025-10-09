@@ -44,7 +44,7 @@ function MainLayout() {
     </motion.div>
   );
 
-  // ✅ 일반 슬라이드 카드 (작고 깔끔형)
+  // ✅ 일반 카드
   const ProductCard = ({ i }) => (
     <motion.div
       className="border border-gray-100 rounded-2xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
@@ -70,7 +70,53 @@ function MainLayout() {
     </motion.div>
   );
 
-  // ✅ 일반 슬라이드 섹션 (수동 슬라이드)
+  // ✅ 세로 3줄 × 각 줄은 가로 슬라이드 (상의, 하의, 자켓)
+  const BestSection = () => {
+    const categories = ["상의", "하의", "자켓"];
+
+    return (
+      <section className="w-full max-w-[1300px] mx-auto px-6 py-[12vh] bg-white text-black">
+        <motion.h2
+          className="text-3xl font-bold mb-12 text-center drop-shadow-sm"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          viewport={{ once: true }}
+        >
+          🌟 베스트 상품
+        </motion.h2>
+
+        <div className="flex flex-col gap-[10vh]">
+          {categories.map((cat, idx) => (
+            <div key={idx} className="w-full">
+              <h3 className="text-2xl font-semibold mb-6 text-gray-800">{cat}</h3>
+
+              <Swiper
+                modules={[Pagination, Navigation]}
+                spaceBetween={20}
+                slidesPerView={1.5}
+                navigation
+                pagination={{ clickable: true }}
+                breakpoints={{
+                  640: { slidesPerView: 2.5 },
+                  1024: { slidesPerView: 4 },
+                }}
+                className="pb-10"
+              >
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <SwiperSlide key={i}>
+                    <ProductCard i={i + idx * 6} />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  };
+
+  // ✅ 일반 슬라이드 섹션
   const SlideSection = ({ title }) => (
     <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black">
       <motion.h2
@@ -105,56 +151,9 @@ function MainLayout() {
     </section>
   );
 
-  // ✅ 베스트 상품 섹션 (4×3 그리드 + 모바일은 슬라이드)
-  const BestSection = () => {
-    const categories = ["상의", "하의", "자켓"];
-
-    return (
-      <section className="w-full max-w-[1300px] mx-auto px-6 py-[12vh] bg-white text-black">
-        <motion.h2
-          className="text-3xl font-bold mb-10 text-center drop-shadow-sm"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          viewport={{ once: true }}
-        >
-          🌟 베스트 상품
-        </motion.h2>
-
-        {categories.map((cat, idx) => (
-          <div key={idx} className="mb-12">
-            <h3 className="text-xl font-semibold mb-6 text-gray-800">{cat}</h3>
-
-            {/* 모바일은 슬라이드 / 데스크탑은 그리드 */}
-            <div className="block md:hidden">
-              <Swiper
-                modules={[Pagination]}
-                spaceBetween={16}
-                slidesPerView={2.2}
-                pagination={{ clickable: true }}
-              >
-                {[1, 2, 3, 4].map((i) => (
-                  <SwiperSlide key={i}>
-                    <ProductCard i={i + idx * 4} />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-            </div>
-
-            <div className="hidden md:grid grid-cols-4 gap-6">
-              {[1, 2, 3, 4].map((i) => (
-                <ProductCard key={i} i={i + idx * 4} />
-              ))}
-            </div>
-          </div>
-        ))}
-      </section>
-    );
-  };
-
   return (
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden">
-      {/* 🔸 배경영역 */}
+      {/* 🔸 배경 */}
       <section
         className="relative flex flex-col items-center justify-center w-full min-h-[110vh]"
         style={{
@@ -211,7 +210,7 @@ function MainLayout() {
       <SlideSection title="👖 하의" />
       <SlideSection title="🧥 코디 추천" />
 
-      {/* 🔸 베스트 상품 섹션 */}
+      {/* 🔸 베스트 상품 (세로 3줄, 각 줄 가로 슬라이드) */}
       <BestSection />
 
       {/* 🔸 브랜드 스토리 */}
