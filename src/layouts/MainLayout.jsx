@@ -6,14 +6,14 @@ import "swiper/css/pagination";
 import { motion } from "framer-motion";
 
 function MainLayout() {
-  // ✅ 추천상품 전용 카드 (크게)
+  // ✅ 추천상품 전용 카드 (정사각형 이미지로 변경)
   const FeaturedCard = ({ i }) => (
     <motion.div
       className="border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-2 hover:scale-[1.05]"
       whileHover={{ scale: 1.05 }}
     >
-      {/* 🔸 카드 크기 확대 (모바일 기준) */}
-      <div className="w-full h-[520px] sm:h-[560px] overflow-hidden">
+      {/* ✅ 정사각형 이미지 영역 */}
+      <div className="w-full aspect-square overflow-hidden">
         <img
           src={
             i % 3 === 1
@@ -23,9 +23,10 @@ function MainLayout() {
               : "/gorani.jpg"
           }
           alt={`sample-${i}`}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-center"
         />
       </div>
+
       <div className="p-6 flex flex-col justify-between h-[240px]">
         <div>
           <h3 className="font-semibold text-2xl mb-2 text-gray-800">
@@ -47,13 +48,12 @@ function MainLayout() {
     </motion.div>
   );
 
-  // ✅ 일반 상품 카드 (비율 수정)
+  // ✅ 일반 상품 카드 (비율 유지)
   const ProductCard = ({ i }) => (
     <motion.div
       className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
       whileHover={{ scale: 1.02 }}
     >
-      {/* ✅ 비율 고정 (모바일 세로 길게, 가로 줄임) */}
       <div className="overflow-hidden w-full aspect-[3/5] sm:aspect-[3/4] mx-auto">
         <img
           src={
@@ -76,7 +76,7 @@ function MainLayout() {
     </motion.div>
   );
 
-  // ✅ 일반 슬라이드 (모바일에서 2.2~2.5장 보이게 조정)
+  // ✅ 일반 슬라이드 (모바일에서 2.2~2.5장 보이게)
   const SlideSection = ({ title }) => (
     <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black">
       <motion.h2
