@@ -1,4 +1,4 @@
-﻿import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+﻿import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import CleanLayout from "./layouts/CleanLayout";
 
@@ -7,61 +7,96 @@ import ProductList from "./pages/ProductList";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 
+// ✅ 네비게이션 컴포넌트 분리
+function Navigation() {
+  const location = useLocation();
+
+  // ✅ 홈("/")에서는 배경 아래쪽에 배치되게 (absolute → relative)
+  const isHome = location.pathname === "/";
+
+  return (
+    <nav
+      style={{
+        padding: "12px 20px",
+        backgroundColor: isHome ? "transparent" : "#f9fafb",
+        borderBottom: isHome ? "none" : "1px solid #ddd",
+        display: "flex",
+        justifyContent: "center",
+        gap: "20px",
+        position: isHome ? "relative" : "sticky",
+        top: 0,
+        zIndex: 50,
+      }}
+    >
+      <Link
+        to="/products"
+        style={{
+          textDecoration: "none",
+          color: isHome ? "white" : "#2563eb",
+          fontWeight: "bold",
+        }}
+      >
+        🛍 상품목록
+      </Link>
+      <Link
+        to="/cart"
+        style={{
+          textDecoration: "none",
+          color: isHome ? "white" : "#2563eb",
+          fontWeight: "bold",
+        }}
+      >
+        🛒 장바구니
+      </Link>
+      <Link
+        to="/admin"
+        style={{
+          textDecoration: "none",
+          color: isHome ? "white" : "#2563eb",
+          fontWeight: "bold",
+        }}
+      >
+        ⚙ 관리자
+      </Link>
+    </nav>
+  );
+}
+
 function App() {
   return (
     <Router>
-      {/* 🔹 공통 네비게이션 */}
-      <nav
-        style={{
-          padding: "12px 20px",
-          backgroundColor: "#f9fafb",
-          borderBottom: "1px solid #ddd",
-          display: "flex",
-          justifyContent: "center",
-          gap: "20px",
-        }}
-      >
-        <Link
-          to="/products"
-          style={{
-            textDecoration: "none",
-            color: "#2563eb",
-            fontWeight: "bold",
-          }}
-        >
-          🛍 상품목록
-        </Link>
-        <Link
-          to="/cart"
-          style={{
-            textDecoration: "none",
-            color: "#2563eb",
-            fontWeight: "bold",
-          }}
-        >
-          🛒 장바구니
-        </Link>
-        <Link
-          to="/admin"
-          style={{
-            textDecoration: "none",
-            color: "#2563eb",
-            fontWeight: "bold",
-          }}
-        >
-          ⚙ 관리자
-        </Link>
-      </nav>
-
       {/* 🔹 라우팅 설정 */}
       <Routes>
-        {/* ✅ 홈 (메인 배너, 등) */}
-        <Route path="/" element={<MainLayout />} />
+        {/* ✅ 홈 (메인 배너 등) */}
+        <Route
+          path="/"
+          element={
+            <>
+              <MainLayout />
+              {/* ✅ 배경 밑으로 네비게이션 배치 */}
+              <div
+                style={{
+                  marginTop: "-80px",
+                  position: "relative",
+                  zIndex: 10,
+                }}
+              >
+                <Navigation />
+              </div>
+            </>
+          }
+        />
 
         {/* ✅ CleanLayout 하위 라우트들 */}
-        <Route element={<CleanLayout />}>
+        <Route
+          element={
+            <>
+              <Navigation />
+              <CleanLayout />
+            </>
+          }
+        >
           <Route path="/products" element={<ProductList />} />
-          {/* ✅ 상품 상세페이지 경로 수정 (/product → /products) */}
           <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/admin" element={<Admin />} />
