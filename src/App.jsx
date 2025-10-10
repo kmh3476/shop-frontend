@@ -44,11 +44,12 @@ function Navigation() {
       ? "rgba(0,0,0,0.75)"
       : "rgba(255,255,255,0.95)",
     borderRadius: "30px",
-    padding: isMobile ? "60px 70px" : "16px 20px", // ✅ 터치 영역 확 크게
-    backdropFilter: "blur(10px)",
-    boxShadow: "0 6px 18px rgba(0,0,0,0.4)",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
+    padding: isMobile ? "60px 70px" : "12px 16px",
+width: isMobile ? "90px" : "26px",
+height: isMobile ? "12px" : "3px",
+marginBottom: isMobile ? "20px" : "10px",
+borderRadius: "6px",
+transform: isOpen ? "rotate(45deg) translateY(25px)" : "none",
   }}
 >
   <div
