@@ -67,8 +67,8 @@ function Navigation() {
             borderRadius: "18px",
             transformOrigin: "center",
             transform: isOpen
-              ? "rotate(45deg) translate(12px, 12px)" // ✅ X 정렬 수정
-              : "none",
+  ? "rotate(45deg) translateY(8px)"
+  : "none",
             transition: "transform 0.4s ease",
           }}
         />
@@ -91,9 +91,9 @@ function Navigation() {
             backgroundColor: isHome ? "white" : "#333",
             borderRadius: "8px",
             transformOrigin: "center",
-            transform: isOpen
-              ? "rotate(-45deg) translate(12px, -12px)" // ✅ X 정렬 수정
-              : "none",
+           transform: isOpen
+  ? "rotate(-45deg) translateY(-8px)"
+  : "none",
             transition: "transform 0.4s ease",
           }}
         />
