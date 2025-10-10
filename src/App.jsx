@@ -32,58 +32,59 @@ function Navigation() {
 
   return (
     <>
-      {/* 🔹 햄버거 버튼 */}
-      <div
-        onClick={() => setIsOpen(!isOpen)}
-        style={{
-          position: "fixed",
-          top: isMobile ? "20px" : "20px",
-          right: isMobile ? "20px" : "24px",
-          zIndex: 120,
-          backgroundColor: isHome
-            ? "rgba(0,0,0,0.7)"
-            : "rgba(255,255,255,0.9)",
-          borderRadius: "18px",
-          padding: isMobile ? "26px 30px" : "12px 16px",
-          backdropFilter: "blur(8px)",
-          boxShadow: "0 3px 10px rgba(0,0,0,0.25)",
-          cursor: "pointer",
-          transition: "all 0.3s ease",
-        }}
-      >
-        <div
-          style={{
-            width: isMobile ? "48px" : "26px",
-            height: isMobile ? "6px" : "3px",
-            backgroundColor: isHome ? "white" : "#333",
-            marginBottom: "10px",
-            borderRadius: "3px",
-            transform: isOpen ? "rotate(45deg) translateY(14px)" : "none",
-            transition: "all 0.3s ease",
-          }}
-        />
-        <div
-          style={{
-            width: isMobile ? "48px" : "26px",
-            height: isMobile ? "6px" : "3px",
-            backgroundColor: isHome ? "white" : "#333",
-            marginBottom: "10px",
-            borderRadius: "3px",
-            opacity: isOpen ? 0 : 1,
-            transition: "opacity 0.3s ease",
-          }}
-        />
-        <div
-          style={{
-            width: isMobile ? "48px" : "26px",
-            height: isMobile ? "6px" : "3px",
-            backgroundColor: isHome ? "white" : "#333",
-            borderRadius: "3px",
-            transform: isOpen ? "rotate(-45deg) translateY(-14px)" : "none",
-            transition: "all 0.3s ease",
-          }}
-        />
-      </div>
+      // ✅ 햄버거 버튼
+<div
+  onClick={() => setIsOpen(!isOpen)}
+  style={{
+    position: "fixed",
+    top: isMobile ? "28px" : "20px",
+    right: isMobile ? "28px" : "24px",
+    zIndex: 120,
+    backgroundColor: isHome
+      ? "rgba(0,0,0,0.7)"
+      : "rgba(255,255,255,0.9)",
+    borderRadius: "22px",
+    padding: isMobile ? "38px 42px" : "12px 16px", // ✅ 버튼 터치 영역 커짐
+    backdropFilter: "blur(8px)",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.35)",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+  }}
+>
+  <div
+    style={{
+      width: isMobile ? "60px" : "26px", // ✅ 막대 더 두껍게
+      height: isMobile ? "8px" : "3px",
+      backgroundColor: isHome ? "white" : "#333",
+      marginBottom: isMobile ? "14px" : "10px",
+      borderRadius: "4px",
+      transform: isOpen ? "rotate(45deg) translateY(18px)" : "none", // ✅ 이동 거리 조정
+      transition: "all 0.3s ease",
+    }}
+  />
+  <div
+    style={{
+      width: isMobile ? "60px" : "26px",
+      height: isMobile ? "8px" : "3px",
+      backgroundColor: isHome ? "white" : "#333",
+      marginBottom: isMobile ? "14px" : "10px",
+      borderRadius: "4px",
+      opacity: isOpen ? 0 : 1,
+      transition: "opacity 0.3s ease",
+    }}
+  />
+  <div
+    style={{
+      width: isMobile ? "60px" : "26px",
+      height: isMobile ? "8px" : "3px",
+      backgroundColor: isHome ? "white" : "#333",
+      borderRadius: "4px",
+      transform: isOpen ? "rotate(-45deg) translateY(-18px)" : "none", // ✅ 이동 거리 조정
+      transition: "all 0.3s ease",
+    }}
+  />
+</div>
+
 
       {/* 🔹 오른쪽 슬라이드 메뉴 */}
       <div
