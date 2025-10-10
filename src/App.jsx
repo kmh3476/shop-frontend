@@ -53,14 +53,14 @@ function Navigation() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: isMobile ? "30px" : "6px", // 줄 간격 넓힘
+          gap: isMobile ? "60px" : "12px", // 줄 간격 넓힘
         }}
       >
         {/* ✅ 햄버거 막대 1 */}
         <div
           style={{
-            width: isMobile ? "180px" : "30px",
-            height: isMobile ? "24px" : "4px",
+            width: isMobile ? "180px" : "60px",
+            height: isMobile ? "14px" : "8px",
             backgroundColor: isHome ? "white" : "#333",
             borderRadius: "12px",
             transformOrigin: "center",
@@ -73,8 +73,8 @@ function Navigation() {
         {/* ✅ 햄버거 막대 2 (중간줄) */}
         <div
           style={{
-            width: isMobile ? "180px" : "30px",
-            height: isMobile ? "24px" : "4px",
+            width: isMobile ? "180px" : "60px",
+            height: isMobile ? "14px" : "8px",
             backgroundColor: isHome ? "white" : "#333",
             borderRadius: "12px",
             opacity: isOpen ? 0 : 1,
@@ -84,8 +84,8 @@ function Navigation() {
         {/* ✅ 햄버거 막대 3 */}
         <div
           style={{
-            width: isMobile ? "180px" : "30px",
-            height: isMobile ? "24px" : "4px",
+            width: isMobile ? "180px" : "60px",
+            height: isMobile ? "14px" : "8px",
             backgroundColor: isHome ? "white" : "#333",
             borderRadius: "12px",
             transformOrigin: "center",
