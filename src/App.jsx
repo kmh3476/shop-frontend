@@ -30,6 +30,11 @@ function Navigation() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // ✅ 메뉴 열릴 때 body 스크롤 방지
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? "hidden" : "auto";
+  }, [isOpen]);
+
   return (
     <>
       {/* 🔹 햄버거 버튼 */}
@@ -37,66 +42,62 @@ function Navigation() {
         onClick={() => setIsOpen(!isOpen)}
         style={{
           position: "fixed",
-          top: isMobile ? "20px" : "20px",
-          right: isMobile ? "20px" : "24px",
+          top: isMobile ? "22px" : "20px",
+          right: isMobile ? "22px" : "24px",
           zIndex: 120,
-          backgroundColor: isHome
-            ? "rgba(0,0,0,0.7)"
-            : "rgba(255,255,255,0.9)",
-          borderRadius: "18px",
-          padding: isMobile ? "26px 30px" : "12px 16px",
-          backdropFilter: "blur(8px)",
-          boxShadow: "0 3px 10px rgba(0,0,0,0.25)",
+          backgroundColor: "rgba(0,0,0,0.75)",
+          borderRadius: "22px",
+          padding: isMobile ? "34px 38px" : "14px 18px",
+          backdropFilter: "blur(10px)",
+          boxShadow: "0 3px 10px rgba(0,0,0,0.3)",
           cursor: "pointer",
           transition: "all 0.3s ease",
         }}
       >
         <div
           style={{
-            width: isMobile ? "48px" : "26px",
-            height: isMobile ? "6px" : "3px",
-            backgroundColor: isHome ? "white" : "#333",
-            marginBottom: "10px",
-            borderRadius: "3px",
-            transform: isOpen ? "rotate(45deg) translateY(14px)" : "none",
+            width: isMobile ? "58px" : "28px",
+            height: isMobile ? "8px" : "3px",
+            backgroundColor: "white",
+            marginBottom: "12px",
+            borderRadius: "4px",
+            transform: isOpen ? "rotate(45deg) translateY(18px)" : "none",
             transition: "all 0.3s ease",
           }}
         />
         <div
           style={{
-            width: isMobile ? "48px" : "26px",
-            height: isMobile ? "6px" : "3px",
-            backgroundColor: isHome ? "white" : "#333",
-            marginBottom: "10px",
-            borderRadius: "3px",
+            width: isMobile ? "58px" : "28px",
+            height: isMobile ? "8px" : "3px",
+            backgroundColor: "white",
+            marginBottom: "12px",
+            borderRadius: "4px",
             opacity: isOpen ? 0 : 1,
             transition: "opacity 0.3s ease",
           }}
         />
         <div
           style={{
-            width: isMobile ? "48px" : "26px",
-            height: isMobile ? "6px" : "3px",
-            backgroundColor: isHome ? "white" : "#333",
-            borderRadius: "3px",
-            transform: isOpen ? "rotate(-45deg) translateY(-14px)" : "none",
+            width: isMobile ? "58px" : "28px",
+            height: isMobile ? "8px" : "3px",
+            backgroundColor: "white",
+            borderRadius: "4px",
+            transform: isOpen ? "rotate(-45deg) translateY(-18px)" : "none",
             transition: "all 0.3s ease",
           }}
         />
       </div>
 
-      {/* 🔹 오른쪽 슬라이드 메뉴 */}
+      {/* 🔹 오른쪽 전체 슬라이드 메뉴 */}
       <div
         style={{
           position: "fixed",
           top: 0,
           right: 0,
-          width: isOpen ? "66vw" : "0", // ✅ 가로로 3분의 2 차지
-          height: "100vh", // ✅ 세로 꽉
+          width: "100vw",
+          height: "100vh",
           backgroundColor: "rgba(0,0,0,0.95)",
           zIndex: 100,
-          borderTopLeftRadius: "30px",
-          borderBottomLeftRadius: "30px",
           transform: isOpen ? "translateX(0)" : "translateX(100%)",
           transition: "transform 0.4s ease",
           display: "flex",
@@ -107,31 +108,29 @@ function Navigation() {
       >
         <nav style={{ textAlign: "center", width: "100%" }}>
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            <li style={{ marginBottom: isMobile ? "46px" : "30px" }}>
+            <li style={{ marginBottom: isMobile ? "52px" : "34px" }}>
               <Link
                 to="/products"
                 onClick={() => setIsOpen(false)}
                 style={{
-                  fontSize: isMobile ? "38px" : "26px",
+                  fontSize: isMobile ? "42px" : "28px",
                   color: "white",
                   textDecoration: "none",
                   fontWeight: "600",
-                  transition: "color 0.2s ease",
                 }}
               >
                 상품목록
               </Link>
             </li>
-            <li style={{ marginBottom: isMobile ? "46px" : "30px" }}>
+            <li style={{ marginBottom: isMobile ? "52px" : "34px" }}>
               <Link
                 to="/cart"
                 onClick={() => setIsOpen(false)}
                 style={{
-                  fontSize: isMobile ? "38px" : "26px",
+                  fontSize: isMobile ? "42px" : "28px",
                   color: "white",
                   textDecoration: "none",
                   fontWeight: "600",
-                  transition: "color 0.2s ease",
                 }}
               >
                 장바구니
@@ -142,11 +141,10 @@ function Navigation() {
                 to="/admin"
                 onClick={() => setIsOpen(false)}
                 style={{
-                  fontSize: isMobile ? "38px" : "26px",
+                  fontSize: isMobile ? "42px" : "28px",
                   color: "white",
                   textDecoration: "none",
                   fontWeight: "600",
-                  transition: "color 0.2s ease",
                 }}
               >
                 관리자
@@ -156,7 +154,7 @@ function Navigation() {
         </nav>
       </div>
 
-      {/* 🔹 어두운 배경 (남은 왼쪽 영역) */}
+      {/* 🔹 어두운 배경 클릭 시 닫기 */}
       {isOpen && (
         <div
           onClick={() => setIsOpen(false)}
@@ -164,12 +162,10 @@ function Navigation() {
             position: "fixed",
             top: 0,
             left: 0,
-            width: "34vw",
+            width: "100vw",
             height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.5)",
-            backdropFilter: "blur(3px)",
+            backgroundColor: "rgba(0,0,0,0.6)",
             zIndex: 90,
-            transition: "all 0.3s ease",
           }}
         />
       )}
