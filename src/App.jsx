@@ -61,10 +61,10 @@ function Navigation() {
         {/* ✅ 햄버거 막대 1 */}
         <div
           style={{
-            width: isMobile ? "140px" : "40px",
-            height: isMobile ? "18px" : "5px",
+            width: isMobile ? "140px" : "50px",
+            height: isMobile ? "18px" : "7px",
             backgroundColor: isHome ? "white" : "#333",
-            borderRadius: "8px",
+            borderRadius: "18px",
             transformOrigin: "center",
             transform: isOpen
               ? "rotate(45deg) translate(12px, 12px)" // ✅ X 정렬 수정
@@ -75,8 +75,8 @@ function Navigation() {
         {/* ✅ 햄버거 막대 2 (중간줄) */}
         <div
           style={{
-            width: isMobile ? "140px" : "40px",
-            height: isMobile ? "18px" : "5px",
+            width: isMobile ? "140px" : "50px",
+            height: isMobile ? "18px" : "7px",
             backgroundColor: isHome ? "white" : "#333",
             borderRadius: "8px",
             opacity: isOpen ? 0 : 1,
@@ -86,8 +86,8 @@ function Navigation() {
         {/* ✅ 햄버거 막대 3 */}
         <div
           style={{
-            width: isMobile ? "140px" : "40px",
-            height: isMobile ? "18px" : "5px",
+            width: isMobile ? "140px" : "50px",
+            height: isMobile ? "18px" : "7px",
             backgroundColor: isHome ? "white" : "#333",
             borderRadius: "8px",
             transformOrigin: "center",
