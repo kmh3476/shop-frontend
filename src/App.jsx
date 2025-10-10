@@ -67,7 +67,7 @@ function Navigation() {
             borderRadius: "18px",
             transformOrigin: "center",
             transform: isOpen
-              ? "rotate(34deg) translate(12px, 12px)" // ✅ X 정렬 수정
+              ? "rotate(45deg) translate(26px, 12px)" // ✅ X 정렬 수정
               : "none",
             transition: "transform 0.4s ease",
           }}
@@ -92,7 +92,7 @@ function Navigation() {
             borderRadius: "8px",
             transformOrigin: "center",
             transform: isOpen
-              ? "rotate(-34deg) translate(12px, -12px)" // ✅ X 정렬 수정
+              ? "rotate(-45deg) translate(26px, -12px)" // ✅ X 정렬 수정
               : "none",
             transition: "transform 0.4s ease",
           }}
