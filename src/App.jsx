@@ -48,7 +48,6 @@ function Navigation() {
 width: isMobile ? "90px" : "26px",
 height: isMobile ? "12px" : "3px",
 marginBottom: isMobile ? "20px" : "10px",
-borderRadius: "6px",
 transform: isOpen ? "rotate(45deg) translateY(25px)" : "none",
   }}
 >
