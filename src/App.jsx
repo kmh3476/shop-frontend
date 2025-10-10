@@ -37,14 +37,16 @@ function Navigation() {
         onClick={() => setIsOpen(!isOpen)}
         style={{
           position: "fixed",
-          top: isMobile ? "80px" : "20px", // 위치도 약간 내려줌
-          right: isMobile ? "80px" : "24px",
+          top: isMobile ? "60px" : "20px",
+          right: isMobile ? "60px" : "24px",
           zIndex: 120,
           backgroundColor: isHome
-            ? "rgba(0,0,0,0.75)"
-            : "rgba(255,255,255,0.95)",
-          borderRadius: "50%",
-          padding: isMobile ? "120px 140px" : "16px 20px", // ✅ 6배 커짐
+            ? "rgba(0,0,0,0.8)"
+            : "rgba(255,255,255,0.9)",
+          borderRadius: "30px", // ✅ 둥근모서리 정사각형
+          padding: isMobile ? "80px" : "20px",
+          width: isMobile ? "200px" : "80px",
+          height: isMobile ? "200px" : "80px",
           backdropFilter: "blur(10px)",
           boxShadow: "0 6px 18px rgba(0,0,0,0.4)",
           cursor: "pointer",
@@ -53,19 +55,19 @@ function Navigation() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: isMobile ? "60px" : "12px", // 줄 간격 넓힘
+          gap: isMobile ? "36px" : "10px",
         }}
       >
         {/* ✅ 햄버거 막대 1 */}
         <div
           style={{
-            width: isMobile ? "180px" : "60px",
-            height: isMobile ? "14px" : "8px",
+            width: isMobile ? "140px" : "40px",
+            height: isMobile ? "18px" : "5px",
             backgroundColor: isHome ? "white" : "#333",
-            borderRadius: "12px",
+            borderRadius: "8px",
             transformOrigin: "center",
             transform: isOpen
-              ? "rotate(45deg) translate(25px, 25px)"
+              ? "rotate(45deg) translate(12px, 12px)" // ✅ X 정렬 수정
               : "none",
             transition: "transform 0.4s ease",
           }}
@@ -73,10 +75,10 @@ function Navigation() {
         {/* ✅ 햄버거 막대 2 (중간줄) */}
         <div
           style={{
-            width: isMobile ? "180px" : "60px",
-            height: isMobile ? "14px" : "8px",
+            width: isMobile ? "140px" : "40px",
+            height: isMobile ? "18px" : "5px",
             backgroundColor: isHome ? "white" : "#333",
-            borderRadius: "12px",
+            borderRadius: "8px",
             opacity: isOpen ? 0 : 1,
             transition: "opacity 0.3s ease",
           }}
@@ -84,13 +86,13 @@ function Navigation() {
         {/* ✅ 햄버거 막대 3 */}
         <div
           style={{
-            width: isMobile ? "180px" : "60px",
-            height: isMobile ? "14px" : "8px",
+            width: isMobile ? "140px" : "40px",
+            height: isMobile ? "18px" : "5px",
             backgroundColor: isHome ? "white" : "#333",
-            borderRadius: "12px",
+            borderRadius: "8px",
             transformOrigin: "center",
             transform: isOpen
-              ? "rotate(-45deg) translate(25px, -25px)"
+              ? "rotate(-45deg) translate(12px, -12px)" // ✅ X 정렬 수정
               : "none",
             transition: "transform 0.4s ease",
           }}
