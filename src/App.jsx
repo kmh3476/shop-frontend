@@ -32,58 +32,59 @@ function Navigation() {
 
   return (
     <>
-      // ✅ 햄버거 버튼
+{/* 🔹 햄버거 버튼 */}
 <div
   onClick={() => setIsOpen(!isOpen)}
   style={{
     position: "fixed",
-    top: isMobile ? "28px" : "20px",
-    right: isMobile ? "28px" : "24px",
+    top: isMobile ? "40px" : "20px",
+    right: isMobile ? "40px" : "24px",
     zIndex: 120,
     backgroundColor: isHome
-      ? "rgba(0,0,0,0.7)"
-      : "rgba(255,255,255,0.9)",
-    borderRadius: "22px",
-    padding: isMobile ? "38px 42px" : "12px 16px", // ✅ 버튼 터치 영역 커짐
-    backdropFilter: "blur(8px)",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.35)",
+      ? "rgba(0,0,0,0.75)"
+      : "rgba(255,255,255,0.95)",
+    borderRadius: "30px",
+    padding: isMobile ? "60px 70px" : "16px 20px", // ✅ 터치 영역 확 크게
+    backdropFilter: "blur(10px)",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.4)",
     cursor: "pointer",
     transition: "all 0.3s ease",
   }}
 >
   <div
     style={{
-      width: isMobile ? "60px" : "26px", // ✅ 막대 더 두껍게
-      height: isMobile ? "8px" : "3px",
+      width: isMobile ? "90px" : "30px", // ✅ 줄 굵고 길게
+      height: isMobile ? "12px" : "4px",
       backgroundColor: isHome ? "white" : "#333",
-      marginBottom: isMobile ? "14px" : "10px",
-      borderRadius: "4px",
-      transform: isOpen ? "rotate(45deg) translateY(18px)" : "none", // ✅ 이동 거리 조정
+      marginBottom: isMobile ? "20px" : "10px",
+      borderRadius: "6px",
+      transform: isOpen ? "rotate(45deg) translateY(25px)" : "none",
       transition: "all 0.3s ease",
     }}
   />
   <div
     style={{
-      width: isMobile ? "60px" : "26px",
-      height: isMobile ? "8px" : "3px",
+      width: isMobile ? "90px" : "30px",
+      height: isMobile ? "12px" : "4px",
       backgroundColor: isHome ? "white" : "#333",
-      marginBottom: isMobile ? "14px" : "10px",
-      borderRadius: "4px",
+      marginBottom: isMobile ? "20px" : "10px",
+      borderRadius: "6px",
       opacity: isOpen ? 0 : 1,
       transition: "opacity 0.3s ease",
     }}
   />
   <div
     style={{
-      width: isMobile ? "60px" : "26px",
-      height: isMobile ? "8px" : "3px",
+      width: isMobile ? "90px" : "30px",
+      height: isMobile ? "12px" : "4px",
       backgroundColor: isHome ? "white" : "#333",
-      borderRadius: "4px",
-      transform: isOpen ? "rotate(-45deg) translateY(-18px)" : "none", // ✅ 이동 거리 조정
+      borderRadius: "6px",
+      transform: isOpen ? "rotate(-45deg) translateY(-25px)" : "none",
       transition: "all 0.3s ease",
     }}
   />
 </div>
+
 
 
       {/* 🔹 오른쪽 슬라이드 메뉴 */}
