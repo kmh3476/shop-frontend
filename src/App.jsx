@@ -37,50 +37,62 @@ function Navigation() {
         onClick={() => setIsOpen(!isOpen)}
         style={{
           position: "fixed",
-          top: isMobile ? "60px" : "20px",
-          right: isMobile ? "60px" : "24px",
+          top: isMobile ? "80px" : "20px", // 위치도 약간 내려줌
+          right: isMobile ? "80px" : "24px",
           zIndex: 120,
           backgroundColor: isHome
             ? "rgba(0,0,0,0.75)"
             : "rgba(255,255,255,0.95)",
-          borderRadius: isMobile ? "60px" : "30px",
-          padding: isMobile ? "120px 140px" : "16px 20px", // ✅ 모바일 3배 확대
-          backdropFilter: "blur(12px)",
-          boxShadow: "0 8px 25px rgba(0,0,0,0.5)",
+          borderRadius: "50%",
+          padding: isMobile ? "120px 140px" : "16px 20px", // ✅ 6배 커짐
+          backdropFilter: "blur(10px)",
+          boxShadow: "0 6px 18px rgba(0,0,0,0.4)",
           cursor: "pointer",
           transition: "all 0.3s ease",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: isMobile ? "30px" : "6px", // 줄 간격 넓힘
         }}
       >
+        {/* ✅ 햄버거 막대 1 */}
         <div
           style={{
-            width: isMobile ? "270px" : "30px", // ✅ 3배 길이
-            height: isMobile ? "36px" : "4px", // ✅ 3배 두께
+            width: isMobile ? "180px" : "30px",
+            height: isMobile ? "24px" : "4px",
             backgroundColor: isHome ? "white" : "#333",
-            marginBottom: isMobile ? "60px" : "10px", // ✅ 간격 3배
-            borderRadius: isMobile ? "18px" : "6px",
-            transform: isOpen ? "rotate(45deg) translateY(75px)" : "none", // ✅ 회전 이동값 조정
-            transition: "all 0.3s ease",
+            borderRadius: "12px",
+            transformOrigin: "center",
+            transform: isOpen
+              ? "rotate(45deg) translate(25px, 25px)"
+              : "none",
+            transition: "transform 0.4s ease",
           }}
         />
+        {/* ✅ 햄버거 막대 2 (중간줄) */}
         <div
           style={{
-            width: isMobile ? "270px" : "30px",
-            height: isMobile ? "36px" : "4px",
+            width: isMobile ? "180px" : "30px",
+            height: isMobile ? "24px" : "4px",
             backgroundColor: isHome ? "white" : "#333",
-            marginBottom: isMobile ? "60px" : "10px",
-            borderRadius: isMobile ? "18px" : "6px",
+            borderRadius: "12px",
             opacity: isOpen ? 0 : 1,
             transition: "opacity 0.3s ease",
           }}
         />
+        {/* ✅ 햄버거 막대 3 */}
         <div
           style={{
-            width: isMobile ? "270px" : "30px",
-            height: isMobile ? "36px" : "4px",
+            width: isMobile ? "180px" : "30px",
+            height: isMobile ? "24px" : "4px",
             backgroundColor: isHome ? "white" : "#333",
-            borderRadius: isMobile ? "18px" : "6px",
-            transform: isOpen ? "rotate(-45deg) translateY(-75px)" : "none",
-            transition: "all 0.3s ease",
+            borderRadius: "12px",
+            transformOrigin: "center",
+            transform: isOpen
+              ? "rotate(-45deg) translate(25px, -25px)"
+              : "none",
+            transition: "transform 0.4s ease",
           }}
         />
       </div>
@@ -91,12 +103,12 @@ function Navigation() {
           position: "fixed",
           top: 0,
           right: 0,
-          width: isOpen ? "66vw" : "0", // ✅ 가로 3분의 2
+          width: isOpen ? "66vw" : "0",
           height: "100vh",
-          backgroundColor: "rgba(0,0,0,0.85)", // ✅ 글자 있는 영역만 반투명하게
+          backgroundColor: "rgba(0,0,0,0.85)",
           zIndex: 100,
-          borderTopLeftRadius: "60px",
-          borderBottomLeftRadius: "60px",
+          borderTopLeftRadius: "30px",
+          borderBottomLeftRadius: "30px",
           transform: isOpen ? "translateX(0)" : "translateX(100%)",
           transition: "transform 0.4s ease",
           display: "flex",
@@ -107,32 +119,30 @@ function Navigation() {
       >
         <nav style={{ textAlign: "center", width: "100%" }}>
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            <li style={{ marginBottom: isMobile ? "120px" : "30px" }}>
+            <li style={{ marginBottom: isMobile ? "90px" : "30px" }}>
               <Link
                 to="/products"
                 onClick={() => setIsOpen(false)}
                 style={{
-                  fontSize: isMobile ? "114px" : "26px", // ✅ 메뉴 글씨 3배
+                  fontSize: isMobile ? "76px" : "26px",
                   color: "white",
                   textDecoration: "none",
-                  fontWeight: "700",
-                  letterSpacing: "3px",
+                  fontWeight: "600",
                   transition: "color 0.2s ease",
                 }}
               >
                 상품목록
               </Link>
             </li>
-            <li style={{ marginBottom: isMobile ? "120px" : "30px" }}>
+            <li style={{ marginBottom: isMobile ? "90px" : "30px" }}>
               <Link
                 to="/cart"
                 onClick={() => setIsOpen(false)}
                 style={{
-                  fontSize: isMobile ? "114px" : "26px",
+                  fontSize: isMobile ? "76px" : "26px",
                   color: "white",
                   textDecoration: "none",
-                  fontWeight: "700",
-                  letterSpacing: "3px",
+                  fontWeight: "600",
                   transition: "color 0.2s ease",
                 }}
               >
@@ -144,11 +154,10 @@ function Navigation() {
                 to="/admin"
                 onClick={() => setIsOpen(false)}
                 style={{
-                  fontSize: isMobile ? "114px" : "26px",
+                  fontSize: isMobile ? "76px" : "26px",
                   color: "white",
                   textDecoration: "none",
-                  fontWeight: "700",
-                  letterSpacing: "3px",
+                  fontWeight: "600",
                   transition: "color 0.2s ease",
                 }}
               >
