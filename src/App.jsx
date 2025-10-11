@@ -96,11 +96,8 @@ function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  // ✅ 반응형 감지
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -133,6 +130,7 @@ function Navigation() {
           gap: isMobile ? "36px" : "20px",
         }}
       >
+        {/* ✅ 햄버거 아이콘 */}
         <div
           style={{
             width: isMobile ? "140px" : "70px",
@@ -177,59 +175,70 @@ function Navigation() {
           position: "fixed",
           top: 0,
           right: 0,
-          width: isOpen ? "66vw" : "0",
+          width: isOpen ? "80vw" : "0",
           height: "100vh",
-          backgroundColor: "rgba(0,0,0,0.85)",
+          backgroundColor: "white",
+          color: "black",
           zIndex: 100,
           borderTopLeftRadius: "30px",
           borderBottomLeftRadius: "30px",
           transform: isOpen ? "translateX(0)" : "translateX(100%)",
           transition: "transform 0.4s ease",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "flex-start",
           overflow: "hidden",
+          paddingTop: "80px",
         }}
       >
-        <nav style={{ textAlign: "center", width: "100%" }}>
-          <ul
-            style={{
-              listStyle: "none",
-              padding: 0,
-              margin: 0,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            {/* 🔹 로그인 / 회원가입을 위로 올림 */}
+        {/* 🔸 상단 로그인/회원가입 */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "20px",
+            fontSize: "18px",
+            fontWeight: "600",
+            borderBottom: "1px solid #ccc",
+            paddingBottom: "16px",
+            width: "80%",
+          }}
+        >
+          <Link to="/login" onClick={() => setIsOpen(false)}>
+            로그인
+          </Link>
+          <span>|</span>
+          <Link to="/signup" onClick={() => setIsOpen(false)}>
+            회원가입
+          </Link>
+        </div>
+
+        {/* 🔸 아래 세로 메뉴 */}
+        <nav style={{ marginTop: "40px", width: "80%", textAlign: "left" }}>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
             {[
-              { path: "/login", label: "로그인" },
-              { path: "/signup", label: "회원가입" },
-              { path: "/products", label: "상품목록" },
+              { path: "/products", label: "상품" },
               { path: "/cart", label: "장바구니" },
               { path: "/admin", label: "관리자" },
-            ].map((item, idx) => (
+              { path: "/style", label: "스타일룸" },
+              { path: "/sale", label: "이벤트/세일" },
+              { path: "/store", label: "매장안내" },
+            ].map((item) => (
               <li
                 key={item.path}
                 style={{
-                  marginBottom: isMobile
-                    ? idx < 2
-                      ? "50px"
-                      : "90px"
-                    : idx < 2
-                    ? "20px"
-                    : "30px",
+                  marginBottom: "24px",
+                  fontSize: "22px",
+                  fontWeight: "700",
                 }}
               >
                 <Link
                   to={item.path}
                   onClick={() => setIsOpen(false)}
                   style={{
-                    fontSize: isMobile ? "76px" : "26px",
-                    color: "white",
+                    color: "black",
                     textDecoration: "none",
-                    fontWeight: "600",
                     transition: "color 0.2s ease",
                   }}
                 >
@@ -239,10 +248,26 @@ function Navigation() {
             ))}
           </ul>
         </nav>
+
+        {/* 🔸 하단 고객센터 */}
+        <div
+          style={{
+            marginTop: "auto",
+            marginBottom: "40px",
+            textAlign: "center",
+            color: "#555",
+            fontSize: "16px",
+            lineHeight: "1.6",
+          }}
+        >
+          <p>고객센터</p>
+          <p>제휴 / 입점안내</p>
+        </div>
       </div>
     </>
   );
 }
+
 
 function App() {
   return (
