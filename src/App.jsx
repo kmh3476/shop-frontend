@@ -14,7 +14,7 @@ import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import { useState, useEffect } from "react";
 
-// ✅ 새로 추가: 로그인 / 회원가입 페이지
+// ✅ 로그인 페이지
 function Login() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-900 font-['Pretendard'] px-6">
@@ -49,6 +49,7 @@ function Login() {
   );
 }
 
+// ✅ 회원가입 페이지
 function Signup() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-900 font-['Pretendard'] px-6">
@@ -132,7 +133,6 @@ function Navigation() {
           gap: isMobile ? "36px" : "20px",
         }}
       >
-        {/* ✅ 햄버거 막대 */}
         <div
           style={{
             width: isMobile ? "140px" : "70px",
@@ -192,17 +192,35 @@ function Navigation() {
         }}
       >
         <nav style={{ textAlign: "center", width: "100%" }}>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          <ul
+            style={{
+              listStyle: "none",
+              padding: 0,
+              margin: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            {/* 🔹 로그인 / 회원가입을 위로 올림 */}
             {[
+              { path: "/login", label: "로그인" },
+              { path: "/signup", label: "회원가입" },
               { path: "/products", label: "상품목록" },
               { path: "/cart", label: "장바구니" },
               { path: "/admin", label: "관리자" },
-              { path: "/login", label: "로그인" },
-              { path: "/signup", label: "회원가입" },
-            ].map((item) => (
+            ].map((item, idx) => (
               <li
                 key={item.path}
-                style={{ marginBottom: isMobile ? "90px" : "30px" }}
+                style={{
+                  marginBottom: isMobile
+                    ? idx < 2
+                      ? "50px"
+                      : "90px"
+                    : idx < 2
+                    ? "20px"
+                    : "30px",
+                }}
               >
                 <Link
                   to={item.path}
