@@ -200,7 +200,7 @@ function Navigation() {
             gap: "20px",
             fontSize: "18px",
             fontWeight: "600",
-            borderBottom: "1px solid #ccc",
+            borderBottom: "1px solid #333",
             paddingBottom: "16px",
             width: "80%",
           }}
