@@ -14,6 +14,80 @@ import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import { useState, useEffect } from "react";
 
+// ✅ 새로 추가: 로그인 / 회원가입 페이지
+function Login() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-900 font-['Pretendard'] px-6">
+      <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md">
+        <h2 className="text-3xl font-bold mb-6 text-center">로그인</h2>
+        <form className="flex flex-col gap-4">
+          <input
+            type="email"
+            placeholder="이메일"
+            className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-gray-600"
+          />
+          <input
+            type="password"
+            placeholder="비밀번호"
+            className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-gray-600"
+          />
+          <button
+            type="submit"
+            className="bg-black text-white py-3 rounded-lg mt-2 hover:bg-gray-800 transition"
+          >
+            로그인
+          </button>
+        </form>
+        <p className="mt-4 text-center text-gray-500">
+          계정이 없으신가요?{" "}
+          <Link to="/signup" className="text-black font-semibold">
+            회원가입
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Signup() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-900 font-['Pretendard'] px-6">
+      <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md">
+        <h2 className="text-3xl font-bold mb-6 text-center">회원가입</h2>
+        <form className="flex flex-col gap-4">
+          <input
+            type="text"
+            placeholder="이름"
+            className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-gray-600"
+          />
+          <input
+            type="email"
+            placeholder="이메일"
+            className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-gray-600"
+          />
+          <input
+            type="password"
+            placeholder="비밀번호"
+            className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-gray-600"
+          />
+          <button
+            type="submit"
+            className="bg-black text-white py-3 rounded-lg mt-2 hover:bg-gray-800 transition"
+          >
+            회원가입
+          </button>
+        </form>
+        <p className="mt-4 text-center text-gray-500">
+          이미 계정이 있으신가요?{" "}
+          <Link to="/login" className="text-black font-semibold">
+            로그인
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ✅ 햄버거 메뉴 컴포넌트
 function Navigation() {
   const location = useLocation();
@@ -43,7 +117,7 @@ function Navigation() {
           backgroundColor: isHome
             ? "rgba(0,0,0,0.8)"
             : "rgba(255,255,255,0.9)",
-          borderRadius: "30px", // ✅ 둥근모서리 정사각형
+          borderRadius: "30px",
           padding: isMobile ? "80px" : "20px",
           width: isMobile ? "200px" : "100px",
           height: isMobile ? "200px" : "100px",
@@ -58,7 +132,7 @@ function Navigation() {
           gap: isMobile ? "36px" : "20px",
         }}
       >
-        {/* ✅ 햄버거 막대 1 */}
+        {/* ✅ 햄버거 막대 */}
         <div
           style={{
             width: isMobile ? "140px" : "70px",
@@ -67,23 +141,21 @@ function Navigation() {
             borderRadius: "18px",
             transformOrigin: "center",
             transform: isOpen
-              ? "rotate(45deg) translate(26px, 12px)" // ✅ X 정렬 수정
+              ? "rotate(45deg) translate(26px, 12px)"
               : "none",
             transition: "transform 0.4s ease",
           }}
         />
-        {/* ✅ 햄버거 막대 2 (중간줄) */}
         <div
           style={{
             width: isMobile ? "140px" : "70px",
-            height: isMobile ? "18px" : "10.766px",
+            height: isMobile ? "18px" : "10px",
             backgroundColor: isHome ? "white" : "#333",
             borderRadius: "8px",
             opacity: isOpen ? 0 : 1,
             transition: "opacity 0.3s ease",
           }}
         />
-        {/* ✅ 햄버거 막대 3 */}
         <div
           style={{
             width: isMobile ? "140px" : "70px",
@@ -92,14 +164,14 @@ function Navigation() {
             borderRadius: "8px",
             transformOrigin: "center",
             transform: isOpen
-              ? "rotate(-45deg) translate(26px, -12px)" // ✅ X 정렬 수정
+              ? "rotate(-45deg) translate(26px, -12px)"
               : "none",
             transition: "transform 0.4s ease",
           }}
         />
       </div>
 
-      {/* 🔹 오른쪽 슬라이드 메뉴 */}
+      {/* 🔹 슬라이드 메뉴 */}
       <div
         style={{
           position: "fixed",
@@ -121,51 +193,32 @@ function Navigation() {
       >
         <nav style={{ textAlign: "center", width: "100%" }}>
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            <li style={{ marginBottom: isMobile ? "90px" : "30px" }}>
-              <Link
-                to="/products"
-                onClick={() => setIsOpen(false)}
-                style={{
-                  fontSize: isMobile ? "76px" : "26px",
-                  color: "white",
-                  textDecoration: "none",
-                  fontWeight: "600",
-                  transition: "color 0.2s ease",
-                }}
+            {[
+              { path: "/products", label: "상품목록" },
+              { path: "/cart", label: "장바구니" },
+              { path: "/admin", label: "관리자" },
+              { path: "/login", label: "로그인" },
+              { path: "/signup", label: "회원가입" },
+            ].map((item) => (
+              <li
+                key={item.path}
+                style={{ marginBottom: isMobile ? "90px" : "30px" }}
               >
-                상품목록
-              </Link>
-            </li>
-            <li style={{ marginBottom: isMobile ? "90px" : "30px" }}>
-              <Link
-                to="/cart"
-                onClick={() => setIsOpen(false)}
-                style={{
-                  fontSize: isMobile ? "76px" : "26px",
-                  color: "white",
-                  textDecoration: "none",
-                  fontWeight: "600",
-                  transition: "color 0.2s ease",
-                }}
-              >
-                장바구니
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/admin"
-                onClick={() => setIsOpen(false)}
-                style={{
-                  fontSize: isMobile ? "76px" : "26px",
-                  color: "white",
-                  textDecoration: "none",
-                  fontWeight: "600",
-                  transition: "color 0.2s ease",
-                }}
-              >
-                관리자
-              </Link>
-            </li>
+                <Link
+                  to={item.path}
+                  onClick={() => setIsOpen(false)}
+                  style={{
+                    fontSize: isMobile ? "76px" : "26px",
+                    color: "white",
+                    textDecoration: "none",
+                    fontWeight: "600",
+                    transition: "color 0.2s ease",
+                  }}
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </nav>
       </div>
@@ -188,7 +241,7 @@ function App() {
           }
         />
 
-        {/* ✅ CleanLayout 하위 라우트들 */}
+        {/* ✅ CleanLayout 하위 라우트 */}
         <Route
           element={
             <>
@@ -201,6 +254,8 @@ function App() {
           <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
         </Route>
 
         {/* ✅ fallback */}
