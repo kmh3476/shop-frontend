@@ -14,8 +14,8 @@ export default function Signup() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ✅ 백엔드 주소 (배포 시 변경 가능)
-  const API_URL = "http://localhost:5000/api/users/register";
+  // ✅ 백엔드 주소 (Render에 배포된 실제 주소 사용)
+  const API_URL = "https://shop-backend-1-dfsl.onrender.com/api/auth/signup";
 
   function onChange(e) {
     const { name, value } = e.target;
@@ -51,11 +51,12 @@ export default function Signup() {
       });
 
       const data = await res.json();
+
       if (!res.ok) {
         throw new Error(data.message || "회원가입에 실패했습니다.");
       }
 
-      // ✅ 성공 시 토큰 저장 (백엔드가 JWT 토큰 반환한다고 가정)
+      // ✅ 성공 시 토큰 저장
       if (data.token) {
         localStorage.setItem("token", data.token);
       }
@@ -63,6 +64,7 @@ export default function Signup() {
       alert("회원가입이 완료되었습니다!");
       navigate("/products");
     } catch (err) {
+      console.error("회원가입 오류:", err);
       setError(err.message);
     } finally {
       setLoading(false);
