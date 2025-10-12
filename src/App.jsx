@@ -167,10 +167,10 @@ function Navigation() {
         style={{
           position: "fixed",
           top: 0,
-          right: "200px",
+          right: 0,
           width: isOpen
             ? isMobile
-              ? "100dvw" // 모바일: 전체화면
+              ? "85vw" // 모바일: 전체화면
               : "38vw" // 데스크탑: 3분의 2만 덮기
             : "0",
           height: "300dvh",
