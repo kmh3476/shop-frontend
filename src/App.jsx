@@ -173,8 +173,8 @@ function Navigation() {
               ? "100vw" // 모바일: 전체화면
               : "66vw" // 데스크탑: 3분의 2만 덮기
             : "0",
-          height: "100dvh",
-          minHeight: "100vh",
+          height: "200dvh",
+          minHeight: "200vh",
           backgroundColor: "white",
           color: "black",
           zIndex: 250,
