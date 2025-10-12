@@ -115,15 +115,15 @@ function Navigation() {
           backgroundColor: isHome
             ? "rgba(0,0,0,0.8)"
             : "rgba(255,255,255,0.9)",
-          borderRadius: "50%",
-          padding: isMobile ? "28px" : "18px",
-          width: isMobile ? "85px" : "60px",
-          height: isMobile ? "85px" : "60px",
+          borderRadius: "30%",
+          padding: isMobile ? "36px" : "18px",
+          width: isMobile ? "85px" : "120px",
+          height: isMobile ? "85px" : "120px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: "10px",
+          gap: "18px",
           boxShadow: "0 6px 18px rgba(0,0,0,0.4)",
           cursor: "pointer",
           transition: "all 0.3s ease",
@@ -132,31 +132,31 @@ function Navigation() {
         {/* ✅ 햄버거 / X 애니메이션 */}
         <div
           style={{
-            width: isMobile ? "38px" : "28px",
-            height: "4px",
+            width: isMobile ? "38px" : "80px",
+            height: "10px",
             backgroundColor: isHome ? "white" : "#333",
-            borderRadius: "8px",
-            transform: isOpen ? "rotate(45deg) translate(6px, 6px)" : "none",
+            borderRadius: "1px",
+            transform: isOpen ? "rotate(45deg) translate(20px, 18px)" : "none",
             transition: "transform 0.3s ease",
           }}
         />
         <div
           style={{
-            width: isMobile ? "38px" : "28px",
-            height: "4px",
+            width: isMobile ? "38px" : "80px",
+            height: "10px",
             backgroundColor: isHome ? "white" : "#333",
-            borderRadius: "8px",
+            borderRadius: "1px",
             opacity: isOpen ? 0 : 1,
             transition: "opacity 0.3s ease",
           }}
         />
         <div
           style={{
-            width: isMobile ? "38px" : "28px",
-            height: "4px",
+            width: isMobile ? "38px" : "80px",
+            height: "10px",
             backgroundColor: isHome ? "white" : "#333",
-            borderRadius: "8px",
-            transform: isOpen ? "rotate(-45deg) translate(6px, -6px)" : "none",
+            borderRadius: "1px",
+            transform: isOpen ? "rotate(-45deg) translate(20px, -18px)" : "none",
             transition: "transform 0.3s ease",
           }}
         />
@@ -170,8 +170,8 @@ function Navigation() {
           right: 0,
           width: isOpen
             ? isMobile
-              ? "100vw" // 모바일: 전체화면
-              : "66vw" // 데스크탑: 3분의 2만 덮기
+              ? "300vw" // 모바일: 전체화면
+              : "38vw" // 데스크탑: 3분의 2만 덮기
             : "0",
           height: "300dvh",
           minHeight: "300vh",
@@ -185,7 +185,7 @@ function Navigation() {
           alignItems: "center",
           justifyContent: "flex-start",
           overflow: "hidden",
-          paddingTop: isMobile ? "160px" : "120px",
+          paddingTop: isMobile ? "160px" : "160px",
         }}
       >
         {/* 🔸 상단 로그인/회원가입 (검정 배경) */}
@@ -197,7 +197,7 @@ function Navigation() {
             justifyContent: "center",
             alignItems: "center",
             gap: "24px",
-            fontSize: isMobile ? "32px" : "18px",
+            fontSize: isMobile ? "32px" : "30px",
             fontWeight: "600",
             padding: "20px 0",
             width: "100%",
@@ -235,7 +235,7 @@ function Navigation() {
                 key={item.path}
                 style={{
                   marginBottom: "40px",
-                  fontSize: isMobile ? "36px" : "22px",
+                  fontSize: isMobile ? "36px" : "30px",
                   fontWeight: "700",
                   textAlign: "center",
                 }}
@@ -258,11 +258,11 @@ function Navigation() {
         {/* 🔸 하단 고객센터 */}
         <div
           style={{
-            marginTop: "auto",
+            marginTop: "20px",
             marginBottom: "60px",
             textAlign: "center",
             color: "#555",
-            fontSize: isMobile ? "24px" : "16px",
+            fontSize: isMobile ? "24px" : "20px",
             lineHeight: "1.6",
           }}
         >
