@@ -109,16 +109,16 @@ function Navigation() {
         onClick={() => setIsOpen(!isOpen)}
         style={{
           position: "fixed",
-          top: isMobile ? "60px" : "30px",
-          right: isMobile ? "60px" : "24px",
-          zIndex: 120,
+          top: isMobile ? "30px" : "30px",
+          right: isMobile ? "30px" : "24px",
+          zIndex: 200,
           backgroundColor: isHome
             ? "rgba(0,0,0,0.8)"
             : "rgba(255,255,255,0.9)",
-          borderRadius: "30px",
-          padding: isMobile ? "80px" : "20px",
-          width: isMobile ? "200px" : "100px",
-          height: isMobile ? "200px" : "100px",
+          borderRadius: "50%",
+          padding: isMobile ? "30px" : "20px",
+          width: isMobile ? "90px" : "60px",
+          height: isMobile ? "90px" : "60px",
           backdropFilter: "blur(10px)",
           boxShadow: "0 6px 18px rgba(0,0,0,0.4)",
           cursor: "pointer",
@@ -127,27 +127,27 @@ function Navigation() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: isMobile ? "36px" : "20px",
+          gap: "10px",
         }}
       >
-        {/* ✅ 햄버거 아이콘 */}
+        {/* ✅ 햄버거 아이콘 (X버튼 포함) */}
         <div
           style={{
-            width: isMobile ? "140px" : "70px",
-            height: isMobile ? "18px" : "10px",
+            width: isMobile ? "40px" : "30px",
+            height: "4px",
             backgroundColor: isHome ? "white" : "#333",
-            borderRadius: "18px",
+            borderRadius: "8px",
             transformOrigin: "center",
             transform: isOpen
-              ? "rotate(45deg) translate(26px, 12px)"
+              ? "rotate(45deg) translate(5px, 6px)"
               : "none",
-            transition: "transform 0.4s ease",
+            transition: "transform 0.3s ease",
           }}
         />
         <div
           style={{
-            width: isMobile ? "140px" : "70px",
-            height: isMobile ? "18px" : "10px",
+            width: isMobile ? "40px" : "30px",
+            height: "4px",
             backgroundColor: isHome ? "white" : "#333",
             borderRadius: "8px",
             opacity: isOpen ? 0 : 1,
@@ -156,15 +156,15 @@ function Navigation() {
         />
         <div
           style={{
-            width: isMobile ? "140px" : "70px",
-            height: isMobile ? "18px" : "10px",
+            width: isMobile ? "40px" : "30px",
+            height: "4px",
             backgroundColor: isHome ? "white" : "#333",
             borderRadius: "8px",
             transformOrigin: "center",
             transform: isOpen
-              ? "rotate(-45deg) translate(26px, -12px)"
+              ? "rotate(-45deg) translate(6px, -6px)"
               : "none",
-            transition: "transform 0.4s ease",
+            transition: "transform 0.3s ease",
           }}
         />
       </div>
@@ -175,13 +175,11 @@ function Navigation() {
           position: "fixed",
           top: 0,
           right: 0,
-          width: isOpen ? "80vw" : "0",
+          width: isOpen ? "100vw" : "0",
           height: "100vh",
           backgroundColor: "white",
           color: "black",
-          zIndex: 100,
-          borderTopLeftRadius: "30px",
-          borderBottomLeftRadius: "30px",
+          zIndex: 150,
           transform: isOpen ? "translateX(0)" : "translateX(100%)",
           transition: "transform 0.4s ease",
           display: "flex",
@@ -189,33 +187,51 @@ function Navigation() {
           alignItems: "center",
           justifyContent: "flex-start",
           overflow: "hidden",
-          paddingTop: "80px",
+          paddingTop: isMobile ? "140px" : "100px",
+          borderTopLeftRadius: "0px",
+          borderBottomLeftRadius: "0px",
         }}
       >
-        {/* 🔸 상단 로그인/회원가입 */}
+        {/* 🔸 상단 로그인/회원가입 (검정색 배경) */}
         <div
           style={{
+            backgroundColor: "black",
+            color: "white",
             display: "flex",
             justifyContent: "center",
+            alignItems: "center",
             gap: "20px",
-            fontSize: "18px",
+            fontSize: isMobile ? "26px" : "18px",
             fontWeight: "600",
-            borderBottom: "1px solid #333",
-            paddingBottom: "16px",
-            width: "80%",
+            padding: "20px 0",
+            width: "100%",
           }}
         >
-          <Link to="/login" onClick={() => setIsOpen(false)}>
+          <Link
+            to="/login"
+            onClick={() => setIsOpen(false)}
+            style={{ color: "white", textDecoration: "none" }}
+          >
             로그인
           </Link>
           <span>|</span>
-          <Link to="/signup" onClick={() => setIsOpen(false)}>
+          <Link
+            to="/signup"
+            onClick={() => setIsOpen(false)}
+            style={{ color: "white", textDecoration: "none" }}
+          >
             회원가입
           </Link>
         </div>
 
-        {/* 🔸 아래 세로 메뉴 */}
-        <nav style={{ marginTop: "40px", width: "80%", textAlign: "left" }}>
+        {/* 🔸 세로 메뉴 */}
+        <nav
+          style={{
+            marginTop: "60px",
+            width: "80%",
+            textAlign: "left",
+          }}
+        >
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
             {[
               { path: "/products", label: "상품" },
@@ -228,9 +244,10 @@ function Navigation() {
               <li
                 key={item.path}
                 style={{
-                  marginBottom: "24px",
-                  fontSize: "22px",
+                  marginBottom: "30px",
+                  fontSize: isMobile ? "28px" : "20px",
                   fontWeight: "700",
+                  textAlign: "center",
                 }}
               >
                 <Link
@@ -239,7 +256,6 @@ function Navigation() {
                   style={{
                     color: "black",
                     textDecoration: "none",
-                    transition: "color 0.2s ease",
                   }}
                 >
                   {item.label}
@@ -253,10 +269,10 @@ function Navigation() {
         <div
           style={{
             marginTop: "auto",
-            marginBottom: "40px",
+            marginBottom: "60px",
             textAlign: "center",
             color: "#555",
-            fontSize: "16px",
+            fontSize: isMobile ? "20px" : "16px",
             lineHeight: "1.6",
           }}
         >
@@ -267,6 +283,7 @@ function Navigation() {
     </>
   );
 }
+
 
 
 function App() {
