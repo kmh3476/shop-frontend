@@ -167,7 +167,7 @@ function Navigation() {
         style={{
           position: "fixed",
           top: 0,
-          right: 0,
+          left: 0,
           width: isOpen
             ? isMobile
               ? "30dvw" // 모바일: 전체화면
