@@ -167,8 +167,8 @@ function Navigation() {
         style={{
           position: "fixed",
           top: 0,
-           left: isOpen ? 0 : "100%",
-         width: isMobile ? "100vw" : "38vw",
+          right: isOpen ? 0 : "100%",
+          width: isMobile ? "100dvw" : "38vw",
           height: "300dvh",
           minHeight: "300vh",
           backgroundColor: "white",
