@@ -168,7 +168,7 @@ function Navigation() {
           position: "fixed",
           top: 0,
           right: isOpen ? 0 : "100%",
-          width: isMobile ? "100dvw" : "38vw",
+          width: isMobile ? "10000dvw" : "38vw",
           height: "300dvh",
           minHeight: "300vh",
           backgroundColor: "white",
