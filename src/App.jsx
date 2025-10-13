@@ -170,9 +170,10 @@ function Navigation() {
           right: 0,
           width: isOpen
             ? isMobile
-              ? "30dvw" // 모바일: 전체화면
+              ? "38dvw" // 모바일: 전체화면
               : "38vw" // 데스크탑: 3분의 2만 덮기
             : "0",
+            minWidth: isMobile ? "100%" : "auto", // 안정성 추가
           height: "300dvh",
           minHeight: "300vh",
           backgroundColor: "white",
