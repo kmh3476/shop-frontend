@@ -167,7 +167,7 @@ function Navigation() {
         style={{
           position: "fixed",
           top: 0,
-          right: 0,
+          right: isOpen ? 0 : "100%",
           width: "100dvw",
           minWidth: "100vw",
           height: "300dvh",
