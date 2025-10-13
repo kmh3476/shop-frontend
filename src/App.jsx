@@ -94,12 +94,22 @@ function Navigation() {
   const location = useLocation();
   const isHome = location.pathname === "/";
   const [isOpen, setIsOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(false);
 
+  // ✅ 반응형 감지 (정확하고 안전한 버전)
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    if (typeof window === "undefined") return;
+
+    const checkIsMobile = () => {
+      const mobile = window.matchMedia("(max-width: 768px)").matches;
+      setIsMobile(mobile);
+      console.log("📱 isMobile 상태:", mobile);
+    };
+
+    checkIsMobile(); // 초기 실행
+    window.addEventListener("resize", checkIsMobile);
+
+    return () => window.removeEventListener("resize", checkIsMobile);
   }, []);
 
   return (
@@ -168,10 +178,8 @@ function Navigation() {
           position: "fixed",
           top: 0,
           right: 0,
-          width: "90vw",
-          minWidth: "30vw", 
-          height: "300dvh",
-          minHeight: "300vh",
+          width: isMobile ? "90vw" : "38vw",
+          height: isMobile ? "300dvh" : "100vh",
           backgroundColor: "white",
           color: "black",
           zIndex: 250,
@@ -182,7 +190,7 @@ function Navigation() {
           alignItems: "center",
           justifyContent: "flex-start",
           overflow: "hidden",
-          paddingTop: isMobile ? "160px" : "160px",
+          paddingTop: isMobile ? "160px" : "120px",
           pointerEvents: isOpen ? "auto" : "none",
         }}
       >
