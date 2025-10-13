@@ -167,21 +167,24 @@ function Navigation() {
         style={{
           position: "fixed",
           top: 0,
-          right: isOpen ? 0 : "100%",
-          width: "100dvw",
-          minWidth: "100vw",
+          right: 0,
+          width: isMobile
+              ? "30dvw" // 모바일: 전체화면
+              : "38vw", // 데스크탑: 3분의 2만 덮기
           height: "300dvh",
           minHeight: "300vh",
           backgroundColor: "white",
           color: "black",
           zIndex: 250,
-          transition: "transform 0.4s ease",
+          transform: isOpen ? "translateX(0)" : "translateX(100%)",
+          transition: "transform 0.4s ease-in-out",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "flex-start",
-          overflow: "auto",
+          overflow: "hidden",
           paddingTop: isMobile ? "160px" : "160px",
+          pointerEvents: isOpen ? "auto" : "none",
         }}
       >
         {/* 🔸 상단 로그인/회원가입 (검정 배경) */}
