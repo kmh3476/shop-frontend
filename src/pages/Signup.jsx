@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext"; // ✅ 추가 (AuthContext 사용)
 
 export default function Signup() {
   const navigate = useNavigate();
+  const { login } = useAuth(); // ✅ 추가 (회원가입 후 자동 로그인용)
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -56,8 +58,11 @@ export default function Signup() {
         throw new Error(data.message || "회원가입에 실패했습니다.");
       }
 
-      // ✅ 성공 시 토큰 저장
-      if (data.token) {
+      // ✅ 성공 시 로그인 상태로 전환 + 토큰 저장
+      if (data.token && data.user) {
+        login(data.user, data.token); // 🔹 AuthContext에 로그인 상태 반영
+      } else if (data.token) {
+        // 🔹 혹시 user 데이터가 없을 경우 대비
         localStorage.setItem("token", data.token);
       }
 

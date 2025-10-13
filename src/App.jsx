@@ -4,6 +4,7 @@
   Route,
   Link,
   useLocation,
+  useNavigate,
 } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import CleanLayout from "./layouts/CleanLayout";
@@ -13,29 +14,84 @@ import ProductList from "./pages/ProductList";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import { useState, useEffect } from "react";
+import { useAuth } from "./context/AuthContext"; // ✅ 추가 (전역 로그인 상태)
+import { useAuth as useAuthContext } from "./context/AuthContext"; // ✅ 로그인 페이지용
 
 // ✅ 로그인 페이지
 function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuthContext();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const API_URL = "https://shop-backend-1-dfsl.onrender.com/api/auth/login";
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError("");
+
+    if (!email || !password) return setError("이메일과 비밀번호를 입력해주세요.");
+
+    try {
+      setLoading(true);
+
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "로그인 실패");
+
+      if (data.token && data.user) {
+        login(data.user, data.token); // ✅ 로그인 상태 전역 반영
+        alert("로그인 성공!");
+        navigate("/products");
+      }
+    } catch (err) {
+      console.error("로그인 오류:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-900 font-['Pretendard'] px-6">
       <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md">
         <h2 className="text-3xl font-bold mb-6 text-center">로그인</h2>
-        <form className="flex flex-col gap-4">
+        {error && (
+          <div className="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded">
+            {error}
+          </div>
+        )}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
             type="email"
             placeholder="이메일"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-gray-600"
           />
           <input
             type="password"
             placeholder="비밀번호"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-gray-600"
           />
           <button
             type="submit"
-            className="bg-black text-white py-3 rounded-lg mt-2 hover:bg-gray-800 transition"
+            disabled={loading}
+            className={`bg-black text-white py-3 rounded-lg mt-2 hover:bg-gray-800 transition ${
+              loading ? "opacity-70" : ""
+            }`}
           >
-            로그인
+            {loading ? "로그인 중..." : "로그인"}
           </button>
         </form>
         <p className="mt-4 text-center text-gray-500">
@@ -49,41 +105,21 @@ function Login() {
   );
 }
 
-// ✅ 회원가입 페이지
+// ✅ 회원가입 페이지 — 별도 파일(Signup.jsx)에서 관리 중이므로 여긴 유지용
 function Signup() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-900 font-['Pretendard'] px-6">
       <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md">
         <h2 className="text-3xl font-bold mb-6 text-center">회원가입</h2>
-        <form className="flex flex-col gap-4">
-          <input
-            type="text"
-            placeholder="이름"
-            className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-gray-600"
-          />
-          <input
-            type="email"
-            placeholder="이메일"
-            className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-gray-600"
-          />
-          <input
-            type="password"
-            placeholder="비밀번호"
-            className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-gray-600"
-          />
-          <button
-            type="submit"
-            className="bg-black text-white py-3 rounded-lg mt-2 hover:bg-gray-800 transition"
-          >
-            회원가입
-          </button>
-        </form>
-        <p className="mt-4 text-center text-gray-500">
-          이미 계정이 있으신가요?{" "}
-          <Link to="/login" className="text-black font-semibold">
-            로그인
-          </Link>
+        <p className="text-center text-gray-500 mb-4">
+          이 페이지는 실제 회원가입 페이지로 리다이렉트됩니다.
         </p>
+        <Link
+          to="/signup"
+          className="bg-black text-white py-3 px-6 rounded-lg hover:bg-gray-800 transition"
+        >
+          회원가입 페이지로 이동
+        </Link>
       </div>
     </div>
   );
@@ -95,8 +131,8 @@ function Navigation() {
   const isHome = location.pathname === "/";
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const { user, logout } = useAuth(); // ✅ 로그인 상태 가져오기
 
-  // ✅ 반응형 감지 (정확하고 안전한 버전)
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -106,7 +142,7 @@ function Navigation() {
       console.log("📱 isMobile 상태:", mobile);
     };
 
-    checkIsMobile(); // 초기 실행
+    checkIsMobile();
     window.addEventListener("resize", checkIsMobile);
 
     return () => window.removeEventListener("resize", checkIsMobile);
@@ -139,7 +175,6 @@ function Navigation() {
           transition: "all 0.3s ease",
         }}
       >
-        {/* ✅ 햄버거 / X 애니메이션 */}
         <div
           style={{
             width: isMobile ? "80px" : "80px",
@@ -194,7 +229,7 @@ function Navigation() {
           pointerEvents: isOpen ? "auto" : "none",
         }}
       >
-        {/* 🔸 상단 로그인/회원가입 (검정 배경) */}
+        {/* 🔸 상단 로그인/회원가입 영역 */}
         <div
           style={{
             backgroundColor: "black",
@@ -209,21 +244,44 @@ function Navigation() {
             width: "100%",
           }}
         >
-          <Link
-            to="/login"
-            onClick={() => setIsOpen(false)}
-            style={{ color: "white", textDecoration: "none" }}
-          >
-            로그인
-          </Link>
-          <span>|</span>
-          <Link
-            to="/signup"
-            onClick={() => setIsOpen(false)}
-            style={{ color: "white", textDecoration: "none" }}
-          >
-            회원가입
-          </Link>
+          {user ? (
+            <>
+              <span>{user.name} 님</span>
+              <span>|</span>
+              <button
+                onClick={() => {
+                  logout();
+                  setIsOpen(false);
+                }}
+                style={{
+                  color: "white",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                로그아웃
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                onClick={() => setIsOpen(false)}
+                style={{ color: "white", textDecoration: "none" }}
+              >
+                로그인
+              </Link>
+              <span>|</span>
+              <Link
+                to="/signup"
+                onClick={() => setIsOpen(false)}
+                style={{ color: "white", textDecoration: "none" }}
+              >
+                회원가입
+              </Link>
+            </>
+          )}
         </div>
 
         {/* 🔸 메뉴 리스트 */}
