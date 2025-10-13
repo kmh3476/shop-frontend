@@ -171,7 +171,7 @@ function Navigation() {
           width: isMobile
               ? "100dvw" // 모바일: 전체화면
               : "38vw", // 데스크탑: 3분의 2만 덮기
-          minWidth: "100vw", 
+          minWidth: "30vw", 
           height: "300dvh",
           minHeight: "300vh",
           backgroundColor: "white",
