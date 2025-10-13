@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
 
   // ✅ 배포 시 루트 경로 (Vercel 같은 정적 호스팅 환경)
-  base: "/",
+  base: "./",
 
   // ✅ 개발 서버 설정
   server: {
