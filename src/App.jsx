@@ -167,11 +167,7 @@ function Navigation() {
         style={{
           position: "fixed",
           top: 0,
-          right: isOpen
-              ? 0
-              : isMobile
-              ? "-300vw"
-              : "-38vw",
+          left: isOpen ? 500 : "100%",
           width: isMobile
               ? "100vw" // 모바일: 전체화면
               : "38vw", // 데스크탑: 3분의 2만 덮기
