@@ -5,6 +5,7 @@
   Link,
   useLocation,
   useNavigate,
+  Navigate,
 } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import CleanLayout from "./layouts/CleanLayout";
@@ -15,10 +16,10 @@ import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Signup from "./pages/Signup"; // ✅ 실제 회원가입 폼 파일 불러오기
 import { useState, useEffect } from "react";
-import { useAuth } from "./context/AuthContext"; // ✅ 추가 (전역 로그인 상태)
+import { useAuth } from "./context/AuthContext"; // ✅ 전역 로그인 상태
 import { useAuth as useAuthContext } from "./context/AuthContext"; // ✅ 로그인 페이지용
 
-// ✅ 로그인 페이지
+/* -------------------- ✅ 로그인 페이지 -------------------- */
 function Login() {
   const navigate = useNavigate();
   const { login } = useAuthContext();
@@ -33,7 +34,8 @@ function Login() {
     e.preventDefault();
     setError("");
 
-    if (!email || !password) return setError("이메일과 비밀번호를 입력해주세요.");
+    if (!email || !password)
+      return setError("이메일과 비밀번호를 입력해주세요.");
 
     try {
       setLoading(true);
@@ -106,7 +108,24 @@ function Login() {
   );
 }
 
-// ✅ 햄버거 메뉴 컴포넌트
+/* -------------------- ✅ 관리자 보호 라우트 -------------------- */
+function AdminRoute({ children }) {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  if (!user.isAdmin)
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen text-center text-gray-700">
+        <h2 className="text-2xl font-bold mb-4">🚫 접근 불가</h2>
+        <p>관리자만 접근할 수 있는 페이지입니다.</p>
+        <Link to="/" className="text-blue-500 underline mt-4">
+          홈으로 돌아가기
+        </Link>
+      </div>
+    );
+  return children;
+}
+
+/* -------------------- ✅ 햄버거 메뉴 -------------------- */
 function Navigation() {
   const location = useLocation();
   const isHome = location.pathname === "/";
@@ -120,12 +139,10 @@ function Navigation() {
     const checkIsMobile = () => {
       const mobile = window.matchMedia("(max-width: 768px)").matches;
       setIsMobile(mobile);
-      console.log("📱 isMobile 상태:", mobile);
     };
 
     checkIsMobile();
     window.addEventListener("resize", checkIsMobile);
-
     return () => window.removeEventListener("resize", checkIsMobile);
   }, []);
 
@@ -143,9 +160,9 @@ function Navigation() {
             ? "rgba(0,0,0,0.8)"
             : "rgba(255,255,255,0.9)",
           borderRadius: "30%",
-          padding: isMobile ? "18px" : "18px",
-          width: isMobile ? "120px" : "120px",
-          height: isMobile ? "120px" : "120px",
+          padding: "18px",
+          width: "120px",
+          height: "120px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -158,7 +175,7 @@ function Navigation() {
       >
         <div
           style={{
-            width: isMobile ? "80px" : "80px",
+            width: "80px",
             height: "10px",
             backgroundColor: isHome ? "white" : "#333",
             borderRadius: "1px",
@@ -168,7 +185,7 @@ function Navigation() {
         />
         <div
           style={{
-            width: isMobile ? "80px" : "80px",
+            width: "80px",
             height: "10px",
             backgroundColor: isHome ? "white" : "#333",
             borderRadius: "1px",
@@ -178,11 +195,13 @@ function Navigation() {
         />
         <div
           style={{
-            width: isMobile ? "80px" : "80px",
+            width: "80px",
             height: "10px",
             backgroundColor: isHome ? "white" : "#333",
             borderRadius: "1px",
-            transform: isOpen ? "rotate(-45deg) translate(20px, -18px)" : "none",
+            transform: isOpen
+              ? "rotate(-45deg) translate(20px, -18px)"
+              : "none",
             transition: "transform 0.3s ease",
           }}
         />
@@ -210,7 +229,7 @@ function Navigation() {
           pointerEvents: isOpen ? "auto" : "none",
         }}
       >
-        {/* 🔸 상단 로그인/회원가입 영역 */}
+        {/* 🔸 상단 로그인/회원가입 or 사용자 정보 */}
         <div
           style={{
             backgroundColor: "black",
@@ -271,7 +290,7 @@ function Navigation() {
             {[
               { path: "/products", label: "상품" },
               { path: "/cart", label: "장바구니" },
-              { path: "/admin", label: "관리자" },
+              ...(user?.isAdmin ? [{ path: "/admin", label: "관리자" }] : []), // ✅ 관리자만 보임
               { path: "/style", label: "스타일룸" },
               { path: "/sale", label: "이벤트/세일" },
               { path: "/store", label: "매장안내" },
@@ -319,6 +338,7 @@ function Navigation() {
   );
 }
 
+/* -------------------- ✅ 라우팅 -------------------- */
 function App() {
   return (
     <Router>
@@ -346,9 +366,17 @@ function App() {
           <Route path="/products" element={<ProductList />} />
           <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
-          <Route path="/admin" element={<Admin />} />
+          {/* ✅ 관리자 보호 라우트 */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <Admin />
+              </AdminRoute>
+            }
+          />
           <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />  // ✅ 진짜 페이지 연결
+          <Route path="/signup" element={<Signup />} />
         </Route>
 
         {/* ✅ fallback */}
