@@ -94,13 +94,10 @@ function Navigation() {
   const location = useLocation();
   const isHome = location.pathname === "/";
   const [isOpen, setIsOpen] = useState(false);
-
-  // ✅ 반응형 상태 유지
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -171,21 +168,10 @@ function Navigation() {
           position: "fixed",
           top: 0,
           right: 0,
-          ...(isMobile
-            ? {
-                width: "90vw",
-                minWidth: "90vw",
-                height: "600dvh",
-                minHeight: "600vh",
-                paddingTop: "160px",
-              }
-            : {
-                width: "38vw",
-                minWidth: "38vw",
-                height: "100vh",
-                minHeight: "100vh",
-                paddingTop: "120px",
-              }),
+          width: "90vw",
+          minWidth: "30vw", 
+          height: "300dvh",
+          minHeight: "300vh",
           backgroundColor: "white",
           color: "black",
           zIndex: 250,
@@ -196,10 +182,11 @@ function Navigation() {
           alignItems: "center",
           justifyContent: "flex-start",
           overflow: "hidden",
+          paddingTop: isMobile ? "160px" : "160px",
           pointerEvents: isOpen ? "auto" : "none",
         }}
       >
-        {/* 🔸 상단 로그인/회원가입 */}
+        {/* 🔸 상단 로그인/회원가입 (검정 배경) */}
         <div
           style={{
             backgroundColor: "black",
