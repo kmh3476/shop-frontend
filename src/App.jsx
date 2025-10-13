@@ -94,10 +94,13 @@ function Navigation() {
   const location = useLocation();
   const isHome = location.pathname === "/";
   const [isOpen, setIsOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
+  // ✅ 반응형 상태 유지
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -164,41 +167,39 @@ function Navigation() {
 
       {/* 🔹 슬라이드 메뉴 */}
       <div
-  style={{
-    position: "fixed",
-    top: 0,
-    right: 0,
-    ...(isMobile
-      ? {
-          // 📱 모바일용 스타일
-          width: "90vw",
-          minWidth: "30vw",
-          height: "300dvh",
-          minHeight: "300vh",
-          paddingTop: "160px",
-        }
-      : {
-          // 💻 데스크탑용 스타일
-          width: "38vw",
-          minWidth: "38vw",
-          height: "100vh",
-          minHeight: "100vh",
-          paddingTop: "120px",
-        }),
-    backgroundColor: "white",
-    color: "black",
-    zIndex: 250,
-    transform: isOpen ? "translateX(0)" : "translateX(100%)",
-    transition: "transform 0.4s ease-in-out",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    overflow: "hidden",
-    pointerEvents: isOpen ? "auto" : "none",
-  }}
+        style={{
+          position: "fixed",
+          top: 0,
+          right: 0,
+          ...(isMobile
+            ? {
+                width: "90vw",
+                minWidth: "90vw",
+                height: "300dvh",
+                minHeight: "300vh",
+                paddingTop: "160px",
+              }
+            : {
+                width: "38vw",
+                minWidth: "38vw",
+                height: "100vh",
+                minHeight: "100vh",
+                paddingTop: "120px",
+              }),
+          backgroundColor: "white",
+          color: "black",
+          zIndex: 250,
+          transform: isOpen ? "translateX(0)" : "translateX(100%)",
+          transition: "transform 0.4s ease-in-out",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          overflow: "hidden",
+          pointerEvents: isOpen ? "auto" : "none",
+        }}
       >
-        {/* 🔸 상단 로그인/회원가입 (검정 배경) */}
+        {/* 🔸 상단 로그인/회원가입 */}
         <div
           style={{
             backgroundColor: "black",
