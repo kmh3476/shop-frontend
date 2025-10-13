@@ -13,6 +13,7 @@ import Admin from "./pages/Admin";
 import ProductList from "./pages/ProductList";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
+import Signup from "./pages/Signup"; // ✅ 실제 회원가입 폼 파일 불러오기
 import { useState, useEffect } from "react";
 import { useAuth } from "./context/AuthContext"; // ✅ 추가 (전역 로그인 상태)
 import { useAuth as useAuthContext } from "./context/AuthContext"; // ✅ 로그인 페이지용
@@ -367,7 +368,7 @@ function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+          <Route path="/signup" element={<Signup />} />  // ✅ 진짜 페이지 연결
         </Route>
 
         {/* ✅ fallback */}
