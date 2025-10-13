@@ -106,26 +106,6 @@ function Login() {
   );
 }
 
-// ✅ 회원가입 페이지 — 별도 파일(Signup.jsx)에서 관리 중이므로 여긴 유지용
-function Signup() {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-900 font-['Pretendard'] px-6">
-      <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md">
-        <h2 className="text-3xl font-bold mb-6 text-center">회원가입</h2>
-        <p className="text-center text-gray-500 mb-4">
-          이 페이지는 실제 회원가입 페이지로 리다이렉트됩니다.
-        </p>
-        <Link
-          to="/signup"
-          className="bg-black text-white py-3 px-6 rounded-lg hover:bg-gray-800 transition"
-        >
-          회원가입 페이지로 이동
-        </Link>
-      </div>
-    </div>
-  );
-}
-
 // ✅ 햄버거 메뉴 컴포넌트
 function Navigation() {
   const location = useLocation();
