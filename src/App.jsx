@@ -170,7 +170,7 @@ function Navigation() {
           right: isOpen
               ? 0
               : isMobile
-              ? "-100vw"
+              ? "-300vw"
               : "-38vw",
           width: isMobile
               ? "100vw" // 모바일: 전체화면
