@@ -168,7 +168,7 @@ function Navigation() {
           position: "fixed",
           top: 0,
           right: isMobile
-              ? 50 // 모바일: 전체화면
+              ? 100 // 모바일: 전체화면
               : 0, // 데스크탑: 3분의 2만 덮기
           width: isMobile
               ? "100vw" // 모바일: 전체화면
