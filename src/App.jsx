@@ -175,8 +175,8 @@ function Navigation() {
             ? {
                 width: "90vw",
                 minWidth: "90vw",
-                height: "300dvh",
-                minHeight: "300vh",
+                height: "600dvh",
+                minHeight: "600vh",
                 paddingTop: "160px",
               }
             : {
