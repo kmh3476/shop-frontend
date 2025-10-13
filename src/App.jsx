@@ -126,9 +126,9 @@ function Navigation() {
             ? "rgba(0,0,0,0.8)"
             : "rgba(255,255,255,0.9)",
           borderRadius: "30%",
-          padding: isMobile ? "36px" : "18px",
-          width: isMobile ? "85px" : "120px",
-          height: isMobile ? "85px" : "120px",
+          padding: isMobile ? "18px" : "18px",
+          width: isMobile ? "120px" : "120px",
+          height: isMobile ? "120px" : "120px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -142,7 +142,7 @@ function Navigation() {
         {/* ✅ 햄버거 / X 애니메이션 */}
         <div
           style={{
-            width: isMobile ? "38px" : "80px",
+            width: isMobile ? "80px" : "80px",
             height: "10px",
             backgroundColor: isHome ? "white" : "#333",
             borderRadius: "1px",
@@ -152,7 +152,7 @@ function Navigation() {
         />
         <div
           style={{
-            width: isMobile ? "38px" : "80px",
+            width: isMobile ? "80px" : "80px",
             height: "10px",
             backgroundColor: isHome ? "white" : "#333",
             borderRadius: "1px",
@@ -162,7 +162,7 @@ function Navigation() {
         />
         <div
           style={{
-            width: isMobile ? "38px" : "80px",
+            width: isMobile ? "80px" : "80px",
             height: "10px",
             backgroundColor: isHome ? "white" : "#333",
             borderRadius: "1px",
