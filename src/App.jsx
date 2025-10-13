@@ -167,9 +167,11 @@ function Navigation() {
         style={{
           position: "fixed",
           top: 0,
-          right: isMobile
-              ? 100 // 모바일: 전체화면
-              : 0, // 데스크탑: 3분의 2만 덮기
+          right: isOpen
+              ? 0
+              : isMobile
+              ? "-100vw"
+              : "-38vw",
           width: isMobile
               ? "100vw" // 모바일: 전체화면
               : "38vw", // 데스크탑: 3분의 2만 덮기
