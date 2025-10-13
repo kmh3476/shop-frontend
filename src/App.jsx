@@ -167,25 +167,19 @@ function Navigation() {
         style={{
           position: "fixed",
           top: 0,
-          right: 0,
-          width: isOpen
-            ? isMobile
-              ? "100dvw" // 모바일: 전체화면
-              : "38vw" // 데스크탑: 3분의 2만 덮기
-            : "0",
-            minWidth: isMobile ? "100%" : "auto", // 안정성 추가
+           left: isOpen ? 0 : "100%",
+         width: isMobile ? "100vw" : "38vw",
           height: "300dvh",
           minHeight: "300vh",
           backgroundColor: "white",
           color: "black",
           zIndex: 250,
-          transform: isOpen ? "translateX(0)" : "translateX(100%)",
           transition: "transform 0.4s ease",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "flex-start",
-          overflow: "hidden",
+          overflow: "auto",
           paddingTop: isMobile ? "160px" : "160px",
         }}
       >
