@@ -164,27 +164,39 @@ function Navigation() {
 
       {/* 🔹 슬라이드 메뉴 */}
       <div
-        style={{
-          position: "fixed",
-          top: 0,
-          right: 0,
-          width: "90vw", // 데스크탑: 3분의 2만 덮기
-          minWidth: "30vw", 
+  style={{
+    position: "fixed",
+    top: 0,
+    right: 0,
+    ...(isMobile
+      ? {
+          // 📱 모바일용 스타일
+          width: "90vw",
+          minWidth: "30vw",
           height: "300dvh",
           minHeight: "300vh",
-          backgroundColor: "white",
-          color: "black",
-          zIndex: 250,
-          transform: isOpen ? "translateX(0)" : "translateX(100%)",
-          transition: "transform 0.4s ease-in-out",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "flex-start",
-          overflow: "hidden",
-          paddingTop: isMobile ? "160px" : "160px",
-          pointerEvents: isOpen ? "auto" : "none",
-        }}
+          paddingTop: "160px",
+        }
+      : {
+          // 💻 데스크탑용 스타일
+          width: "38vw",
+          minWidth: "38vw",
+          height: "100vh",
+          minHeight: "100vh",
+          paddingTop: "120px",
+        }),
+    backgroundColor: "white",
+    color: "black",
+    zIndex: 250,
+    transform: isOpen ? "translateX(0)" : "translateX(100%)",
+    transition: "transform 0.4s ease-in-out",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    overflow: "hidden",
+    pointerEvents: isOpen ? "auto" : "none",
+  }}
       >
         {/* 🔸 상단 로그인/회원가입 (검정 배경) */}
         <div
