@@ -15,6 +15,8 @@ import ProductList from "./pages/ProductList";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Signup from "./pages/Signup"; // ✅ 실제 회원가입 폼 파일 불러오기
+import FindId from "./pages/FindId"; // ✅ 아이디 찾기 페이지 추가
+import ForgotPassword from "./pages/ForgotPassword"; // ✅ 비밀번호 재설정 페이지 추가
 import { useState, useEffect } from "react";
 import { useAuth } from "./context/AuthContext"; // ✅ 전역 로그인 상태
 import { useAuth as useAuthContext } from "./context/AuthContext"; // ✅ 로그인 페이지용
@@ -97,6 +99,17 @@ function Login() {
             {loading ? "로그인 중..." : "로그인"}
           </button>
         </form>
+
+        {/* ✅ 아이디/비밀번호 찾기 링크 추가 */}
+        <div className="flex justify-between mt-4 text-sm text-gray-500">
+          <Link to="/find-id" className="hover:text-black">
+            아이디 찾기
+          </Link>
+          <Link to="/forgot-password" className="hover:text-black">
+            비밀번호 찾기
+          </Link>
+        </div>
+
         <p className="mt-4 text-center text-gray-500">
           계정이 없으신가요?{" "}
           <Link to="/signup" className="text-black font-semibold">
@@ -131,7 +144,7 @@ function Navigation() {
   const isHome = location.pathname === "/";
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const { user, logout } = useAuth(); // ✅ 로그인 상태 가져오기
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -290,7 +303,7 @@ function Navigation() {
             {[
               { path: "/products", label: "상품" },
               { path: "/cart", label: "장바구니" },
-              ...(user?.isAdmin ? [{ path: "/admin", label: "관리자" }] : []), // ✅ 관리자만 보임
+              ...(user?.isAdmin ? [{ path: "/admin", label: "관리자" }] : []),
               { path: "/style", label: "스타일룸" },
               { path: "/sale", label: "이벤트/세일" },
               { path: "/store", label: "매장안내" },
@@ -377,6 +390,9 @@ function App() {
           />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          {/* ✅ 추가된 부분 */}
+          <Route path="/find-id" element={<FindId />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
         </Route>
 
         {/* ✅ fallback */}
