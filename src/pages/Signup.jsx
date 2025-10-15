@@ -1,22 +1,23 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"; // ✅ 추가 (AuthContext 사용)
 
 export default function Signup() {
   const navigate = useNavigate();
-  const { login } = useAuth(); // ✅ 추가 (회원가입 후 자동 로그인용)
+
   const [form, setForm] = useState({
+    userId: "",
+    nickname: "",
     name: "",
     email: "",
     password: "",
     confirm: "",
-    phone: "",
   });
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
 
-  // ✅ 백엔드 주소 (Render에 배포된 실제 주소 사용)
+  // ✅ 백엔드 주소 (Render 등 배포된 실제 주소)
   const API_URL = "https://shop-backend-1-dfsl.onrender.com/api/auth/signup";
 
   function onChange(e) {
@@ -27,7 +28,10 @@ export default function Signup() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    setSuccessMsg("");
 
+    if (!form.userId.trim()) return setError("아이디를 입력해주세요.");
+    if (!form.nickname.trim()) return setError("닉네임을 입력해주세요.");
     if (!form.name.trim()) return setError("이름을 입력해주세요.");
     if (!form.email || !/\S+@\S+\.\S+/.test(form.email))
       return setError("유효한 이메일을 입력해주세요.");
@@ -40,34 +44,29 @@ export default function Signup() {
     try {
       setLoading(true);
 
-      // ✅ 실제 회원가입 API 요청
+      // ✅ 회원가입 요청
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          userId: form.userId,
+          nickname: form.nickname,
           name: form.name,
           email: form.email,
           password: form.password,
-          phone: form.phone,
         }),
       });
 
       const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "회원가입 실패");
 
-      if (!res.ok) {
-        throw new Error(data.message || "회원가입에 실패했습니다.");
-      }
+      // ✅ 이메일 인증 안내 메시지 출력
+      setSuccessMsg(
+        "회원가입이 완료되었습니다. 이메일로 전송된 인증 링크를 확인해주세요!"
+      );
 
-      // ✅ 성공 시 로그인 상태로 전환 + 토큰 저장
-      if (data.token && data.user) {
-        login(data.user, data.token); // 🔹 AuthContext에 로그인 상태 반영
-      } else if (data.token) {
-        // 🔹 혹시 user 데이터가 없을 경우 대비
-        localStorage.setItem("token", data.token);
-      }
-
-      alert("회원가입이 완료되었습니다!");
-      navigate("/products");
+      // 일정 시간 후 로그인 페이지로 이동
+      setTimeout(() => navigate("/login"), 5000);
     } catch (err) {
       console.error("회원가입 오류:", err);
       setError(err.message);
@@ -101,7 +100,37 @@ export default function Signup() {
               {error}
             </div>
           )}
+          {successMsg && (
+            <div className="mb-4 text-sm text-green-700 bg-green-50 p-3 rounded">
+              {successMsg}
+            </div>
+          )}
 
+          {/* 아이디 */}
+          <label className="block text-sm font-medium text-gray-700">
+            아이디
+          </label>
+          <input
+            name="userId"
+            value={form.userId}
+            onChange={onChange}
+            placeholder="아이디 입력"
+            className="mt-1 mb-4 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          />
+
+          {/* 닉네임 */}
+          <label className="block text-sm font-medium text-gray-700">
+            닉네임
+          </label>
+          <input
+            name="nickname"
+            value={form.nickname}
+            onChange={onChange}
+            placeholder="닉네임 입력"
+            className="mt-1 mb-4 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          />
+
+          {/* 이름 */}
           <label className="block text-sm font-medium text-gray-700">
             이름
           </label>
@@ -109,56 +138,50 @@ export default function Signup() {
             name="name"
             value={form.name}
             onChange={onChange}
+            placeholder="이름 입력"
             className="mt-1 mb-4 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
 
+          {/* 이메일 */}
           <label className="block text-sm font-medium text-gray-700">
             이메일
           </label>
           <input
             name="email"
+            type="email"
             value={form.email}
             onChange={onChange}
-            type="email"
             placeholder="you@example.com"
             className="mt-1 mb-4 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
 
+          {/* 비밀번호 */}
           <label className="block text-sm font-medium text-gray-700">
             비밀번호
           </label>
           <input
             name="password"
+            type="password"
             value={form.password}
             onChange={onChange}
-            type="password"
             placeholder="6자 이상 입력"
             className="mt-1 mb-4 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
 
+          {/* 비밀번호 확인 */}
           <label className="block text-sm font-medium text-gray-700">
             비밀번호 확인
           </label>
           <input
             name="confirm"
+            type="password"
             value={form.confirm}
             onChange={onChange}
-            type="password"
+            placeholder="비밀번호 재입력"
             className="mt-1 mb-4 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
 
-          <label className="block text-sm font-medium text-gray-700">
-            휴대전화 (선택)
-          </label>
-          <input
-            name="phone"
-            value={form.phone}
-            onChange={onChange}
-            type="tel"
-            placeholder="010-1234-5678"
-            className="mt-1 mb-4 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          />
-
+          {/* 이용약관 동의 */}
           <label className="inline-flex items-start gap-2 mt-2">
             <input
               type="checkbox"
@@ -178,6 +201,7 @@ export default function Signup() {
             </div>
           </label>
 
+          {/* 제출 버튼 */}
           <button
             type="submit"
             disabled={loading}
@@ -185,9 +209,10 @@ export default function Signup() {
               loading ? "bg-indigo-400" : "bg-indigo-900 hover:bg-indigo-800"
             } text-white py-3 rounded-lg font-semibold transition`}
           >
-            {loading ? "가입 중..." : "계정 만들기"}
+            {loading ? "가입 중..." : "회원가입"}
           </button>
 
+          {/* 하단 안내 */}
           <div className="mt-4 text-center text-sm text-gray-500">
             이미 계정이 있으신가요?{" "}
             <Link to="/login" className="text-indigo-600 hover:underline">
