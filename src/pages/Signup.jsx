@@ -21,9 +21,10 @@ export default function Signup() {
   // ✅ 추가된 상태들
   const [emailVerified, setEmailVerified] = useState(false);
   const [emailCode, setEmailCode] = useState("");
-  const [sentCode, setSentCode] = useState("");
   const [checkingId, setCheckingId] = useState(false);
   const [checkingNick, setCheckingNick] = useState(false);
+  const [codeSent, setCodeSent] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   // ✅ API 주소
   const API = "https://shop-backend-1-dfsl.onrender.com/api/auth";
@@ -43,14 +44,19 @@ export default function Signup() {
     type === "id" ? setCheckingId(true) : setCheckingNick(true);
 
     try {
-      const res = await fetch(`${API}/check-${type === "id" ? "id" : "nickname"}`, {
+      const res = await fetch(`${API}/check-id`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ [field]: value }),
       });
 
       const data = await res.json();
-      alert(data.message);
+
+      if (data.exists) {
+        alert(`이미 사용 중인 ${type === "id" ? "아이디" : "닉네임"}입니다.`);
+      } else {
+        alert(`사용 가능한 ${type === "id" ? "아이디" : "닉네임"}입니다.`);
+      }
     } catch (err) {
       console.error("중복 확인 오류:", err);
       alert("서버 오류가 발생했습니다.");
@@ -63,6 +69,7 @@ export default function Signup() {
   async function sendEmailCode() {
     if (!form.email) return alert("이메일을 입력해주세요.");
 
+    setSendingEmail(true);
     try {
       const res = await fetch(`${API}/send-email-code`, {
         method: "POST",
@@ -74,21 +81,36 @@ export default function Signup() {
 
       if (!res.ok) throw new Error(data.message || "이메일 전송 실패");
 
-      alert("이메일로 인증코드가 전송되었습니다!");
-      setSentCode(data.code); // 실제 서비스에서는 이 코드를 백엔드에 저장
+      alert("이메일로 인증 코드가 전송되었습니다!");
+      setCodeSent(true);
     } catch (err) {
       console.error("이메일 전송 오류:", err);
       alert(err.message);
+    } finally {
+      setSendingEmail(false);
     }
   }
 
-  /* -------------------- ✅ 인증 코드 확인 -------------------- */
-  function verifyEmailCode() {
-    if (emailCode === sentCode && sentCode !== "") {
-      setEmailVerified(true);
+  /* -------------------- ✅ 이메일 인증 코드 검증 -------------------- */
+  async function verifyEmailCode() {
+    if (!emailCode.trim()) return alert("인증 코드를 입력해주세요.");
+
+    try {
+      const res = await fetch(`${API}/verify-email-code`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email, code: emailCode }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "인증 실패");
+
       alert("✅ 이메일 인증이 완료되었습니다!");
-    } else {
-      alert("❌ 인증 코드가 올바르지 않습니다.");
+      setEmailVerified(true);
+    } catch (err) {
+      console.error("이메일 인증 오류:", err);
+      alert(err.message);
     }
   }
 
@@ -121,6 +143,7 @@ export default function Signup() {
           name: form.name,
           email: form.email,
           password: form.password,
+          emailVerified: true, // ✅ 인증 완료 후 전달
         }),
       });
 
@@ -229,19 +252,23 @@ export default function Signup() {
                 onChange={onChange}
                 placeholder="you@example.com"
                 className="mt-1 mb-2 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                disabled={emailVerified}
               />
             </div>
             <button
               type="button"
               onClick={sendEmailCode}
-              className="h-[42px] bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm"
+              disabled={sendingEmail || emailVerified}
+              className={`h-[42px] ${
+                emailVerified ? "bg-green-500" : "bg-indigo-700 hover:bg-indigo-800"
+              } text-white px-3 py-2 rounded-lg text-sm`}
             >
-              인증요청
+              {emailVerified ? "인증완료" : sendingEmail ? "전송중..." : "인증요청"}
             </button>
           </div>
 
           {/* 인증 코드 입력 */}
-          {sentCode && !emailVerified && (
+          {codeSent && !emailVerified && (
             <div className="flex gap-2 mt-2">
               <input
                 placeholder="인증코드 입력"
