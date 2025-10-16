@@ -3,48 +3,44 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const API = "https://shop-backend-1-dfsl.onrender.com/api/auth/login";
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    // ✅ 간단 검증
-    if (!email) {
+    // ✅ 기본 입력 검증
+    if (!userId.trim()) {
       setLoading(false);
-      return setError("이메일을 입력해주세요.");
+      return setError("아이디를 입력해주세요.");
     }
-    if (!password) {
+    if (!password.trim()) {
       setLoading(false);
       return setError("비밀번호를 입력해주세요.");
     }
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      setLoading(false);
-      return setError("유효한 이메일을 입력해주세요.");
-    }
 
     try {
-      // ✅ 실제 로그인 API 요청 (백엔드 연결 시 사용)
-      // const res = await axios.post("http://localhost:5000/api/auth/login", {
-      //   email,
-      //   password,
-      // });
-      // localStorage.setItem("token", res.data.token);
+      // ✅ 실제 로그인 요청 (아이디 + 비밀번호 기반)
+      const res = await axios.post(API, {
+        userId,
+        password,
+      });
 
-      // ✅ 임시 성공 예시
-      localStorage.setItem("token", "dummyToken");
+      // ✅ 로그인 성공
+      localStorage.setItem("token", res.data.token);
       alert("로그인 성공!");
-      navigate("/products"); // 로그인 성공 시 이동
+      navigate("/products"); // 로그인 후 이동
     } catch (err) {
-      // 서버 연결 시 아래처럼 에러 처리 가능
-      // setError(err.response?.data?.message || "로그인 실패");
-      setError("로그인 요청 중 오류가 발생했습니다.");
+      console.error("로그인 오류:", err);
+      setError(err.response?.data?.message || "로그인 실패. 다시 시도해주세요.");
     } finally {
       setLoading(false);
     }
@@ -74,17 +70,19 @@ export default function Login() {
             </div>
           )}
 
+          {/* 아이디 입력 */}
           <label className="block text-sm font-medium text-gray-700">
-            이메일
+            아이디
           </label>
           <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            type="email"
-            placeholder="you@example.com"
+            value={userId}
+            onChange={(e) => setUserId(e.target.value)}
+            type="text"
+            placeholder="아이디를 입력하세요"
             className="mt-1 mb-4 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
           />
 
+          {/* 비밀번호 입력 */}
           <label className="block text-sm font-medium text-gray-700">
             비밀번호
           </label>
@@ -93,7 +91,7 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               type={showPw ? "text" : "password"}
-              placeholder="비밀번호"
+              placeholder="비밀번호를 입력하세요"
               className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
             />
             <button
@@ -105,6 +103,7 @@ export default function Login() {
             </button>
           </div>
 
+          {/* 옵션 */}
           <div className="flex items-center justify-between mb-6">
             <label className="inline-flex items-center">
               <input
@@ -121,6 +120,7 @@ export default function Login() {
             </Link>
           </div>
 
+          {/* 로그인 버튼 */}
           <button
             type="submit"
             disabled={loading}
@@ -133,6 +133,7 @@ export default function Login() {
             {loading ? "로그인 중..." : "로그인"}
           </button>
 
+          {/* 소셜 로그인 (추후 구현용) */}
           <div className="mt-5">
             <div className="text-center text-sm text-gray-400">또는</div>
             <div className="mt-4 flex gap-3">
