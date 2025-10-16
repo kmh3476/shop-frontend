@@ -17,21 +17,26 @@ export default function ForgotPassword() {
 
     try {
       setLoading(true);
-      const res = await fetch(
-        "https://shop-backend-1-dfsl.onrender.com/api/auth/forgot",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, userId }),
-        }
-      );
+
+      // ✅ 백엔드 URL을 환경변수에서 불러오도록 수정
+      const baseUrl =
+        import.meta.env.VITE_API_BASE_URL ||
+        "https://shop-backend-1-dfsl.onrender.com";
+
+      const res = await fetch(`${baseUrl}/api/auth/forgot`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, userId }),
+      });
 
       const data = await res.json();
+
       if (!res.ok) throw new Error(data.message || "비밀번호 재설정 요청 실패");
 
-      setMessage(data.message);
+      // ✅ 성공 시 메시지
+      setMessage("비밀번호 재설정 링크가 이메일로 전송되었습니다. 메일함을 확인해주세요!");
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "서버 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
@@ -61,11 +66,17 @@ export default function ForgotPassword() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition"
+            className={`py-3 rounded-lg text-white transition ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-black hover:bg-gray-800"
+            }`}
           >
             {loading ? "처리 중..." : "비밀번호 재설정 링크 받기"}
           </button>
         </form>
+
+        {/* ✅ 에러 / 성공 메시지 */}
         {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
         {message && <p className="text-green-600 mt-4 text-center">{message}</p>}
       </div>
