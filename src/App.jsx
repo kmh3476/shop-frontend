@@ -14,18 +14,19 @@ import Admin from "./pages/Admin";
 import ProductList from "./pages/ProductList";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
-import Signup from "./pages/Signup"; // ✅ 실제 회원가입 폼 파일 불러오기
-import FindId from "./pages/FindId"; // ✅ 아이디 찾기 페이지 추가
-import ForgotPassword from "./pages/ForgotPassword"; // ✅ 비밀번호 재설정 페이지 추가
+import Signup from "./pages/Signup";
+import FindId from "./pages/FindId";
+import ForgotPassword from "./pages/ForgotPassword";
+import Support from "./pages/Support"; // ✅ 고객센터 페이지 추가
 import { useState, useEffect } from "react";
-import { useAuth } from "./context/AuthContext"; // ✅ 전역 로그인 상태
-import { useAuth as useAuthContext } from "./context/AuthContext"; // ✅ 로그인 페이지용
+import { useAuth } from "./context/AuthContext";
+import { useAuth as useAuthContext } from "./context/AuthContext";
 
 /* -------------------- ✅ 로그인 페이지 -------------------- */
 function Login() {
   const navigate = useNavigate();
   const { login } = useAuthContext();
-  const [loginInput, setLoginInput] = useState(""); // ✅ 아이디 또는 이메일 통합 입력
+  const [loginInput, setLoginInput] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,8 +42,6 @@ function Login() {
 
     try {
       setLoading(true);
-
-      // ✅ 이메일 형식이면 email로, 아니면 userId로 전송
       const isEmail = /\S+@\S+\.\S+/.test(loginInput);
       const payload = isEmail
         ? { email: loginInput, password }
@@ -55,11 +54,10 @@ function Login() {
       });
 
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.message || "로그인 실패");
 
       if (data.token && data.user) {
-        login(data.user, data.token); // ✅ 로그인 상태 전역 반영
+        login(data.user, data.token);
         alert("로그인 성공!");
         navigate("/products");
       }
@@ -81,7 +79,6 @@ function Login() {
           </div>
         )}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* ✅ 아이디 또는 이메일 입력 필드 */}
           <input
             type="text"
             placeholder="아이디 또는 이메일을 입력하세요"
@@ -107,7 +104,6 @@ function Login() {
           </button>
         </form>
 
-        {/* ✅ 아이디/비밀번호 찾기 링크 추가 */}
         <div className="flex justify-between mt-4 text-sm text-gray-500">
           <Link to="/find-id" className="hover:text-black">
             아이디 찾기
@@ -154,13 +150,9 @@ function Navigation() {
   const { user, logout } = useAuth();
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
     const checkIsMobile = () => {
-      const mobile = window.matchMedia("(max-width: 768px)").matches;
-      setIsMobile(mobile);
+      setIsMobile(window.matchMedia("(max-width: 768px)").matches);
     };
-
     checkIsMobile();
     window.addEventListener("resize", checkIsMobile);
     return () => window.removeEventListener("resize", checkIsMobile);
@@ -234,22 +226,18 @@ function Navigation() {
           top: 0,
           right: 0,
           width: isMobile ? "90vw" : "38vw",
-          height: isMobile ? "300dvh" : "100vh",
+          height: "100vh",
           backgroundColor: "white",
-          color: "black",
           zIndex: 250,
           transform: isOpen ? "translateX(0)" : "translateX(100%)",
           transition: "transform 0.4s ease-in-out",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "flex-start",
-          overflow: "hidden",
-          paddingTop: isMobile ? "160px" : "120px",
-          pointerEvents: isOpen ? "auto" : "none",
+          paddingTop: "120px",
         }}
       >
-        {/* 🔸 상단 로그인/회원가입 or 사용자 정보 */}
+        {/* 상단 로그인/회원가입 */}
         <div
           style={{
             backgroundColor: "black",
@@ -258,7 +246,7 @@ function Navigation() {
             justifyContent: "center",
             alignItems: "center",
             gap: "24px",
-            fontSize: isMobile ? "32px" : "30px",
+            fontSize: "28px",
             fontWeight: "600",
             padding: "20px 0",
             width: "100%",
@@ -304,22 +292,22 @@ function Navigation() {
           )}
         </div>
 
-        {/* 🔸 메뉴 리스트 */}
-        <nav style={{ marginTop: "70px", width: "80%" }}>
+        {/* 메뉴 */}
+        <nav style={{ marginTop: "60px", width: "80%" }}>
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
             {[
+              ...(user?.isAdmin ? [{ path: "/admin", label: "관리자" }] : []), // ✅ 맨 위로 이동
               { path: "/products", label: "상품" },
               { path: "/cart", label: "장바구니" },
-              ...(user?.isAdmin ? [{ path: "/admin", label: "관리자" }] : []),
               { path: "/style", label: "스타일룸" },
               { path: "/sale", label: "이벤트/세일" },
-              { path: "/store", label: "매장안내" },
+              { path: "/support", label: "고객센터" }, // ✅ 추가됨
             ].map((item) => (
               <li
                 key={item.path}
                 style={{
                   marginBottom: "40px",
-                  fontSize: isMobile ? "36px" : "30px",
+                  fontSize: "30px",
                   fontWeight: "700",
                   textAlign: "center",
                 }}
@@ -338,21 +326,6 @@ function Navigation() {
             ))}
           </ul>
         </nav>
-
-        {/* 🔸 하단 고객센터 */}
-        <div
-          style={{
-            marginTop: "20px",
-            marginBottom: "60px",
-            textAlign: "center",
-            color: "#555",
-            fontSize: isMobile ? "24px" : "20px",
-            lineHeight: "1.6",
-          }}
-        >
-          <p>고객센터</p>
-          <p>제휴 / 입점안내</p>
-        </div>
       </div>
     </>
   );
@@ -363,7 +336,6 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* ✅ 홈 */}
         <Route
           path="/"
           element={
@@ -374,7 +346,6 @@ function App() {
           }
         />
 
-        {/* ✅ CleanLayout 하위 라우트 */}
         <Route
           element={
             <>
@@ -386,7 +357,6 @@ function App() {
           <Route path="/products" element={<ProductList />} />
           <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
-          {/* ✅ 관리자 보호 라우트 */}
           <Route
             path="/admin"
             element={
@@ -397,12 +367,11 @@ function App() {
           />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          {/* ✅ 추가된 부분 */}
           <Route path="/find-id" element={<FindId />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/support" element={<Support />} /> {/* ✅ 추가 */}
         </Route>
 
-        {/* ✅ fallback */}
         <Route
           path="*"
           element={
