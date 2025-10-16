@@ -304,33 +304,31 @@ function Navigation() {
           )}
         </div>
 
-        {/* 🔸 해시태그 스타일 메뉴 */}
+        {/* 🔸 메뉴 리스트 */}
         <nav style={{ marginTop: "70px", width: "80%" }}>
-          <ul
-            style={{
-              listStyle: "none",
-              padding: 0,
-              margin: 0,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "40px",
-              fontSize: isMobile ? "36px" : "30px",
-              fontWeight: "700",
-              color: "#666",
-            }}
-          >
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
             {[
-              { path: "/products", label: "#ALL" },
-              { path: "/products?category=top", label: "#Top" },
-              { path: "/products?category=bottom", label: "#Bottom" },
+              { path: "/products", label: "상품" },
+              { path: "/cart", label: "장바구니" },
+              ...(user?.isAdmin ? [{ path: "/admin", label: "관리자" }] : []),
+              { path: "/style", label: "스타일룸" },
+              { path: "/sale", label: "이벤트/세일" },
+              { path: "/store", label: "매장안내" },
             ].map((item) => (
-              <li key={item.path}>
+              <li
+                key={item.path}
+                style={{
+                  marginBottom: "40px",
+                  fontSize: isMobile ? "36px" : "30px",
+                  fontWeight: "700",
+                  textAlign: "center",
+                }}
+              >
                 <Link
                   to={item.path}
                   onClick={() => setIsOpen(false)}
                   style={{
-                    color: "#666",
+                    color: "black",
                     textDecoration: "none",
                   }}
                 >
@@ -340,6 +338,21 @@ function Navigation() {
             ))}
           </ul>
         </nav>
+
+        {/* 🔸 하단 고객센터 */}
+        <div
+          style={{
+            marginTop: "20px",
+            marginBottom: "60px",
+            textAlign: "center",
+            color: "#555",
+            fontSize: isMobile ? "24px" : "20px",
+            lineHeight: "1.6",
+          }}
+        >
+          <p>고객센터</p>
+          <p>제휴 / 입점안내</p>
+        </div>
       </div>
     </>
   );

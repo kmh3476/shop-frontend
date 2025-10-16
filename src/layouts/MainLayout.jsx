@@ -4,6 +4,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom"; // ✅ 추가
 
 function MainLayout() {
   // ✅ 추천상품 전용 카드 (정사각형 + 폰트 개선)
@@ -133,12 +134,33 @@ function MainLayout() {
       {/* 🔸 추천 상품 + 메뉴바 포함 */}
       <section className="flex flex-col items-center justify-center py-[10vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
         
-        {/* ✅ 메뉴 바 (추천상품 제목 위) */}
+        {/* ✅ 수정된 메뉴 바 */}
         <nav className="w-full bg-white shadow-md z-10 mb-12">
-          <ul className="max-w-[1200px] mx-auto flex justify-center gap-10 py-5 text-gray-800 font-semibold text-lg font-['Pretendard']">
-            <li className="hover:text-black cursor-pointer transition">상품목록</li>
-            <li className="hover:text-black cursor-pointer transition">장바구니</li>
-            <li className="hover:text-black cursor-pointer transition">관리자</li>
+          <ul className="max-w-[1200px] mx-auto flex justify-center gap-10 py-5 text-gray-600 font-semibold text-lg font-['Pretendard']">
+            <li>
+              <Link
+                to="/products"
+                className="hover:text-black transition"
+              >
+                #ALL
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/products?category=top"
+                className="hover:text-black transition"
+              >
+                #Top
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/products?category=bottom"
+                className="hover:text-black transition"
+              >
+                #Bottom
+              </Link>
+            </li>
           </ul>
         </nav>
 
