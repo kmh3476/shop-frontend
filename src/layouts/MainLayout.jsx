@@ -136,36 +136,36 @@ function MainLayout() {
         
         {/* ✅ 수정된 메뉴 바 */}
         <nav className="w-full bg-white shadow-md z-10 mb-12">
-          <ul className="max-w-[1200px] mx-auto flex justify-center gap-10 py-5 text-gray-600 font-semibold text-lg font-['Pretendard']">
-            <li>
-              <Link
-                to="/products"
-                className="hover:text-black transition"
-              >
-                #ALL
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/products?category=top"
-                className="hover:text-black transition"
-              >
-                #Top
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/products?category=bottom"
-                className="hover:text-black transition"
-              >
-                #Bottom
-              </Link>
-            </li>
-          </ul>
-        </nav>
+  <ul className="max-w-[1200px] mx-auto flex justify-center gap-10 py-5 text-gray-600 font-semibold text-lg font-['Pretendard']">
+    <li>
+      <Link
+        to="/products"
+        className="text-gray-600 hover:text-black no-underline transition"
+      >
+        #ALL
+      </Link>
+    </li>
+    <li>
+      <Link
+        to="/products?category=top"
+        className="text-gray-600 hover:text-black no-underline transition"
+      >
+        #Top
+      </Link>
+    </li>
+    <li>
+      <Link
+        to="/products?category=bottom"
+        className="text-gray-600 hover:text-black no-underline transition"
+      >
+        #Bottom
+      </Link>
+    </li>
+  </ul>
+</nav>
 
         <motion.h2
-          className="text-5xl md:text-6xl font-extrabold mb-12 drop-shadow-sm tracking-tight text-gray-900"
+          className="text-5xl md:text-6xl font-extrabold mb-12 drop-shadow-sm tracking-tight text-gray-600"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
