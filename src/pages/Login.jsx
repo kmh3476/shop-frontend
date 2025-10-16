@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export default function Login() {
-  const [userId, setUserId] = useState("");
+  const [loginInput, setLoginInput] = useState(""); // ✅ 아이디 또는 이메일 통합 입력
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
@@ -17,10 +17,10 @@ export default function Login() {
     setError("");
     setLoading(true);
 
-    // ✅ 기본 입력 검증
-    if (!userId.trim()) {
+    // ✅ 기본 검증
+    if (!loginInput.trim()) {
       setLoading(false);
-      return setError("아이디를 입력해주세요.");
+      return setError("아이디 또는 이메일을 입력해주세요.");
     }
     if (!password.trim()) {
       setLoading(false);
@@ -28,16 +28,19 @@ export default function Login() {
     }
 
     try {
-      // ✅ 실제 로그인 요청 (아이디 + 비밀번호 기반)
-      const res = await axios.post(API, {
-        userId,
-        password,
-      });
+      // ✅ 이메일 형식이면 email 필드로, 아니면 userId로 보냄
+      const isEmail = /\S+@\S+\.\S+/.test(loginInput);
+      const payload = isEmail
+        ? { email: loginInput, password }
+        : { userId: loginInput, password };
 
-      // ✅ 로그인 성공
+      // ✅ 백엔드 요청
+      const res = await axios.post(API, payload);
+
+      // ✅ 성공 시 토큰 저장 및 이동
       localStorage.setItem("token", res.data.token);
       alert("로그인 성공!");
-      navigate("/products"); // 로그인 후 이동
+      navigate("/products");
     } catch (err) {
       console.error("로그인 오류:", err);
       setError(err.response?.data?.message || "로그인 실패. 다시 시도해주세요.");
@@ -70,15 +73,15 @@ export default function Login() {
             </div>
           )}
 
-          {/* 아이디 입력 */}
+          {/* 아이디 또는 이메일 */}
           <label className="block text-sm font-medium text-gray-700">
-            아이디
+            아이디 또는 이메일
           </label>
           <input
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
+            value={loginInput}
+            onChange={(e) => setLoginInput(e.target.value)}
             type="text"
-            placeholder="아이디를 입력하세요"
+            placeholder="아이디 또는 이메일을 입력하세요"
             className="mt-1 mb-4 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
           />
 
