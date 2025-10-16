@@ -25,7 +25,7 @@ import { useAuth as useAuthContext } from "./context/AuthContext"; // ✅ 로그
 function Login() {
   const navigate = useNavigate();
   const { login } = useAuthContext();
-  const [email, setEmail] = useState("");
+  const [loginInput, setLoginInput] = useState(""); // ✅ 아이디 또는 이메일 통합 입력
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,16 +36,22 @@ function Login() {
     e.preventDefault();
     setError("");
 
-    if (!email || !password)
-      return setError("이메일과 비밀번호를 입력해주세요.");
+    if (!loginInput || !password)
+      return setError("아이디 또는 이메일과 비밀번호를 입력해주세요.");
 
     try {
       setLoading(true);
 
+      // ✅ 이메일 형식이면 email로, 아니면 userId로 전송
+      const isEmail = /\S+@\S+\.\S+/.test(loginInput);
+      const payload = isEmail
+        ? { email: loginInput, password }
+        : { userId: loginInput, password };
+
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -75,16 +81,17 @@ function Login() {
           </div>
         )}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* ✅ 아이디 또는 이메일 입력 필드 */}
           <input
-            type="email"
-            placeholder="이메일"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            placeholder="아이디 또는 이메일을 입력하세요"
+            value={loginInput}
+            onChange={(e) => setLoginInput(e.target.value)}
             className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-gray-600"
           />
           <input
             type="password"
-            placeholder="비밀번호"
+            placeholder="비밀번호를 입력하세요"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-gray-600"
@@ -259,7 +266,7 @@ function Navigation() {
         >
           {user ? (
             <>
-              <span>{user.name} 님</span>
+              <span>{user.nickname || user.userId} 님</span>
               <span>|</span>
               <button
                 onClick={() => {
