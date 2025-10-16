@@ -7,7 +7,6 @@ export default function Signup() {
   const [form, setForm] = useState({
     userId: "",
     nickname: "",
-    name: "",
     email: "",
     password: "",
     confirm: "",
@@ -122,7 +121,6 @@ export default function Signup() {
 
     if (!form.userId.trim()) return setError("아이디를 입력해주세요.");
     if (!form.nickname.trim()) return setError("닉네임을 입력해주세요.");
-    if (!form.name.trim()) return setError("이름을 입력해주세요.");
     if (!form.email || !/\S+@\S+\.\S+/.test(form.email))
       return setError("유효한 이메일을 입력해주세요.");
     if (!emailVerified) return setError("이메일 인증을 완료해주세요.");
@@ -140,10 +138,9 @@ export default function Signup() {
         body: JSON.stringify({
           userId: form.userId,
           nickname: form.nickname,
-          name: form.name,
           email: form.email,
           password: form.password,
-          emailVerified: true, // ✅ 인증 완료 후 전달
+          emailVerified: true,
         }),
       });
 
@@ -171,7 +168,9 @@ export default function Signup() {
               닫기
             </Link>
           </div>
-          <p className="mt-2 text-sm text-gray-200">간단한 가입으로 쇼핑을 시작하세요.</p>
+          <p className="mt-2 text-sm text-gray-200">
+            간단한 가입으로 쇼핑을 시작하세요.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 py-8">
@@ -190,7 +189,9 @@ export default function Signup() {
           {/* 아이디 */}
           <div className="flex gap-2 items-end">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700">아이디</label>
+              <label className="block text-sm font-medium text-gray-700">
+                아이디
+              </label>
               <input
                 name="userId"
                 value={form.userId}
@@ -212,7 +213,9 @@ export default function Signup() {
           {/* 닉네임 */}
           <div className="flex gap-2 items-end mt-3">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700">닉네임</label>
+              <label className="block text-sm font-medium text-gray-700">
+                닉네임
+              </label>
               <input
                 name="nickname"
                 value={form.nickname}
@@ -231,20 +234,12 @@ export default function Signup() {
             </button>
           </div>
 
-          {/* 이름 */}
-          <label className="block text-sm font-medium text-gray-700 mt-3">이름</label>
-          <input
-            name="name"
-            value={form.name}
-            onChange={onChange}
-            placeholder="이름 입력"
-            className="mt-1 mb-4 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          />
-
           {/* 이메일 + 인증 */}
-          <div className="flex gap-2 items-end">
+          <div className="flex gap-2 items-end mt-3">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700">이메일</label>
+              <label className="block text-sm font-medium text-gray-700">
+                이메일
+              </label>
               <input
                 name="email"
                 type="email"
@@ -260,7 +255,9 @@ export default function Signup() {
               onClick={sendEmailCode}
               disabled={sendingEmail || emailVerified}
               className={`h-[42px] ${
-                emailVerified ? "bg-green-500" : "bg-indigo-700 hover:bg-indigo-800"
+                emailVerified
+                  ? "bg-green-500"
+                  : "bg-indigo-700 hover:bg-indigo-800"
               } text-white px-3 py-2 rounded-lg text-sm`}
             >
               {emailVerified ? "인증완료" : sendingEmail ? "전송중..." : "인증요청"}
@@ -287,7 +284,9 @@ export default function Signup() {
           )}
 
           {/* 비밀번호 */}
-          <label className="block text-sm font-medium text-gray-700 mt-4">비밀번호</label>
+          <label className="block text-sm font-medium text-gray-700 mt-4">
+            비밀번호
+          </label>
           <input
             name="password"
             type="password"
@@ -297,7 +296,9 @@ export default function Signup() {
             className="mt-1 mb-4 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
 
-          <label className="block text-sm font-medium text-gray-700">비밀번호 확인</label>
+          <label className="block text-sm font-medium text-gray-700">
+            비밀번호 확인
+          </label>
           <input
             name="confirm"
             type="password"
