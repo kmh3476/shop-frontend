@@ -136,7 +136,7 @@ function MainLayout() {
         
         {/* ✅ 수정된 메뉴 바 */}
         <nav className="w-full bg-white shadow-md z-10 mb-12">
-  <ul className="max-w-[1200px] mx-auto flex justify-center gap-10 py-5 text-gray-600 font-semibold text-lg font-['Pretendard']">
+  <ul className="max-w-[1200px] mx-auto flex justify-center gap-16 py-6 text-gray-600 font-bold text-5xl font-['Pretendard']">
     <li>
       <Link
         to="/products"
