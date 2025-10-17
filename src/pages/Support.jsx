@@ -8,8 +8,12 @@ export default function Support() {
   const [reply, setReply] = useState({});
   const [loading, setLoading] = useState(false);
 
-  // ✅ 백엔드 API 주소 (Render에서 배포된 백엔드)
+  // ✅ 백엔드 API 주소
   const API = "https://shop-backend-1-dfsl.onrender.com/api/support";
+
+  // ✅ JWT 토큰 (관리자 인증용)
+  const token = localStorage.getItem("token");
+  const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
 
   // ✅ 문의 목록 불러오기
   useEffect(() => {
@@ -18,10 +22,13 @@ export default function Support() {
 
   async function fetchPosts() {
     try {
-      const res = await axios.get(API);
+      const res = await axios.get(API, { headers: authHeaders });
       setPosts(res.data);
     } catch (err) {
       console.error("게시글 불러오기 실패:", err);
+      if (err.response?.status === 401) {
+        alert("관리자 인증이 필요합니다. 로그인 후 다시 시도해주세요.");
+      }
     }
   }
 
@@ -53,13 +60,17 @@ export default function Support() {
   async function handleReply(id) {
     if (!reply[id]) return alert("답변 내용을 입력해주세요.");
     try {
-      await axios.post(`${API}/${id}/reply`, { reply: reply[id] });
+      await axios.post(`${API}/${id}/reply`, { reply: reply[id] }, { headers: authHeaders });
       alert("답변이 이메일로 전송되었습니다.");
       setReply({ ...reply, [id]: "" });
       fetchPosts();
     } catch (err) {
       console.error("답변 실패:", err);
-      alert("답변 전송 중 오류 발생");
+      if (err.response?.status === 401) {
+        alert("관리자 권한이 없습니다. 로그인 후 다시 시도해주세요.");
+      } else {
+        alert("답변 전송 중 오류가 발생했습니다.");
+      }
     }
   }
 
@@ -131,13 +142,17 @@ export default function Support() {
                 >
                   <td className="p-3 text-center">{posts.length - i}</td>
                   <td className="p-3 text-sm">{p.email}</td>
-                  <td className="p-3 font-semibold text-gray-800">{p.subject}</td>
+                  <td className="p-3 font-semibold text-gray-800">
+                    {p.subject}
+                  </td>
                   <td className="p-3 text-gray-700 text-sm">{p.message}</td>
 
                   {/* ✅ 상태 표시 */}
                   <td className="p-3 text-center">
                     {p.reply ? (
-                      <span className="text-green-600 font-medium">답변 완료</span>
+                      <span className="text-green-600 font-medium">
+                        답변 완료
+                      </span>
                     ) : p.isRead ? (
                       <span className="text-blue-600 font-medium">읽음</span>
                     ) : (
