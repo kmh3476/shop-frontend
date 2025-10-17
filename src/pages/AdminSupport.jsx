@@ -19,11 +19,6 @@ export default function AdminSupport() {
     },
   };
 
-  useEffect(() => {
-    if (!token) return;
-    fetchPosts();
-  }, [token]);
-
   /* ✅ 관리자 여부 확인 */
   useEffect(() => {
     if (user && !user.isAdmin) {
@@ -33,16 +28,32 @@ export default function AdminSupport() {
   }, [user]);
 
   /* ✅ 문의 목록 불러오기 */
+  useEffect(() => {
+    if (!token) {
+      console.warn("⚠️ 관리자 토큰이 없습니다. 로그인 후 접근하세요.");
+      return;
+    }
+    fetchPosts();
+  }, [token]);
+
   async function fetchPosts() {
     try {
-      const res = await axios.get(`${API}`, axiosConfig);
+      console.log("📡 관리자 문의 목록 요청 시작:", API);
+      const res = await axios.get(API, axiosConfig);
+
+      console.log("✅ 관리자 문의 목록 응답:", res.status, res.data);
       setPosts(res.data);
     } catch (err) {
-      console.error("문의 목록 조회 실패:", err.response || err.message);
+      console.error("❌ 문의 목록 조회 실패:", err.response || err.message);
+
       if (err.response?.status === 401) {
-        alert("인증이 만료되었거나 관리자 권한이 없습니다.");
+        alert("인증이 만료되었거나 관리자 권한이 없습니다. 다시 로그인해주세요.");
+        window.location.href = "/login";
+      } else if (err.response?.status === 403) {
+        alert("관리자 권한이 없습니다.");
+        window.location.href = "/";
       } else {
-        alert("문의 목록을 불러올 수 없습니다.");
+        alert("문의 목록을 불러올 수 없습니다. (서버 응답 오류)");
       }
     }
   }
@@ -51,12 +62,13 @@ export default function AdminSupport() {
   async function handleReply(id) {
     if (!reply[id]) return alert("답변 내용을 입력하세요.");
     try {
-      await axios.post(`${API}/${id}/reply`, { reply: reply[id] }, axiosConfig);
+      const res = await axios.post(`${API}/${id}/reply`, { reply: reply[id] }, axiosConfig);
+      console.log("✅ 답변 전송 완료:", res.data);
       alert("답변이 성공적으로 전송되었습니다!");
       setReply({ ...reply, [id]: "" });
       fetchPosts();
     } catch (err) {
-      console.error("답변 전송 실패:", err.response || err.message);
+      console.error("❌ 답변 전송 실패:", err.response || err.message);
       if (err.response?.status === 401) {
         alert("관리자 권한이 없거나 세션이 만료되었습니다.");
       } else {
@@ -69,11 +81,12 @@ export default function AdminSupport() {
   async function handleDelete(id) {
     if (!window.confirm("정말 이 문의를 삭제하시겠습니까?")) return;
     try {
-      await axios.delete(`${API}/${id}`, axiosConfig);
+      const res = await axios.delete(`${API}/${id}`, axiosConfig);
+      console.log("🗑️ 문의 삭제 성공:", res.data);
       alert("문의가 삭제되었습니다.");
       fetchPosts();
     } catch (err) {
-      console.error("삭제 실패:", err.response || err.message);
+      console.error("❌ 삭제 실패:", err.response || err.message);
       alert("문의 삭제 중 오류가 발생했습니다.");
     }
   }
@@ -81,10 +94,11 @@ export default function AdminSupport() {
   /* ✅ 읽음 처리 토글 */
   async function toggleRead(id, current) {
     try {
-      await axios.patch(`${API}/${id}`, { isRead: !current }, axiosConfig);
+      const res = await axios.patch(`${API}/${id}`, { isRead: !current }, axiosConfig);
+      console.log("👁️ 읽음 상태 변경:", res.data);
       fetchPosts();
     } catch (err) {
-      console.error("읽음 상태 변경 실패:", err.response || err.message);
+      console.error("❌ 읽음 상태 변경 실패:", err.response || err.message);
     }
   }
 
@@ -143,9 +157,7 @@ export default function AdminSupport() {
                   {/* 내용 */}
                   <td className="p-3 text-gray-700">
                     {p.isPrivate ? (
-                      <span className="text-gray-400 italic">
-                        (비공개 문의입니다)
-                      </span>
+                      <span className="text-gray-400 italic">(비공개 문의입니다)</span>
                     ) : p.message ? (
                       <div className="whitespace-pre-wrap">{p.message}</div>
                     ) : (
@@ -236,10 +248,7 @@ export default function AdminSupport() {
               ))
             ) : (
               <tr>
-                <td
-                  colSpan="7"
-                  className="text-center text-gray-500 py-10 text-lg"
-                >
+                <td colSpan="7" className="text-center text-gray-500 py-10 text-lg">
                   등록된 문의가 없습니다.
                 </td>
               </tr>
