@@ -11,69 +11,90 @@ export default function AdminSupport() {
 
   const API = "https://shop-backend-1-dfsl.onrender.com/api/support";
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
+  /* ✅ 공통 Axios 헤더 설정 */
+  const axiosConfig = {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : "",
+      "Content-Type": "application/json",
+    },
+  };
 
-  // ✅ 문의 목록 불러오기
+  useEffect(() => {
+    if (!token) return;
+    fetchPosts();
+  }, [token]);
+
+  /* ✅ 관리자 여부 확인 */
+  useEffect(() => {
+    if (user && !user.isAdmin) {
+      alert("관리자만 접근 가능한 페이지입니다.");
+      window.location.href = "/";
+    }
+  }, [user]);
+
+  /* ✅ 문의 목록 불러오기 */
   async function fetchPosts() {
     try {
-      const res = await axios.get(`${API}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(`${API}`, axiosConfig);
       setPosts(res.data);
     } catch (err) {
-      console.error("문의 목록 조회 실패:", err);
-      alert("문의 목록을 불러올 수 없습니다. 관리자 권한을 확인하세요.");
+      console.error("문의 목록 조회 실패:", err.response || err.message);
+      if (err.response?.status === 401) {
+        alert("인증이 만료되었거나 관리자 권한이 없습니다.");
+      } else {
+        alert("문의 목록을 불러올 수 없습니다.");
+      }
     }
   }
 
-  // ✅ 관리자 답변 전송
+  /* ✅ 관리자 답변 전송 */
   async function handleReply(id) {
     if (!reply[id]) return alert("답변 내용을 입력하세요.");
     try {
-      await axios.post(
-        `${API}/${id}/reply`,
-        { reply: reply[id] },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.post(`${API}/${id}/reply`, { reply: reply[id] }, axiosConfig);
       alert("답변이 성공적으로 전송되었습니다!");
       setReply({ ...reply, [id]: "" });
       fetchPosts();
     } catch (err) {
-      console.error("답변 전송 실패:", err);
-      alert("답변 전송 중 오류 발생.");
+      console.error("답변 전송 실패:", err.response || err.message);
+      if (err.response?.status === 401) {
+        alert("관리자 권한이 없거나 세션이 만료되었습니다.");
+      } else {
+        alert("답변 전송 중 오류가 발생했습니다.");
+      }
     }
   }
 
-  // ✅ 문의 삭제
+  /* ✅ 문의 삭제 */
   async function handleDelete(id) {
     if (!window.confirm("정말 이 문의를 삭제하시겠습니까?")) return;
     try {
-      await axios.delete(`${API}/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.delete(`${API}/${id}`, axiosConfig);
       alert("문의가 삭제되었습니다.");
       fetchPosts();
     } catch (err) {
-      console.error("삭제 실패:", err);
+      console.error("삭제 실패:", err.response || err.message);
       alert("문의 삭제 중 오류가 발생했습니다.");
     }
   }
 
-  // ✅ 읽음 처리 토글
+  /* ✅ 읽음 처리 토글 */
   async function toggleRead(id, current) {
     try {
-      await axios.patch(
-        `${API}/${id}`,
-        { isRead: !current },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.patch(`${API}/${id}`, { isRead: !current }, axiosConfig);
       fetchPosts();
     } catch (err) {
-      console.error("읽음 상태 변경 실패:", err);
+      console.error("읽음 상태 변경 실패:", err.response || err.message);
     }
   }
+
+  /* ✅ 이메일 중간 모자이크 처리 */
+  const maskEmail = (email) => {
+    if (!email) return "";
+    const [id, domain] = email.split("@");
+    const visible = id.slice(0, 2);
+    return `${visible}${"*".repeat(Math.max(0, id.length - 2))}@${domain}`;
+  };
 
   return (
     <div className="min-h-screen bg-white text-black py-12 px-6 font-['Pretendard']">
@@ -108,8 +129,8 @@ export default function AdminSupport() {
                   {/* 번호 */}
                   <td className="p-3 text-center">{posts.length - i}</td>
 
-                  {/* 이메일 */}
-                  <td className="p-3">{p.email}</td>
+                  {/* 이메일 (모자이크 처리) */}
+                  <td className="p-3">{maskEmail(p.email)}</td>
 
                   {/* 제목 */}
                   <td className="p-3 font-semibold text-gray-800">
@@ -121,12 +142,14 @@ export default function AdminSupport() {
 
                   {/* 내용 */}
                   <td className="p-3 text-gray-700">
-                    {p.message ? (
+                    {p.isPrivate ? (
+                      <span className="text-gray-400 italic">
+                        (비공개 문의입니다)
+                      </span>
+                    ) : p.message ? (
                       <div className="whitespace-pre-wrap">{p.message}</div>
                     ) : (
-                      <span className="text-gray-400 italic">
-                        (내용 없음)
-                      </span>
+                      <span className="text-gray-400 italic">(내용 없음)</span>
                     )}
                   </td>
 
@@ -154,9 +177,7 @@ export default function AdminSupport() {
                   <td className="p-3">
                     {p.reply && !editMode[p._id] ? (
                       <div>
-                        <p className="text-green-700 font-medium">
-                          {p.reply}
-                        </p>
+                        <p className="text-green-700 font-medium">{p.reply}</p>
                         <p className="text-xs text-gray-400 mt-1">
                           ({new Date(p.repliedAt).toLocaleString("ko-KR")})
                         </p>
