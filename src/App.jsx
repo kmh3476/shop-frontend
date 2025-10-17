@@ -18,7 +18,8 @@ import Cart from "./pages/Cart";
 import Signup from "./pages/Signup";
 import FindId from "./pages/FindId";
 import ForgotPassword from "./pages/ForgotPassword";
-import Support from "./pages/Support"; // ✅ 고객센터 페이지 추가
+import Support from "./pages/Support"; // ✅ 일반 고객센터
+import AdminSupport from "./pages/AdminSupport"; // ✅ 관리자 고객센터 추가
 import { useState, useEffect } from "react";
 import { useAuth } from "./context/AuthContext";
 import { useAuth as useAuthContext } from "./context/AuthContext";
@@ -236,6 +237,7 @@ function Navigation() {
           flexDirection: "column",
           alignItems: "center",
           paddingTop: "120px",
+          boxShadow: isOpen ? "-8px 0 20px rgba(0,0,0,0.1)" : "none",
         }}
       >
         {/* 상단 로그인/회원가입 */}
@@ -296,7 +298,12 @@ function Navigation() {
         {/* 메뉴 */}
         <nav style={{ marginTop: "60px", width: "80%" }}>
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            {[...(user?.isAdmin ? [{ path: "/admin", label: "관리자" }] : []),
+            {[...(user?.isAdmin
+              ? [
+                  { path: "/admin", label: "관리자 홈" },
+                  { path: "/admin/support", label: "고객센터 관리" },
+                ]
+              : []),
               { path: "/products", label: "상품" },
               { path: "/cart", label: "장바구니" },
               { path: "/style", label: "스타일룸" },
@@ -359,6 +366,11 @@ function App() {
           <Route path="/products" element={<ProductList />} />
           <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
+
+          {/* ✅ 고객센터 */}
+          <Route path="/support" element={<Support />} />
+
+          {/* ✅ 관리자 전용 */}
           <Route
             path="/admin"
             element={
@@ -367,11 +379,20 @@ function App() {
               </AdminRoute>
             }
           />
+          <Route
+            path="/admin/support"
+            element={
+              <AdminRoute>
+                <AdminSupport />
+              </AdminRoute>
+            }
+          />
+
+          {/* ✅ 인증 관련 */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/find-id" element={<FindId />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/support" element={<Support />} /> {/* ✅ 고객센터 페이지 추가 */}
         </Route>
 
         {/* 404 */}

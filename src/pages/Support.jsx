@@ -11,7 +11,7 @@ export default function Support() {
   // ✅ 백엔드 API 주소 (Render에서 배포된 백엔드)
   const API = "https://shop-backend-1-dfsl.onrender.com/api/support";
 
-  // ✅ 게시글 목록 불러오기
+  // ✅ 문의 목록 불러오기
   useEffect(() => {
     fetchPosts();
   }, []);
@@ -33,7 +33,11 @@ export default function Support() {
 
     try {
       setLoading(true);
-      await axios.post(API, newPost);
+      await axios.post(API, {
+        email: newPost.email,
+        subject: newPost.title,
+        message: newPost.message,
+      });
       alert("문의가 등록되었습니다! 답변은 이메일로 발송됩니다.");
       setNewPost({ email: "", title: "", message: "" });
       fetchPosts();
@@ -45,7 +49,7 @@ export default function Support() {
     }
   }
 
-  // ✅ 관리자 답변
+  // ✅ 관리자 답변 전송
   async function handleReply(id) {
     if (!reply[id]) return alert("답변 내용을 입력해주세요.");
     try {
@@ -108,11 +112,12 @@ export default function Support() {
         <table className="w-full border-collapse border-t border-gray-300">
           <thead className="bg-gray-100">
             <tr className="text-left">
-              <th className="p-3 w-[10%]">번호</th>
-              <th className="p-3 w-[20%]">이메일</th>
-              <th className="p-3 w-[30%]">제목</th>
-              <th className="p-3 w-[30%]">내용</th>
-              <th className="p-3 w-[10%]">답변</th>
+              <th className="p-3 w-[8%]">번호</th>
+              <th className="p-3 w-[15%]">이메일</th>
+              <th className="p-3 w-[20%]">제목</th>
+              <th className="p-3 w-[27%]">내용</th>
+              <th className="p-3 w-[10%]">상태</th>
+              <th className="p-3 w-[20%]">답변</th>
             </tr>
           </thead>
           <tbody>
@@ -120,15 +125,35 @@ export default function Support() {
               posts.map((p, i) => (
                 <tr
                   key={p._id}
-                  className="border-b border-gray-200 hover:bg-gray-50 transition"
+                  className={`border-b border-gray-200 transition ${
+                    p.isRead ? "bg-white" : "bg-yellow-50"
+                  }`}
                 >
                   <td className="p-3 text-center">{posts.length - i}</td>
-                  <td className="p-3">{p.email}</td>
-                  <td className="p-3 font-semibold text-gray-800">{p.title}</td>
-                  <td className="p-3 text-gray-700">{p.message}</td>
-                  <td className="p-3">
+                  <td className="p-3 text-sm">{p.email}</td>
+                  <td className="p-3 font-semibold text-gray-800">{p.subject}</td>
+                  <td className="p-3 text-gray-700 text-sm">{p.message}</td>
+
+                  {/* ✅ 상태 표시 */}
+                  <td className="p-3 text-center">
                     {p.reply ? (
                       <span className="text-green-600 font-medium">답변 완료</span>
+                    ) : p.isRead ? (
+                      <span className="text-blue-600 font-medium">읽음</span>
+                    ) : (
+                      <span className="text-gray-500">안 읽음</span>
+                    )}
+                  </td>
+
+                  {/* ✅ 관리자 답변 */}
+                  <td className="p-3">
+                    {p.reply ? (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-2 text-sm">
+                        <strong>답변:</strong> {p.reply}
+                        <div className="text-xs text-gray-400 mt-1">
+                          ({new Date(p.repliedAt).toLocaleString("ko-KR")})
+                        </div>
+                      </div>
                     ) : (
                       <div className="flex flex-col gap-2">
                         <textarea
@@ -154,7 +179,7 @@ export default function Support() {
             ) : (
               <tr>
                 <td
-                  colSpan="5"
+                  colSpan="6"
                   className="text-center text-gray-500 py-8 text-lg"
                 >
                   등록된 문의가 없습니다.
