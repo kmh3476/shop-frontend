@@ -1,6 +1,7 @@
 // 📁 src/pages/Support.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 export default function Support() {
   const [posts, setPosts] = useState([]);
@@ -12,7 +13,9 @@ export default function Support() {
     isPrivate: false,
   });
   const [loading, setLoading] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
 
+  const { user } = useAuth();
   const API = "https://shop-backend-1-dfsl.onrender.com/api/support";
 
   useEffect(() => {
@@ -29,12 +32,11 @@ export default function Support() {
     }
   }
 
-  // ✅ 이메일 모자이크 처리
-  function maskEmail(email) {
+  // ✅ 이메일(닉네임 형태) 표시
+  function displayEmail(email) {
     if (!email.includes("@")) return email;
-    const [id, domain] = email.split("@");
-    if (id.length <= 3) return "***@" + domain;
-    return id.slice(0, 3) + "***@" + domain;
+    const [id] = email.split("@");
+    return id.slice(0, 2) + "****";
   }
 
   // ✅ 문의 작성
@@ -63,12 +65,27 @@ export default function Support() {
     }
   }
 
+  // ✅ 클릭 시 상세보기 (공개글 or 본인글만)
+  function handleViewDetail(post) {
+    const isOwner = user?.email && post.email.includes(user.email.slice(0, 3));
+    if (post.isPrivate && !isOwner) {
+      alert("비공개 문의는 작성자만 볼 수 있습니다.");
+      return;
+    }
+    setSelectedPost(post);
+  }
+
+  // ✅ 상세보기 닫기
+  function closeDetail() {
+    setSelectedPost(null);
+  }
+
   return (
     <div className="min-h-screen bg-white text-black py-16 px-4 font-['Pretendard']">
       <h1 className="text-5xl font-extrabold text-center mb-14">고객센터</h1>
 
       {/* ✅ 글쓰기 버튼 */}
-      {!showForm && (
+      {!showForm && !selectedPost && (
         <div className="text-center mb-10">
           <button
             onClick={() => setShowForm(true)}
@@ -80,7 +97,7 @@ export default function Support() {
       )}
 
       {/* ✅ 문의 작성 폼 */}
-      {showForm && (
+      {showForm && !selectedPost && (
         <div className="max-w-3xl mx-auto mb-16 bg-gray-50 rounded-2xl p-8 shadow">
           <h2 className="text-2xl font-bold mb-6">문의 작성</h2>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -140,64 +157,114 @@ export default function Support() {
         </div>
       )}
 
+      {/* ✅ 상세 보기 모달 */}
+      {selectedPost && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl w-[90%] relative">
+            <button
+              onClick={closeDetail}
+              className="absolute top-3 right-4 text-gray-500 hover:text-black text-2xl"
+            >
+              ✕
+            </button>
+            <h2 className="text-2xl font-bold mb-4">{selectedPost.subject}</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              {displayEmail(selectedPost.email)} •{" "}
+              {new Date(selectedPost.createdAt).toLocaleString("ko-KR")}
+            </p>
+            <div className="border-t border-gray-200 pt-4 text-gray-800 whitespace-pre-wrap">
+              {selectedPost.message}
+            </div>
+
+            {selectedPost.reply && (
+              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h3 className="font-semibold text-green-700 mb-2">
+                  💬 관리자 답변
+                </h3>
+                <p className="text-gray-800 whitespace-pre-wrap">
+                  {selectedPost.reply}
+                </p>
+                <p className="text-xs text-gray-500 mt-2">
+                  {new Date(selectedPost.repliedAt).toLocaleString("ko-KR")}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ✅ 문의 목록 */}
-      <div className="max-w-6xl mx-auto">
-        <h2 className="text-3xl font-bold mb-6">문의 목록</h2>
-        <table className="w-full border-collapse border-t border-gray-300">
-          <thead className="bg-gray-100">
-            <tr className="text-left">
-              <th className="p-3 w-[8%]">번호</th>
-              <th className="p-3 w-[20%]">이메일</th>
-              <th className="p-3 w-[25%]">제목</th>
-              <th className="p-3 w-[35%]">내용</th>
-              <th className="p-3 w-[12%]">상태</th>
-            </tr>
-          </thead>
-          <tbody>
-            {posts.length > 0 ? (
-              posts.map((p, i) => (
-                <tr
-                  key={p._id}
-                  className="border-b border-gray-200 hover:bg-gray-50 transition"
-                >
-                  <td className="p-3 text-center">{posts.length - i}</td>
-                  <td className="p-3 text-sm">{maskEmail(p.email)}</td>
-                  <td className="p-3 font-semibold text-gray-800">
-                    {p.subject}
-                  </td>
-                  <td className="p-3 text-gray-700 text-sm">
-                    {p.isPrivate ? (
-                      <span className="italic text-gray-400">
-                        🔒 비공개 문의입니다.
-                      </span>
-                    ) : (
-                      p.message
-                    )}
-                  </td>
-                  <td className="p-3 text-center">
-                    {p.reply ? (
-                      <span className="text-green-600 font-medium">
-                        답변 완료
-                      </span>
-                    ) : (
-                      <span className="text-gray-500">처리 중</span>
-                    )}
+      {!selectedPost && (
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold mb-6">문의 목록</h2>
+          <table className="w-full border-collapse border-t border-gray-300">
+            <thead className="bg-gray-100">
+              <tr className="text-left">
+                <th className="p-3 w-[8%]">번호</th>
+                <th className="p-3 w-[20%]">작성자</th>
+                <th className="p-3 w-[25%]">제목</th>
+                <th className="p-3 w-[35%]">내용</th>
+                <th className="p-3 w-[12%]">상태</th>
+              </tr>
+            </thead>
+            <tbody>
+              {posts.length > 0 ? (
+                posts.map((p, i) => {
+                  const isOwner =
+                    user?.email && p.email.includes(user.email.slice(0, 3));
+                  const visible =
+                    !p.isPrivate || isOwner; // 공개글 또는 본인 글
+                  return (
+                    <tr
+                      key={p._id}
+                      className="border-b border-gray-200 hover:bg-gray-50 transition cursor-pointer"
+                      onClick={() => handleViewDetail(p)}
+                    >
+                      <td className="p-3 text-center">{posts.length - i}</td>
+                      <td className="p-3 text-sm">{displayEmail(p.email)}</td>
+                      <td className="p-3 font-semibold text-gray-800 flex items-center gap-1">
+                        {p.subject}
+                        {p.isPrivate && (
+                          <span className="text-xs text-gray-500">🔒</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-gray-700 text-sm">
+                        {visible ? (
+                          p.message.length > 40
+                            ? p.message.slice(0, 40) + "..."
+                            : p.message
+                        ) : (
+                          <span className="italic text-gray-400">
+                            🔒 비공개 문의입니다.
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-3 text-center">
+                        {p.reply ? (
+                          <span className="text-green-600 font-medium">
+                            답변 완료
+                          </span>
+                        ) : (
+                          <span className="text-gray-500">처리 중</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td
+                    colSpan="5"
+                    className="text-center text-gray-500 py-8 text-lg"
+                  >
+                    등록된 문의가 없습니다.
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan="5"
-                  className="text-center text-gray-500 py-8 text-lg"
-                >
-                  등록된 문의가 없습니다.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

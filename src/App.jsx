@@ -18,11 +18,13 @@ import Cart from "./pages/Cart";
 import Signup from "./pages/Signup";
 import FindId from "./pages/FindId";
 import ForgotPassword from "./pages/ForgotPassword";
-import Support from "./pages/Support"; // ✅ 일반 고객센터
-import AdminSupport from "./pages/AdminSupport"; // ✅ 관리자 고객센터
+import Support from "./pages/Support";
+import AdminSupport from "./pages/AdminSupport";
 import { useState, useEffect } from "react";
 import { useAuth } from "./context/AuthContext";
 import { useAuth as useAuthContext } from "./context/AuthContext";
+import { Mail } from "lucide-react"; // ✅ 메일 아이콘 추가
+import MailModal from "./components/MailModal"; // ✅ 새 모달 컴포넌트 불러오기
 
 /* -------------------- ✅ 로그인 페이지 -------------------- */
 function Login() {
@@ -149,6 +151,7 @@ function Navigation() {
   const isHome = location.pathname === "/";
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showMailModal, setShowMailModal] = useState(false); // ✅ 메일 모달 상태 추가
   const { user, logout } = useAuth();
 
   useEffect(() => {
@@ -246,7 +249,7 @@ function Navigation() {
           boxShadow: isOpen ? "-8px 0 20px rgba(0,0,0,0.1)" : "none",
         }}
       >
-        {/* 상단 로그인/회원가입 */}
+        {/* 상단 로그인/회원가입 + 메일아이콘 */}
         <div
           style={{
             backgroundColor: "black",
@@ -259,6 +262,7 @@ function Navigation() {
             fontWeight: "600",
             padding: "20px 0",
             width: "100%",
+            position: "relative",
           }}
         >
           {user ? (
@@ -279,6 +283,16 @@ function Navigation() {
               >
                 로그아웃
               </button>
+              {/* ✅ 메일 아이콘 추가 */}
+              <Mail
+                size={28}
+                style={{
+                  position: "absolute",
+                  right: "40px",
+                  cursor: "pointer",
+                }}
+                onClick={() => setShowMailModal(true)}
+              />
             </>
           ) : (
             <>
@@ -342,6 +356,9 @@ function Navigation() {
           </ul>
         </nav>
       </div>
+
+      {/* ✅ 메일 모달 */}
+      {showMailModal && <MailModal onClose={() => setShowMailModal(false)} />}
     </>
   );
 }
@@ -351,7 +368,6 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* 홈 */}
         <Route
           path="/"
           element={
@@ -362,7 +378,6 @@ function App() {
           }
         />
 
-        {/* 클린 레이아웃 */}
         <Route
           element={
             <>
@@ -374,11 +389,8 @@ function App() {
           <Route path="/products" element={<ProductList />} />
           <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
-
-          {/* ✅ 고객센터 */}
           <Route path="/support" element={<Support />} />
 
-          {/* ✅ 관리자 전용 */}
           <Route
             path="/admin"
             element={
@@ -396,14 +408,12 @@ function App() {
             }
           />
 
-          {/* ✅ 인증 관련 */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/find-id" element={<FindId />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
         </Route>
 
-        {/* 404 */}
         <Route
           path="*"
           element={
