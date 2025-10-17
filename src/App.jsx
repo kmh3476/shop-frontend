@@ -19,7 +19,7 @@ import Signup from "./pages/Signup";
 import FindId from "./pages/FindId";
 import ForgotPassword from "./pages/ForgotPassword";
 import Support from "./pages/Support"; // ✅ 일반 고객센터
-import AdminSupport from "./pages/AdminSupport"; // ✅ 관리자 고객센터 추가
+import AdminSupport from "./pages/AdminSupport"; // ✅ 관리자 고객센터
 import { useState, useEffect } from "react";
 import { useAuth } from "./context/AuthContext";
 import { useAuth as useAuthContext } from "./context/AuthContext";
@@ -157,8 +157,14 @@ function Navigation() {
     };
     checkIsMobile();
     window.addEventListener("resize", checkIsMobile);
-    return () => window.removeEventListener("resize", checkIsMobile);
-  }, []);
+    document.body.style.overflow = isOpen ? "hidden" : "auto";
+    return () => {
+      document.body.style.overflow = "auto";
+      window.removeEventListener("resize", checkIsMobile);
+    };
+  }, [isOpen]);
+
+  const isActive = (path) => location.pathname.startsWith(path);
 
   return (
     <>
@@ -315,7 +321,7 @@ function Navigation() {
                 style={{
                   marginBottom: "40px",
                   fontSize: "30px",
-                  fontWeight: "700",
+                  fontWeight: isActive(item.path) ? "900" : "700",
                   textAlign: "center",
                 }}
               >
@@ -323,8 +329,10 @@ function Navigation() {
                   to={item.path}
                   onClick={() => setIsOpen(false)}
                   style={{
-                    color: "black",
-                    textDecoration: "none",
+                    color: isActive(item.path) ? "#000" : "#444",
+                    textDecoration: isActive(item.path)
+                      ? "underline"
+                      : "none",
                   }}
                 >
                   {item.label}
