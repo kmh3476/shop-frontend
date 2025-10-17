@@ -1,4 +1,5 @@
-﻿import {
+﻿// 📁 src/App.jsx
+import {
   BrowserRouter as Router,
   Routes,
   Route,
@@ -295,13 +296,12 @@ function Navigation() {
         {/* 메뉴 */}
         <nav style={{ marginTop: "60px", width: "80%" }}>
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            {[
-              ...(user?.isAdmin ? [{ path: "/admin", label: "관리자" }] : []), // ✅ 맨 위로 이동
+            {[...(user?.isAdmin ? [{ path: "/admin", label: "관리자" }] : []),
               { path: "/products", label: "상품" },
               { path: "/cart", label: "장바구니" },
               { path: "/style", label: "스타일룸" },
               { path: "/sale", label: "이벤트/세일" },
-              { path: "/support", label: "고객센터" }, // ✅ 추가됨
+              { path: "/support", label: "고객센터" },
             ].map((item) => (
               <li
                 key={item.path}
@@ -336,6 +336,7 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* 홈 */}
         <Route
           path="/"
           element={
@@ -346,6 +347,7 @@ function App() {
           }
         />
 
+        {/* 클린 레이아웃 */}
         <Route
           element={
             <>
@@ -369,9 +371,10 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/find-id" element={<FindId />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/support" element={<Support />} /> {/* ✅ 추가 */}
+          <Route path="/support" element={<Support />} /> {/* ✅ 고객센터 페이지 추가 */}
         </Route>
 
+        {/* 404 */}
         <Route
           path="*"
           element={
