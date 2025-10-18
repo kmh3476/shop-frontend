@@ -74,7 +74,7 @@ export default function MailModal({ onClose }) {
       return;
 
     for (const id of selectedIds) {
-      await handleDelete(id);
+      await Promise.all(selectedIds.map((id) => handleDelete(id)));
     }
     setSelectedIds([]);
   }
@@ -398,7 +398,7 @@ export default function MailModal({ onClose }) {
                     lineHeight: "1.6",
                   }}
                 >
-                  {selectedMail.message}
+                  {selectedMail.adminReply}
                 </p>
               </div>
 
