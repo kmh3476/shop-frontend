@@ -151,7 +151,7 @@ function Navigation() {
   const isHome = location.pathname === "/";
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [showMailModal, setShowMailModal] = useState(false); // ✅ 메일 모달 상태 추가
+  const [showMailModal, setShowMailModal] = useState(false);
   const { user, logout } = useAuth();
 
   useEffect(() => {
@@ -249,7 +249,7 @@ function Navigation() {
           boxShadow: isOpen ? "-8px 0 20px rgba(0,0,0,0.1)" : "none",
         }}
       >
-        {/* 상단 로그인/회원가입 + 메일아이콘 */}
+        {/* 상단 로그인/회원가입 */}
         <div
           style={{
             backgroundColor: "black",
@@ -283,16 +283,6 @@ function Navigation() {
               >
                 로그아웃
               </button>
-              {/* ✅ 메일 아이콘 추가 */}
-              <Mail
-                size={28}
-                style={{
-                  position: "absolute",
-                  right: "40px",
-                  cursor: "pointer",
-                }}
-                onClick={() => setShowMailModal(true)}
-              />
             </>
           ) : (
             <>
@@ -314,6 +304,27 @@ function Navigation() {
             </>
           )}
         </div>
+
+        {/* ✅ 메일 아이콘을 검정 배경 밖으로 이동 */}
+        {user && isOpen && (
+          <Mail
+            size={32}
+            style={{
+              position: "fixed",
+              top: "100px",
+              right: isMobile ? "70px" : "12vw",
+              color: "#000",
+              backgroundColor: "white",
+              borderRadius: "50%",
+              padding: "8px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+              zIndex: 260,
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+            }}
+            onClick={() => setShowMailModal(true)}
+          />
+        )}
 
         {/* 메뉴 */}
         <nav style={{ marginTop: "60px", width: "80%" }}>
