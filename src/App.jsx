@@ -308,16 +308,16 @@ function Navigation() {
         {/* ✅ 메일 아이콘을 검정 배경 밖으로 이동 */}
         {user && isOpen && (
   <Mail
-    size={32} // 🔹 아이콘 크기
     style={{
       position: "fixed",
-      top: "6px",          // 🔹 위쪽 거리
-      right: "550px",      // 🔹 오른쪽 거리
-      color: "#000",       // 🔹 검정색 아이콘
+      top: "20px",       // 🔹 위쪽 위치
+      right: "410px",    // 🔹 오른쪽 위치
+      width: "80px",     // 🔹 너비
+      height: "80px",    // 🔹 높이
+      color: "#000",     // 🔹 아이콘 색상
       zIndex: 260,
       cursor: "pointer",
       transition: "all 0.3s ease",
-      // ✅ 원 배경 제거 및 모서리 유지 (borderRadius / backgroundColor / padding / shadow 제거)
     }}
     onClick={() => setShowMailModal(true)}
   />
