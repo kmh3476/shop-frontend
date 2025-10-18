@@ -307,24 +307,21 @@ function Navigation() {
 
         {/* ✅ 메일 아이콘을 검정 배경 밖으로 이동 */}
         {user && isOpen && (
-          <Mail
-            size={100}
-            style={{
-              position: "fixed",
-              top: "60px",
-              right: isMobile ? "100px" : "12vw",
-              color: "#000",
-              backgroundColor: "white",
-              borderRadius: "50%",
-              padding: "8px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-              zIndex: 260,
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-            }}
-            onClick={() => setShowMailModal(true)}
-          />
-        )}
+  <Mail
+    size={32} // 🔹 아이콘 크기
+    style={{
+      position: "fixed",
+      top: "6px",          // 🔹 위쪽 거리
+      right: "550px",      // 🔹 오른쪽 거리
+      color: "#000",       // 🔹 검정색 아이콘
+      zIndex: 260,
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      // ✅ 원 배경 제거 및 모서리 유지 (borderRadius / backgroundColor / padding / shadow 제거)
+    }}
+    onClick={() => setShowMailModal(true)}
+  />
+)}
 
         {/* 메뉴 */}
         <nav style={{ marginTop: "60px", width: "80%" }}>
