@@ -311,7 +311,7 @@ function Navigation() {
     style={{
       position: "fixed",
       top: "20px",       // 🔹 위쪽 위치
-      right: "410px",    // 🔹 오른쪽 위치
+      right: "600px",    // 🔹 오른쪽 위치
       width: "80px",     // 🔹 너비
       height: "80px",    // 🔹 높이
       color: "#000",     // 🔹 아이콘 색상
