@@ -1,12 +1,13 @@
 // 📁 src/components/MailModal.jsx
 import { useEffect, useState } from "react";
-import { X, Trash2, MailOpen } from "lucide-react";
+import { X, Trash2, MailOpen, CheckSquare, Square } from "lucide-react";
 
 export default function MailModal({ onClose }) {
   const [replies, setReplies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedMail, setSelectedMail] = useState(null); // ✅ 추가: 선택된 메일 상태
+  const [selectedMail, setSelectedMail] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]); // ✅ 선택된 메일 ID 저장
 
   const API_URL = "https://shop-backend-1-dfsl.onrender.com/api/support/replies";
   const token = localStorage.getItem("token");
@@ -61,10 +62,36 @@ export default function MailModal({ onClose }) {
       if (!res.ok) throw new Error(data.message || "삭제 실패");
 
       setReplies((prev) => prev.filter((r) => r._id !== id));
+      setSelectedIds((prev) => prev.filter((sid) => sid !== id));
     } catch (err) {
       alert(err.message);
     }
   }
+
+  async function handleBulkDelete() {
+    if (selectedIds.length === 0) return alert("삭제할 메일을 선택하세요.");
+    if (!window.confirm(`${selectedIds.length}개의 메일을 삭제하시겠습니까?`))
+      return;
+
+    for (const id of selectedIds) {
+      await handleDelete(id);
+    }
+    setSelectedIds([]);
+  }
+
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === replies.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(replies.map((r) => r._id));
+    }
+  };
 
   return (
     <div
@@ -87,8 +114,8 @@ export default function MailModal({ onClose }) {
           background: "white",
           borderRadius: "20px",
           width: "90%",
-          maxWidth: "600px",
-          maxHeight: "80vh",
+          maxWidth: "650px",
+          maxHeight: "85vh",
           overflowY: "auto",
           position: "relative",
           padding: "30px 20px",
@@ -117,12 +144,50 @@ export default function MailModal({ onClose }) {
             textAlign: "center",
             fontSize: "24px",
             fontWeight: "700",
-            marginBottom: "20px",
+            marginBottom: "10px",
           }}
         >
           📬 관리자 답장함
         </h2>
 
+        {/* ✅ 전체선택 / 선택삭제 버튼 */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            gap: "12px",
+            marginBottom: "15px",
+          }}
+        >
+          <button
+            onClick={toggleSelectAll}
+            style={{
+              background: "#f3f3f3",
+              border: "1px solid #ccc",
+              borderRadius: "6px",
+              padding: "6px 10px",
+              cursor: "pointer",
+            }}
+          >
+            {selectedIds.length === replies.length ? "선택 해제" : "전체 선택"}
+          </button>
+          <button
+            onClick={handleBulkDelete}
+            style={{
+              background: "#ff4d4f",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              padding: "6px 10px",
+              cursor: "pointer",
+            }}
+          >
+            선택 삭제
+          </button>
+        </div>
+
+        {/* ✅ 로딩 / 에러 / 데이터 표시 */}
         {loading ? (
           <p style={{ textAlign: "center", color: "#777" }}>불러오는 중...</p>
         ) : error ? (
@@ -136,7 +201,7 @@ export default function MailModal({ onClose }) {
             {replies.map((reply) => (
               <li
                 key={reply._id}
-                onClick={() => setSelectedMail(reply)} // ✅ 추가: 클릭 시 상세 보기
+                onClick={() => setSelectedMail(reply)}
                 style={{
                   border: "1px solid #e5e7eb",
                   borderRadius: "12px",
@@ -144,62 +209,84 @@ export default function MailModal({ onClose }) {
                   marginBottom: "15px",
                   backgroundColor: "#fafafa",
                   position: "relative",
-                  cursor: "pointer", // ✅ 클릭 가능 표시
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "10px",
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    marginBottom: "8px",
-                  }}
-                >
-                  <MailOpen size={20} color="#555" />
-                  <h3
-                    style={{
-                      fontSize: "18px",
-                      fontWeight: "600",
-                      margin: 0,
-                    }}
-                  >
-                    {reply.inquiryTitle || "제목 없음"}
-                  </h3>
+                {/* ✅ 체크박스 */}
+                <div onClick={(e) => e.stopPropagation()}>
+                  {selectedIds.includes(reply._id) ? (
+                    <CheckSquare
+                      color="#007bff"
+                      onClick={() => toggleSelect(reply._id)}
+                      style={{ cursor: "pointer" }}
+                    />
+                  ) : (
+                    <Square
+                      color="#aaa"
+                      onClick={() => toggleSelect(reply._id)}
+                      style={{ cursor: "pointer" }}
+                    />
+                  )}
                 </div>
 
-                <p
-                  style={{
-                    fontSize: "15px",
-                    color: "#444",
-                    marginTop: "4px",
-                    whiteSpace: "pre-line",
-                  }}
-                >
-                  {reply.message}
-                </p>
+                {/* ✅ 메일 내용 */}
+                <div style={{ flexGrow: 1 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <MailOpen size={20} color="#555" />
+                    <h3
+                      style={{
+                        fontSize: "18px",
+                        fontWeight: "600",
+                        margin: 0,
+                      }}
+                    >
+                      {reply.inquiryTitle || "제목 없음"}
+                    </h3>
+                  </div>
 
-                <p
-                  style={{
-                    fontSize: "13px",
-                    color: "#777",
-                    marginTop: "8px",
-                  }}
-                >
-                  📅 {new Date(reply.createdAt).toLocaleString()}
-                </p>
+                  <p
+                    style={{
+                      fontSize: "15px",
+                      color: "#444",
+                      marginTop: "4px",
+                      whiteSpace: "pre-line",
+                    }}
+                  >
+                    {reply.message}
+                  </p>
 
+                  <p
+                    style={{
+                      fontSize: "13px",
+                      color: "#777",
+                      marginTop: "8px",
+                    }}
+                  >
+                    📅 {new Date(reply.createdAt).toLocaleString()}
+                  </p>
+                </div>
+
+                {/* ✅ 삭제 버튼 */}
                 <button
                   onClick={(e) => {
-                    e.stopPropagation(); // ✅ 클릭 시 상세 보기로 안 넘어가게
+                    e.stopPropagation();
                     handleDelete(reply._id);
                   }}
                   style={{
-                    position: "absolute",
-                    top: "10px",
-                    right: "10px",
                     background: "none",
                     border: "none",
                     cursor: "pointer",
+                    marginLeft: "auto",
                   }}
                   title="삭제"
                 >
@@ -210,7 +297,7 @@ export default function MailModal({ onClose }) {
           </ul>
         )}
 
-        {/* ✅ 추가: 선택된 메일 상세 보기 모달 */}
+        {/* ✅ 선택된 메일 상세 보기 모달 */}
         {selectedMail && (
           <div
             style={{
@@ -266,16 +353,54 @@ export default function MailModal({ onClose }) {
                 {selectedMail.inquiryTitle || "제목 없음"}
               </h3>
 
-              <p
+              {/* 내가 쓴 문의 */}
+              <div
                 style={{
-                  fontSize: "16px",
-                  color: "#444",
-                  whiteSpace: "pre-line",
-                  lineHeight: "1.6",
+                  marginBottom: "25px",
+                  background: "#f9f9f9",
+                  padding: "15px",
+                  borderRadius: "10px",
+                  border: "1px solid #eee",
                 }}
               >
-                {selectedMail.message}
-              </p>
+                <p style={{ fontWeight: "600", color: "#333", marginBottom: "6px" }}>
+                  ✉️ 내가 보낸 문의
+                </p>
+                <p
+                  style={{
+                    fontSize: "15px",
+                    color: "#444",
+                    whiteSpace: "pre-line",
+                    lineHeight: "1.6",
+                  }}
+                >
+                  {selectedMail.inquiryMessage || "내용을 불러올 수 없습니다."}
+                </p>
+              </div>
+
+              {/* 관리자 답장 */}
+              <div
+                style={{
+                  background: "#fff5e6",
+                  padding: "15px",
+                  borderRadius: "10px",
+                  border: "1px solid #f0c36d",
+                }}
+              >
+                <p style={{ fontWeight: "600", color: "#c27800", marginBottom: "6px" }}>
+                  🧑‍💼 관리자 답장
+                </p>
+                <p
+                  style={{
+                    fontSize: "15px",
+                    color: "#555",
+                    whiteSpace: "pre-line",
+                    lineHeight: "1.6",
+                  }}
+                >
+                  {selectedMail.message}
+                </p>
+              </div>
 
               <p
                 style={{
