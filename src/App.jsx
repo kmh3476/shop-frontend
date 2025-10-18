@@ -308,11 +308,11 @@ function Navigation() {
         {/* ✅ 메일 아이콘을 검정 배경 밖으로 이동 */}
         {user && isOpen && (
           <Mail
-            size={32}
+            size={100}
             style={{
               position: "fixed",
-              top: "100px",
-              right: isMobile ? "70px" : "12vw",
+              top: "60px",
+              right: isMobile ? "100px" : "12vw",
               color: "#000",
               backgroundColor: "white",
               borderRadius: "50%",
