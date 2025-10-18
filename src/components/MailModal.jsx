@@ -6,8 +6,9 @@ export default function MailModal({ onClose }) {
   const [replies, setReplies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedMail, setSelectedMail] = useState(null); // ✅ 추가: 선택된 메일 상태
 
-  const API_URL = "https://shop-backend-1-dfsl.onrender.com/api/support/replies"; // ✅ 관리자 답장 불러오는 API
+  const API_URL = "https://shop-backend-1-dfsl.onrender.com/api/support/replies";
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export default function MailModal({ onClose }) {
         });
 
         const data = await res.json();
-        console.log("📬 메일함 응답:", data); // ✅ 콘솔에 응답 출력 (디버깅용)
+        console.log("📬 메일함 응답:", data);
 
         if (!res.ok) {
           throw new Error(data.message || "메일을 불러올 수 없습니다.");
@@ -79,7 +80,7 @@ export default function MailModal({ onClose }) {
         justifyContent: "center",
         zIndex: 9999,
       }}
-      onClick={onClose} // ✅ 배경 클릭 시 닫기
+      onClick={onClose}
     >
       <div
         style={{
@@ -93,9 +94,8 @@ export default function MailModal({ onClose }) {
           padding: "30px 20px",
           boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
         }}
-        onClick={(e) => e.stopPropagation()} // ✅ 내부 클릭 시 닫히지 않게
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* 닫기 버튼 */}
         <button
           onClick={onClose}
           style={{
@@ -123,7 +123,6 @@ export default function MailModal({ onClose }) {
           📬 관리자 답장함
         </h2>
 
-        {/* 로딩 / 에러 / 데이터 표시 */}
         {loading ? (
           <p style={{ textAlign: "center", color: "#777" }}>불러오는 중...</p>
         ) : error ? (
@@ -137,6 +136,7 @@ export default function MailModal({ onClose }) {
             {replies.map((reply) => (
               <li
                 key={reply._id}
+                onClick={() => setSelectedMail(reply)} // ✅ 추가: 클릭 시 상세 보기
                 style={{
                   border: "1px solid #e5e7eb",
                   borderRadius: "12px",
@@ -144,6 +144,7 @@ export default function MailModal({ onClose }) {
                   marginBottom: "15px",
                   backgroundColor: "#fafafa",
                   position: "relative",
+                  cursor: "pointer", // ✅ 클릭 가능 표시
                 }}
               >
                 <div
@@ -187,9 +188,11 @@ export default function MailModal({ onClose }) {
                   📅 {new Date(reply.createdAt).toLocaleString()}
                 </p>
 
-                {/* 삭제 버튼 */}
                 <button
-                  onClick={() => handleDelete(reply._id)}
+                  onClick={(e) => {
+                    e.stopPropagation(); // ✅ 클릭 시 상세 보기로 안 넘어가게
+                    handleDelete(reply._id);
+                  }}
                   style={{
                     position: "absolute",
                     top: "10px",
@@ -205,6 +208,87 @@ export default function MailModal({ onClose }) {
               </li>
             ))}
           </ul>
+        )}
+
+        {/* ✅ 추가: 선택된 메일 상세 보기 모달 */}
+        {selectedMail && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              background: "rgba(0,0,0,0.7)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 10000,
+            }}
+            onClick={() => setSelectedMail(null)}
+          >
+            <div
+              style={{
+                background: "white",
+                borderRadius: "20px",
+                width: "90%",
+                maxWidth: "600px",
+                padding: "40px 30px",
+                position: "relative",
+                boxShadow: "0 10px 40px rgba(0,0,0,0.4)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setSelectedMail(null)}
+                style={{
+                  position: "absolute",
+                  top: "20px",
+                  right: "20px",
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                }}
+                title="닫기"
+              >
+                <X size={28} />
+              </button>
+
+              <h3
+                style={{
+                  fontSize: "22px",
+                  fontWeight: "700",
+                  marginBottom: "16px",
+                  borderBottom: "1px solid #ddd",
+                  paddingBottom: "8px",
+                }}
+              >
+                {selectedMail.inquiryTitle || "제목 없음"}
+              </h3>
+
+              <p
+                style={{
+                  fontSize: "16px",
+                  color: "#444",
+                  whiteSpace: "pre-line",
+                  lineHeight: "1.6",
+                }}
+              >
+                {selectedMail.message}
+              </p>
+
+              <p
+                style={{
+                  fontSize: "14px",
+                  color: "#777",
+                  marginTop: "20px",
+                  textAlign: "right",
+                }}
+              >
+                📅 {new Date(selectedMail.createdAt).toLocaleString()}
+              </p>
+            </div>
+          </div>
         )}
       </div>
     </div>
