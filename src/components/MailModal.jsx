@@ -8,30 +8,41 @@ export default function MailModal({ onClose }) {
   const [error, setError] = useState("");
 
   const API_URL = "https://shop-backend-1-dfsl.onrender.com/api/support/replies"; // ✅ 관리자 답장 불러오는 API
-
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     async function fetchReplies() {
       try {
+        if (!token) {
+          setError("로그인이 필요합니다.");
+          setLoading(false);
+          return;
+        }
+
         const res = await fetch(API_URL, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
-        const data = await res.json();
 
-        if (!res.ok) throw new Error(data.message || "메일을 불러올 수 없습니다.");
+        const data = await res.json();
+        console.log("📬 메일함 응답:", data); // ✅ 콘솔에 응답 출력 (디버깅용)
+
+        if (!res.ok) {
+          throw new Error(data.message || "메일을 불러올 수 없습니다.");
+        }
+
         setReplies(data.replies || []);
       } catch (err) {
-        setError(err.message);
+        console.error("메일 로드 중 오류:", err);
+        setError(err.message || "서버 오류가 발생했습니다.");
       } finally {
         setLoading(false);
       }
     }
 
-    if (token) fetchReplies();
+    fetchReplies();
   }, [token]);
 
   async function handleDelete(id) {
@@ -68,6 +79,7 @@ export default function MailModal({ onClose }) {
         justifyContent: "center",
         zIndex: 9999,
       }}
+      onClick={onClose} // ✅ 배경 클릭 시 닫기
     >
       <div
         style={{
@@ -81,6 +93,7 @@ export default function MailModal({ onClose }) {
           padding: "30px 20px",
           boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
         }}
+        onClick={(e) => e.stopPropagation()} // ✅ 내부 클릭 시 닫히지 않게
       >
         {/* 닫기 버튼 */}
         <button
@@ -92,7 +105,9 @@ export default function MailModal({ onClose }) {
             border: "none",
             background: "transparent",
             cursor: "pointer",
+            color: "#666",
           }}
+          title="닫기"
         >
           <X size={26} />
         </button>
@@ -108,12 +123,15 @@ export default function MailModal({ onClose }) {
           📬 관리자 답장함
         </h2>
 
+        {/* 로딩 / 에러 / 데이터 표시 */}
         {loading ? (
-          <p className="text-center text-gray-500">불러오는 중...</p>
+          <p style={{ textAlign: "center", color: "#777" }}>불러오는 중...</p>
         ) : error ? (
-          <p className="text-center text-red-600">{error}</p>
+          <p style={{ textAlign: "center", color: "red" }}>❌ {error}</p>
         ) : replies.length === 0 ? (
-          <p className="text-center text-gray-500">받은 답장이 없습니다.</p>
+          <p style={{ textAlign: "center", color: "#555" }}>
+            받은 답장이 없습니다.
+          </p>
         ) : (
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
             {replies.map((reply) => (
@@ -128,23 +146,44 @@ export default function MailModal({ onClose }) {
                   position: "relative",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    marginBottom: "8px",
+                  }}
+                >
                   <MailOpen size={20} color="#555" />
-                  <h3 style={{ fontSize: "18px", fontWeight: "600", margin: 0 }}>
+                  <h3
+                    style={{
+                      fontSize: "18px",
+                      fontWeight: "600",
+                      margin: 0,
+                    }}
+                  >
                     {reply.inquiryTitle || "제목 없음"}
                   </h3>
                 </div>
+
                 <p
                   style={{
                     fontSize: "15px",
                     color: "#444",
-                    marginTop: "8px",
+                    marginTop: "4px",
                     whiteSpace: "pre-line",
                   }}
                 >
                   {reply.message}
                 </p>
-                <p style={{ fontSize: "13px", color: "#777", marginTop: "5px" }}>
+
+                <p
+                  style={{
+                    fontSize: "13px",
+                    color: "#777",
+                    marginTop: "8px",
+                  }}
+                >
                   📅 {new Date(reply.createdAt).toLocaleString()}
                 </p>
 
