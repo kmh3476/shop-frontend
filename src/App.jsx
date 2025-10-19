@@ -25,7 +25,8 @@ import { useAuth } from "./context/AuthContext";
 import { useAuth as useAuthContext } from "./context/AuthContext";
 import { Mail } from "lucide-react";
 import MailModal from "./components/MailModal";
-import { SiteSettingsProvider } from "./context/SiteSettingsContext"; // ✅ 전역 사이트 설정 추가
+import { SiteSettingsProvider } from "./context/SiteSettingsContext"; // ✅ 전역 사이트 설정
+import { EditModeProvider } from "./context/EditModeContext"; // ✅ 편집 모드 Context 추가
 
 /* -------------------- ✅ 로그인 페이지 -------------------- */
 function Login() {
@@ -361,73 +362,75 @@ function Navigation() {
 /* -------------------- ✅ 라우팅 -------------------- */
 function App() {
   return (
-    <SiteSettingsProvider>
-      <Router>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <div style={{ position: "relative" }}>
-                <MainLayout />
-                <Navigation />
-              </div>
-            }
-          />
-          <Route
-            element={
-              <>
-                <Navigation />
-                <CleanLayout />
-              </>
-            }
-          >
-            <Route path="/products" element={<ProductList />} />
-            <Route path="/products/:id" element={<ProductDetail />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/support" element={<Support />} />
+    <EditModeProvider> {/* ✅ 새로 추가된 Provider */}
+      <SiteSettingsProvider>
+        <Router>
+          <Routes>
             <Route
-              path="/admin"
+              path="/"
               element={
-                <AdminRoute>
-                  <Admin />
-                </AdminRoute>
+                <div style={{ position: "relative" }}>
+                  <MainLayout />
+                  <Navigation />
+                </div>
               }
             />
             <Route
-              path="/admin/support"
               element={
-                <AdminRoute>
-                  <AdminSupport />
-                </AdminRoute>
+                <>
+                  <Navigation />
+                  <CleanLayout />
+                </>
+              }
+            >
+              <Route path="/products" element={<ProductList />} />
+              <Route path="/products/:id" element={<ProductDetail />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/support" element={<Support />} />
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <Admin />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/support"
+                element={
+                  <AdminRoute>
+                    <AdminSupport />
+                  </AdminRoute>
+                }
+              />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/find-id" element={<FindId />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+            </Route>
+            <Route
+              path="*"
+              element={
+                <div style={{ padding: "40px", textAlign: "center" }}>
+                  <h2>🚫 페이지를 찾을 수 없습니다.</h2>
+                  <Link
+                    to="/"
+                    style={{
+                      marginTop: "10px",
+                      display: "inline-block",
+                      color: "#2563eb",
+                      textDecoration: "underline",
+                    }}
+                  >
+                    홈으로 이동
+                  </Link>
+                </div>
               }
             />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/find-id" element={<FindId />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-          </Route>
-          <Route
-            path="*"
-            element={
-              <div style={{ padding: "40px", textAlign: "center" }}>
-                <h2>🚫 페이지를 찾을 수 없습니다.</h2>
-                <Link
-                  to="/"
-                  style={{
-                    marginTop: "10px",
-                    display: "inline-block",
-                    color: "#2563eb",
-                    textDecoration: "underline",
-                  }}
-                >
-                  홈으로 이동
-                </Link>
-              </div>
-            }
-          />
-        </Routes>
-      </Router>
-    </SiteSettingsProvider>
+          </Routes>
+        </Router>
+      </SiteSettingsProvider>
+    </EditModeProvider>
   );
 }
 
