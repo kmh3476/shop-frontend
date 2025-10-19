@@ -4,23 +4,27 @@ import { useEditMode } from "../context/EditModeContext";
 
 /**
  * ✅ 사용법:
- * <EditableText
- *   id="hero-title"
- *   defaultText="기본 문구"
- *   apiUrl="http://localhost:1337/api/texts"
- * />
+ * <EditableText id="hero-title" defaultText="기본 문구" />
  */
-export default function EditableText({ id, defaultText, apiUrl }) {
+export default function EditableText({ id, defaultText }) {
   const { isEditMode } = useEditMode();
   const [text, setText] = useState(defaultText);
   const [isEditing, setIsEditing] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  // ✅ 컴포넌트가 처음 로드될 때 Strapi에서 데이터 불러오기
+  // ✅ 환경 변수에서 Strapi API 정보 불러오기
+  const apiUrl = `${import.meta.env.VITE_STRAPI_URL}/api/texts`;
+  const token = import.meta.env.VITE_STRAPI_TOKEN;
+
+  // ✅ Strapi에서 기존 텍스트 불러오기
   useEffect(() => {
     async function fetchText() {
       try {
-        const res = await fetch(`${apiUrl}?filters[key][$eq]=${id}`);
+        const res = await fetch(`${apiUrl}?filters[key][$eq]=${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const data = await res.json();
         const strapiText = data.data?.[0]?.attributes?.content;
         if (strapiText) setText(strapiText);
@@ -29,20 +33,21 @@ export default function EditableText({ id, defaultText, apiUrl }) {
       }
     }
     fetchText();
-  }, [id, apiUrl]);
+  }, [id, apiUrl, token]);
 
-  // ✅ 수정된 텍스트를 Strapi로 저장
+  // ✅ 수정된 텍스트를 Strapi에 저장
   async function saveToStrapi(newText) {
     try {
-      // 먼저 기존 데이터가 있는지 확인
-      const checkRes = await fetch(`${apiUrl}?filters[key][$eq]=${id}`);
+      // 기존 데이터 확인
+      const checkRes = await fetch(`${apiUrl}?filters[key][$eq]=${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const checkData = await checkRes.json();
 
       const existing = checkData.data?.[0];
-      const url = existing
-        ? `${apiUrl}/${existing.id}`
-        : apiUrl;
-
+      const url = existing ? `${apiUrl}/${existing.id}` : apiUrl;
       const method = existing ? "PUT" : "POST";
 
       const payload = existing
@@ -51,11 +56,16 @@ export default function EditableText({ id, defaultText, apiUrl }) {
 
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) throw new Error("저장 실패");
+      console.log(`✅ Strapi에 저장 완료: ${id} = ${newText}`);
+
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
@@ -63,7 +73,7 @@ export default function EditableText({ id, defaultText, apiUrl }) {
     }
   }
 
-  // ✅ 수정 완료 시 저장
+  // ✅ 수정 완료 시 자동 저장
   const handleBlur = (e) => {
     const newText = e.target.innerText.trim();
     setText(newText);
