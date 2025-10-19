@@ -23,8 +23,9 @@ import AdminSupport from "./pages/AdminSupport";
 import { useState, useEffect } from "react";
 import { useAuth } from "./context/AuthContext";
 import { useAuth as useAuthContext } from "./context/AuthContext";
-import { Mail } from "lucide-react"; // ✅ 메일 아이콘 추가
-import MailModal from "./components/MailModal"; // ✅ 새 모달 컴포넌트 불러오기
+import { Mail } from "lucide-react";
+import MailModal from "./components/MailModal";
+import { SiteSettingsProvider } from "./context/SiteSettingsContext"; // ✅ 전역 사이트 설정 추가
 
 /* -------------------- ✅ 로그인 페이지 -------------------- */
 function Login() {
@@ -145,7 +146,7 @@ function AdminRoute({ children }) {
   return children;
 }
 
-/* -------------------- ✅ 햄버거 메뉴 -------------------- */
+/* -------------------- ✅ 네비게이션 -------------------- */
 function Navigation() {
   const location = useLocation();
   const isHome = location.pathname === "/";
@@ -201,7 +202,6 @@ function Navigation() {
             width: "80px",
             height: "10px",
             backgroundColor: isHome ? "white" : "#333",
-            borderRadius: "1px",
             transform: isOpen ? "rotate(45deg) translate(20px, 18px)" : "none",
             transition: "transform 0.3s ease",
           }}
@@ -211,7 +211,6 @@ function Navigation() {
             width: "80px",
             height: "10px",
             backgroundColor: isHome ? "white" : "#333",
-            borderRadius: "1px",
             opacity: isOpen ? 0 : 1,
             transition: "opacity 0.3s ease",
           }}
@@ -221,7 +220,6 @@ function Navigation() {
             width: "80px",
             height: "10px",
             backgroundColor: isHome ? "white" : "#333",
-            borderRadius: "1px",
             transform: isOpen
               ? "rotate(-45deg) translate(20px, -18px)"
               : "none",
@@ -230,7 +228,7 @@ function Navigation() {
         />
       </div>
 
-      {/* 🔹 슬라이드 메뉴 */}
+      {/* 🔹 메뉴 패널 */}
       <div
         style={{
           position: "fixed",
@@ -286,44 +284,35 @@ function Navigation() {
             </>
           ) : (
             <>
-              <Link
-                to="/login"
-                onClick={() => setIsOpen(false)}
-                style={{ color: "white", textDecoration: "none" }}
-              >
+              <Link to="/login" onClick={() => setIsOpen(false)} style={{ color: "white" }}>
                 로그인
               </Link>
               <span>|</span>
-              <Link
-                to="/signup"
-                onClick={() => setIsOpen(false)}
-                style={{ color: "white", textDecoration: "none" }}
-              >
+              <Link to="/signup" onClick={() => setIsOpen(false)} style={{ color: "white" }}>
                 회원가입
               </Link>
             </>
           )}
         </div>
 
-        {/* ✅ 메일 아이콘을 검정 배경 밖으로 이동 */}
+        {/* ✅ 메일 아이콘 */}
         {user && isOpen && (
-  <Mail
-    style={{
-      position: "fixed",
-      top: "20px",       // 🔹 위쪽 위치
-      right: "600px",    // 🔹 오른쪽 위치
-      width: "80px",     // 🔹 너비
-      height: "80px",    // 🔹 높이
-      color: "#000",     // 🔹 아이콘 색상
-      zIndex: 260,
-      cursor: "pointer",
-      transition: "all 0.3s ease",
-    }}
-    onClick={() => setShowMailModal(true)}
-  />
-)}
+          <Mail
+            style={{
+              position: "fixed",
+              top: "20px",
+              right: "600px",
+              width: "80px",
+              height: "80px",
+              color: "#000",
+              zIndex: 260,
+              cursor: "pointer",
+            }}
+            onClick={() => setShowMailModal(true)}
+          />
+        )}
 
-        {/* 메뉴 */}
+        {/* 메뉴 목록 */}
         <nav style={{ marginTop: "60px", width: "80%" }}>
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
             {[...(user?.isAdmin
@@ -352,9 +341,7 @@ function Navigation() {
                   onClick={() => setIsOpen(false)}
                   style={{
                     color: isActive(item.path) ? "#000" : "#444",
-                    textDecoration: isActive(item.path)
-                      ? "underline"
-                      : "none",
+                    textDecoration: isActive(item.path) ? "underline" : "none",
                   }}
                 >
                   {item.label}
@@ -374,75 +361,73 @@ function Navigation() {
 /* -------------------- ✅ 라우팅 -------------------- */
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <div style={{ position: "relative" }}>
-              <MainLayout />
-              <Navigation />
-            </div>
-          }
-        />
-
-        <Route
-          element={
-            <>
-              <Navigation />
-              <CleanLayout />
-            </>
-          }
-        >
-          <Route path="/products" element={<ProductList />} />
-          <Route path="/products/:id" element={<ProductDetail />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/support" element={<Support />} />
-
+    <SiteSettingsProvider>
+      <Router>
+        <Routes>
           <Route
-            path="/admin"
+            path="/"
             element={
-              <AdminRoute>
-                <Admin />
-              </AdminRoute>
+              <div style={{ position: "relative" }}>
+                <MainLayout />
+                <Navigation />
+              </div>
             }
           />
           <Route
-            path="/admin/support"
             element={
-              <AdminRoute>
-                <AdminSupport />
-              </AdminRoute>
+              <>
+                <Navigation />
+                <CleanLayout />
+              </>
+            }
+          >
+            <Route path="/products" element={<ProductList />} />
+            <Route path="/products/:id" element={<ProductDetail />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/support" element={<Support />} />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <Admin />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/support"
+              element={
+                <AdminRoute>
+                  <AdminSupport />
+                </AdminRoute>
+              }
+            />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/find-id" element={<FindId />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+          </Route>
+          <Route
+            path="*"
+            element={
+              <div style={{ padding: "40px", textAlign: "center" }}>
+                <h2>🚫 페이지를 찾을 수 없습니다.</h2>
+                <Link
+                  to="/"
+                  style={{
+                    marginTop: "10px",
+                    display: "inline-block",
+                    color: "#2563eb",
+                    textDecoration: "underline",
+                  }}
+                >
+                  홈으로 이동
+                </Link>
+              </div>
             }
           />
-
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/find-id" element={<FindId />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-        </Route>
-
-        <Route
-          path="*"
-          element={
-            <div style={{ padding: "40px", textAlign: "center" }}>
-              <h2>🚫 페이지를 찾을 수 없습니다.</h2>
-              <Link
-                to="/"
-                style={{
-                  marginTop: "10px",
-                  display: "inline-block",
-                  color: "#2563eb",
-                  textDecoration: "underline",
-                }}
-              >
-                홈으로 이동
-              </Link>
-            </div>
-          }
-        />
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+    </SiteSettingsProvider>
   );
 }
 
