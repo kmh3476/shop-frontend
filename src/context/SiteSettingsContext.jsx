@@ -4,65 +4,59 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 const SiteSettingsContext = createContext();
 
 export function SiteSettingsProvider({ children }) {
-  const [settings, setSettings] = useState(null);
+  const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // ✅ Strapi API 주소 (자신의 Strapi 주소로 바꿔줘야 함)
-  const API_URL = "http://localhost:1337/api/site-settings?populate=*";
+  // ✅ CMS Page API 호출 (slug 기반)
+  // const API_URL = `/cms/api/pages?filters[slug][$eq]=home&populate[sections][populate]=*`;
+  // ↑ CMS 연결은 제거 (Strapi 호출 안 함)
 
   useEffect(() => {
-    async function fetchSettings() {
+    async function fetchPage() {
       try {
-        const res = await fetch(API_URL);
-        const data = await res.json();
-
-        if (!res.ok) throw new Error(data.error?.message || "설정 불러오기 실패");
-
-        // ✅ Strapi의 데이터 구조에 맞게 변환
-        const attrs = data.data?.attributes || {};
-        const formatted = {
-          fontFamily: attrs.fontFamily || "Pretendard, sans-serif",
-          fontSize: attrs.fontSize || "16px",
-          imageMaxWidth: attrs.imageMaxWidth || "600px",
-          imageMaxHeight: attrs.imageMaxHeight || "auto",
-          textColor: attrs.textColor || "#222",
-          backgroundColor: attrs.backgroundColor || "#fff",
+        // ✅ CMS 연결 제거 — 대신 로컬 더미 데이터 사용
+        const dummyData = {
+          id: 1,
+          attributes: {
+            title: "로컬 홈 페이지",
+            slug: "home",
+            sections: [
+              {
+                id: 1,
+                type: "hero",
+                content: "이건 CMS 없이 직접 로컬에서 불러오는 예시 콘텐츠입니다.",
+              },
+              {
+                id: 2,
+                type: "info",
+                content: "여기에 원하는 기본 데이터나 테스트용 텍스트를 추가할 수 있습니다.",
+              },
+            ],
+          },
         };
 
-        setSettings(formatted);
+        // CMS처럼 구조를 맞춰서 setPage
+        setPage(dummyData);
+        setError("");
       } catch (err) {
-        console.error("⚠️ 사이트 설정 불러오기 오류:", err);
+        console.error("⚠️ 페이지 데이터 불러오기 오류:", err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchSettings();
+    fetchPage();
   }, []);
 
-  // ✅ Strapi 설정값을 CSS 변수로 전역 적용
-  useEffect(() => {
-    if (settings) {
-      const root = document.documentElement;
-      root.style.setProperty("--font-family", settings.fontFamily);
-      root.style.setProperty("--font-size", settings.fontSize);
-      root.style.setProperty("--text-color", settings.textColor);
-      root.style.setProperty("--bg-color", settings.backgroundColor);
-      root.style.setProperty("--image-max-width", settings.imageMaxWidth);
-      root.style.setProperty("--image-max-height", settings.imageMaxHeight);
-    }
-  }, [settings]);
-
   return (
-    <SiteSettingsContext.Provider value={{ settings, loading, error }}>
+    <SiteSettingsContext.Provider value={{ page, loading, error }}>
       {children}
     </SiteSettingsContext.Provider>
   );
 }
 
-// ✅ 다른 컴포넌트에서 쉽게 사용하기 위한 커스텀 훅
 export function useSiteSettings() {
   return useContext(SiteSettingsContext);
 }

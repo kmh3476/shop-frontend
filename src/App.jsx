@@ -25,8 +25,9 @@ import { useAuth } from "./context/AuthContext";
 import { useAuth as useAuthContext } from "./context/AuthContext";
 import { Mail } from "lucide-react";
 import MailModal from "./components/MailModal";
-import { SiteSettingsProvider } from "./context/SiteSettingsContext"; // ✅ 전역 사이트 설정
-import { EditModeProvider } from "./context/EditModeContext"; // ✅ 편집 모드 Context 추가
+import { SiteSettingsProvider } from "./context/SiteSettingsContext";
+import { EditModeProvider } from "./context/EditModeContext";
+import Page from "./pages/Page"; // 혹시 나중에 사용할 수도 있으니 유지
 
 /* -------------------- ✅ 로그인 페이지 -------------------- */
 function Login() {
@@ -37,7 +38,7 @@ function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const API_URL = "https://shop-backend-1-dfsl.onrender.com/api/auth/login";
+  const API_URL = `${import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "")}/auth/local`;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -48,25 +49,20 @@ function Login() {
 
     try {
       setLoading(true);
-      const isEmail = /\S+@\S+\.\S+/.test(loginInput);
-      const payload = isEmail
-        ? { email: loginInput, password }
-        : { userId: loginInput, password };
-
+      const payload = { identifier: loginInput, password };
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "로그인 실패");
+      if (!res.ok) throw new Error(data?.error?.message || "로그인 실패");
 
-      if (data.token && data.user) {
-        login(data.user, data.token);
+      if (data.jwt && data.user) {
+        login(data.user, data.jwt);
         alert("로그인 성공!");
         navigate("/products");
-      }
+      } else throw new Error("로그인 응답이 올바르지 않습니다.");
     } catch (err) {
       console.error("로그인 오류:", err);
       setError(err.message);
@@ -248,7 +244,6 @@ function Navigation() {
           boxShadow: isOpen ? "-8px 0 20px rgba(0,0,0,0.1)" : "none",
         }}
       >
-        {/* 상단 로그인/회원가입 */}
         <div
           style={{
             backgroundColor: "black",
@@ -285,18 +280,25 @@ function Navigation() {
             </>
           ) : (
             <>
-              <Link to="/login" onClick={() => setIsOpen(false)} style={{ color: "white" }}>
+              <Link
+                to="/login"
+                onClick={() => setIsOpen(false)}
+                style={{ color: "white" }}
+              >
                 로그인
               </Link>
               <span>|</span>
-              <Link to="/signup" onClick={() => setIsOpen(false)} style={{ color: "white" }}>
+              <Link
+                to="/signup"
+                onClick={() => setIsOpen(false)}
+                style={{ color: "white" }}
+              >
                 회원가입
               </Link>
             </>
           )}
         </div>
 
-        {/* ✅ 메일 아이콘 */}
         {user && isOpen && (
           <Mail
             style={{
@@ -313,7 +315,6 @@ function Navigation() {
           />
         )}
 
-        {/* 메뉴 목록 */}
         <nav style={{ marginTop: "60px", width: "80%" }}>
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
             {[...(user?.isAdmin
@@ -353,7 +354,6 @@ function Navigation() {
         </nav>
       </div>
 
-      {/* ✅ 메일 모달 */}
       {showMailModal && <MailModal onClose={() => setShowMailModal(false)} />}
     </>
   );
@@ -362,17 +362,22 @@ function Navigation() {
 /* -------------------- ✅ 라우팅 -------------------- */
 function App() {
   return (
-    <EditModeProvider> {/* ✅ 새로 추가된 Provider */}
+    <EditModeProvider>
       <SiteSettingsProvider>
         <Router>
           <Routes>
             <Route
               path="/"
               element={
-                <div style={{ position: "relative" }}>
-                  <MainLayout />
+                <>
+                  {/* ✅ 기본 홈 페이지 (Builder 제거됨) */}
+                  <MainLayout>
+                    <h1 className="text-center mt-20 text-3xl font-bold">
+                      홈 페이지
+                    </h1>
+                  </MainLayout>
                   <Navigation />
-                </div>
+                </>
               }
             />
             <Route

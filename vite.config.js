@@ -1,28 +1,81 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import path from "path";
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  // ✅ .env 파일 로드 (VITE_ 로 시작하는 값만 자동으로 주입됨)
   const env = loadEnv(mode, process.cwd(), "VITE_");
 
   return {
     plugins: [react()],
-
-    // ✅ 배포 시 루트 경로 (Vercel 같은 정적 호스팅 환경)
     base: "./",
 
-    // ✅ 개발 서버 설정
     server: {
-      host: "0.0.0.0", // 로컬 네트워크에서 접근 가능하게 함 (선택)
-      port: 5173,      // 기본 포트
-      open: true,      // 자동으로 브라우저 열기
+      host: "localhost",
+      port: 5173,
+      open: true,
+      historyApiFallback: true,
+
+      // ✅ 파일 시스템 접근 완화
+      fs: {
+        strict: false,
+      },
+
+      // ⚠️ HMR은 완전 비활성화 금지 — 대신 안정화 설정
+      hmr: {
+        overlay: true, // 오류 발생 시 브라우저 오버레이 표시
+        protocol: "ws",
+        host: "localhost",
+      },
+
+      // ✅ CORS 설정
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+      },
+
+      // ✅ Strapi CMS API 프록시
+      proxy: {
+        "/cms": {
+          target: "http://localhost:1337",
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/cms/, ""),
+        },
+      },
     },
 
-    // ✅ 전역 환경변수 주입 (필요한 경우 직접 접근 가능)
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
+    },
+
     define: {
-      "import.meta.env.VITE_API_BASE_URL": JSON.stringify(env.VITE_API_BASE_URL),
-      "import.meta.env.VITE_STRAPI_URL": JSON.stringify(env.VITE_STRAPI_URL),
+      // ✅ 기존 Strapi 환경변수
+      "import.meta.env.VITE_API_BASE_URL": JSON.stringify(
+        env.VITE_API_BASE_URL || "http://localhost:1337/api"
+      ),
+      "import.meta.env.VITE_STRAPI_URL": JSON.stringify(
+        env.VITE_STRAPI_URL || "http://localhost:1337"
+      ),
+      "import.meta.env.VITE_STRAPI_TOKEN": JSON.stringify(
+        env.VITE_STRAPI_TOKEN || ""
+      ),
+
+      // ✅ Builder.io 관련 환경변수 추가
+      "import.meta.env.VITE_BUILDER_PUBLIC_API_KEY": JSON.stringify(
+        env.VITE_BUILDER_PUBLIC_API_KEY || ""
+      ),
+      "import.meta.env.VITE_BUILDER_API_URL": JSON.stringify(
+        env.VITE_BUILDER_API_URL || "https://cdn.builder.io/api/v3"
+      ),
+      "import.meta.env.VITE_BUILDER_MODEL": JSON.stringify(
+        env.VITE_BUILDER_MODEL || "page"
+      ),
+      "import.meta.env.VITE_BUILDER_PREVIEW": JSON.stringify(
+        env.VITE_BUILDER_PREVIEW || "true"
+      ),
     },
   };
 });
