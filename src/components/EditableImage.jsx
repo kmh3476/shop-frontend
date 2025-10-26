@@ -17,9 +17,8 @@ import { useEditMode } from "../context/EditModeContext";
  * 로컬스토리지에 이미지 src + 메타데이터 저장됨.
  */
 export default function EditableImage({ id, defaultSrc, alt, filePath, componentName, style = {} }) {
-  const { isEditMode, saveEditLog } = useEditMode(); // ✅ saveEditLog 추가
+  const { isEditMode, saveEditLog } = useEditMode();
   const [imageSrc, setImageSrc] = useState(() => {
-    // 로컬 저장된 이미지 불러오기
     const savedData = localStorage.getItem(`editable-image-${id}`);
     if (savedData) {
       try {
@@ -47,18 +46,16 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
 
     try {
       localStorage.setItem(`editable-image-${id}`, JSON.stringify(saveData));
+
+      // 로그 저장 (EditModeContext에서 제공)
+      saveEditLog?.({
+        text: `Image updated (${id})`,
+        filePath: filePath || "unknown",
+        componentName: componentName || "unknown",
+        updatedAt: saveData.updatedAt,
+      });
+
       console.log(`✅ 로컬에 이미지 저장됨: ${id}`, saveData);
-
-      // ✅ 글로벌 editLogs에도 기록 추가
-      if (saveEditLog) {
-        saveEditLog({
-          text: `이미지 변경: ${id}`,
-          filePath: filePath || import.meta.url,
-          componentName: componentName || "EditableImage",
-          updatedAt: new Date().toISOString(),
-        });
-      }
-
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
@@ -116,7 +113,7 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
       onClick={handleClick}
       onContextMenu={handleContextMenu}
     >
-      {/* 실제 이미지 */}
+      {/* ✅ 이미지는 클릭 막지 않음 (이전 문제 해결) */}
       <img
         src={imageSrc}
         alt={alt || ""}
@@ -127,12 +124,11 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
           opacity: isEditMode && isHovering ? 0.8 : 1,
           transition: "opacity 0.2s ease",
           userSelect: "none",
-          pointerEvents: isEditMode ? "none" : "auto",
+          pointerEvents: "none", // ← hover는 div가 받음, 클릭은 div로 위임됨
         }}
         draggable={false}
       />
 
-      {/* 파일 업로드 input (숨김) */}
       <input
         type="file"
         accept="image/*"
@@ -141,7 +137,6 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
         onChange={handleFileChange}
       />
 
-      {/* 저장 알림 */}
       {saved && (
         <span
           style={{
@@ -159,7 +154,6 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
         </span>
       )}
 
-      {/* 편집 모드일 때 오버레이 표시 */}
       {isEditMode && isHovering && (
         <div
           style={{
@@ -173,6 +167,7 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
             alignItems: "center",
             textAlign: "center",
             fontWeight: "bold",
+            pointerEvents: "none",
           }}
         >
           클릭: 이미지 교체 <br />
