@@ -26,7 +26,7 @@ import { useAuth as useAuthContext } from "./context/AuthContext";
 import { Mail } from "lucide-react";
 import MailModal from "./components/MailModal";
 import { SiteSettingsProvider } from "./context/SiteSettingsContext";
-import { EditModeProvider } from "./context/EditModeContext";
+import { EditModeProvider, useEditMode } from "./context/EditModeContext"; // ✅ 수정: useEditMode 추가
 import Page from "./pages/Page"; // 혹시 나중에 사용할 수도 있으니 유지
 
 /* -------------------- ✅ 로그인 페이지 -------------------- */
@@ -361,6 +361,20 @@ function Navigation() {
 
 /* -------------------- ✅ 라우팅 -------------------- */
 function App() {
+  const { setIsEditMode } = useEditMode(); // ✅ 추가됨
+
+  // ✅ App.jsx 파일 자체 로드 시 추적 로그 남기기
+  useEffect(() => {
+    const logEntry = {
+      text: "App.jsx loaded",
+      filePath: import.meta.url,
+      componentName: "App",
+      updatedAt: new Date().toISOString(),
+    };
+    const prevLogs = JSON.parse(localStorage.getItem("editLogs") || "[]");
+    localStorage.setItem("editLogs", JSON.stringify([...prevLogs, logEntry]));
+  }, []);
+
   return (
     <EditModeProvider>
       <SiteSettingsProvider>
