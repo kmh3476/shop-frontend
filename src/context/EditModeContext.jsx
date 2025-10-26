@@ -34,8 +34,20 @@ export function EditModeProvider({ children }) {
     localStorage.setItem("editLogs", JSON.stringify(newLogs));
   }, [isEditMode]);
 
+  // ✅ 전역 로그 기록 함수 (EditableText / EditableImage 등에서 사용)
+  const saveEditLog = (entry) => {
+    try {
+      const prev = JSON.parse(localStorage.getItem("editLogs") || "[]");
+      const newLogs = [...prev, entry];
+      localStorage.setItem("editLogs", JSON.stringify(newLogs));
+      console.log("📝 editLogs에 기록됨:", entry);
+    } catch (err) {
+      console.error("❌ editLogs 저장 실패:", err);
+    }
+  };
+
   return (
-    <EditModeContext.Provider value={{ isEditMode, setIsEditMode }}>
+    <EditModeContext.Provider value={{ isEditMode, setIsEditMode, saveEditLog }}>
       {children}
     </EditModeContext.Provider>
   );

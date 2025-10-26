@@ -15,7 +15,7 @@ import { useEditMode } from "../context/EditModeContext";
  * 이제 filePath와 componentName이 로컬스토리지에 함께 저장됨.
  */
 export default function EditableText({ id, defaultText, filePath, componentName }) {
-  const { isEditMode } = useEditMode();
+  const { isEditMode, saveEditLog } = useEditMode(); // ✅ saveEditLog 추가
 
   const [text, setText] = useState(() => {
     // 로컬 저장된 값이 있으면 불러오기
@@ -53,6 +53,17 @@ export default function EditableText({ id, defaultText, filePath, componentName 
       try {
         localStorage.setItem(`editable-text-${id}`, JSON.stringify(saveData));
         console.log(`✅ 로컬에 저장됨: ${id}`, saveData);
+
+        // ✅ 글로벌 editLogs에도 기록 추가
+        if (saveEditLog) {
+          saveEditLog({
+            text: newText,
+            filePath: filePath || import.meta.url,
+            componentName: componentName || "EditableText",
+            updatedAt: new Date().toISOString(),
+          });
+        }
+
       } catch (err) {
         console.error("❌ 로컬스토리지 저장 실패:", err);
       }

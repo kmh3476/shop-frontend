@@ -17,7 +17,7 @@ import { useEditMode } from "../context/EditModeContext";
  * 로컬스토리지에 이미지 src + 메타데이터 저장됨.
  */
 export default function EditableImage({ id, defaultSrc, alt, filePath, componentName, style = {} }) {
-  const { isEditMode } = useEditMode();
+  const { isEditMode, saveEditLog } = useEditMode(); // ✅ saveEditLog 추가
   const [imageSrc, setImageSrc] = useState(() => {
     // 로컬 저장된 이미지 불러오기
     const savedData = localStorage.getItem(`editable-image-${id}`);
@@ -48,6 +48,17 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
     try {
       localStorage.setItem(`editable-image-${id}`, JSON.stringify(saveData));
       console.log(`✅ 로컬에 이미지 저장됨: ${id}`, saveData);
+
+      // ✅ 글로벌 editLogs에도 기록 추가
+      if (saveEditLog) {
+        saveEditLog({
+          text: `이미지 변경: ${id}`,
+          filePath: filePath || import.meta.url,
+          componentName: componentName || "EditableImage",
+          updatedAt: new Date().toISOString(),
+        });
+      }
+
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
