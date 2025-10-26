@@ -360,8 +360,8 @@ function Navigation() {
 }
 
 /* -------------------- ✅ 라우팅 -------------------- */
-function App() {
-  const { setIsEditMode } = useEditMode(); // ✅ 추가됨
+function InnerApp() {
+  const { setIsEditMode } = useEditMode(); // ✅ 이 위치로 이동
 
   // ✅ App.jsx 파일 자체 로드 시 추적 로그 남기기
   useEffect(() => {
@@ -376,79 +376,84 @@ function App() {
   }, []);
 
   return (
+    <SiteSettingsProvider>
+      <Router>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <MainLayout>
+                  <h1 className="text-center mt-20 text-3xl font-bold">
+                    홈 페이지
+                  </h1>
+                </MainLayout>
+                <Navigation />
+              </>
+            }
+          />
+          <Route
+            element={
+              <>
+                <Navigation />
+                <CleanLayout />
+              </>
+            }
+          >
+            <Route path="/products" element={<ProductList />} />
+            <Route path="/products/:id" element={<ProductDetail />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/support" element={<Support />} />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <Admin />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/support"
+              element={
+                <AdminRoute>
+                  <AdminSupport />
+                </AdminRoute>
+              }
+            />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/find-id" element={<FindId />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+          </Route>
+          <Route
+            path="*"
+            element={
+              <div style={{ padding: "40px", textAlign: "center" }}>
+                <h2>🚫 페이지를 찾을 수 없습니다.</h2>
+                <Link
+                  to="/"
+                  style={{
+                    marginTop: "10px",
+                    display: "inline-block",
+                    color: "#2563eb",
+                    textDecoration: "underline",
+                  }}
+                >
+                  홈으로 이동
+                </Link>
+              </div>
+            }
+          />
+        </Routes>
+      </Router>
+    </SiteSettingsProvider>
+  );
+}
+
+function App() {
+  return (
     <EditModeProvider>
-      <SiteSettingsProvider>
-        <Router>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <>
-                  {/* ✅ 기본 홈 페이지 (Builder 제거됨) */}
-                  <MainLayout>
-                    <h1 className="text-center mt-20 text-3xl font-bold">
-                      홈 페이지
-                    </h1>
-                  </MainLayout>
-                  <Navigation />
-                </>
-              }
-            />
-            <Route
-              element={
-                <>
-                  <Navigation />
-                  <CleanLayout />
-                </>
-              }
-            >
-              <Route path="/products" element={<ProductList />} />
-              <Route path="/products/:id" element={<ProductDetail />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/support" element={<Support />} />
-              <Route
-                path="/admin"
-                element={
-                  <AdminRoute>
-                    <Admin />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin/support"
-                element={
-                  <AdminRoute>
-                    <AdminSupport />
-                  </AdminRoute>
-                }
-              />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/find-id" element={<FindId />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-            </Route>
-            <Route
-              path="*"
-              element={
-                <div style={{ padding: "40px", textAlign: "center" }}>
-                  <h2>🚫 페이지를 찾을 수 없습니다.</h2>
-                  <Link
-                    to="/"
-                    style={{
-                      marginTop: "10px",
-                      display: "inline-block",
-                      color: "#2563eb",
-                      textDecoration: "underline",
-                    }}
-                  >
-                    홈으로 이동
-                  </Link>
-                </div>
-              }
-            />
-          </Routes>
-        </Router>
-      </SiteSettingsProvider>
+      <InnerApp /> {/* ✅ Provider 내부에서 호출 */}
     </EditModeProvider>
   );
 }
