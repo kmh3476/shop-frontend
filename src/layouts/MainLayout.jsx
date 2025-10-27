@@ -251,8 +251,8 @@ function MainLayout() {
         centeredSlides={false}
         allowTouchMove={!isResizeMode}
         breakpoints={{
-          360: { slidesPerView: 2.2 },
-          640: { slidesPerView: 3 },
+          360: { slidesPerView: 4 },
+          640: { slidesPerView: 4 },
           1024: { slidesPerView: 4 },
           1280: { slidesPerView: 4 },
         }}
