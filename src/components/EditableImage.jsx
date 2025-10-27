@@ -11,16 +11,21 @@ import { useEditMode } from "../context/EditModeContext";
  *    filePath="src/components/HeroSection.jsx"
  *    componentName="HeroSection"
  * />
- * 
- * 이미지 교체 + 크기조절 모두 가능.
- * - 클릭: 이미지 업로드
- * - 우클릭: URL 직접 입력
- * - 드래그: 편집모드에서 크기조절 가능
+ *
+ * 이미지 업로드 / URL 변경 / 크기 조절 (편집 모드에서만) 가능.
+ * 모든 데이터는 로컬스토리지에 저장됨.
  */
-export default function EditableImage({ id, defaultSrc, alt, filePath, componentName, style = {} }) {
+export default function EditableImage({
+  id,
+  defaultSrc,
+  alt,
+  filePath,
+  componentName,
+  style = {},
+}) {
   const { isEditMode, saveEditLog } = useEditMode();
 
-  // ✅ 이미지 src 복원
+  // ✅ 이미지 저장/복원
   const [imageSrc, setImageSrc] = useState(() => {
     const savedData = localStorage.getItem(`editable-image-${id}`);
     if (savedData) {
@@ -28,28 +33,25 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
         const parsed = JSON.parse(savedData);
         return parsed.src || defaultSrc;
       } catch {
-        return savedData || defaultSrc;
+        return defaultSrc;
       }
     }
     return defaultSrc;
   });
 
-  // ✅ 크기 복원
-  const [imageSize, setImageSize] = useState(() => {
-    const saved = localStorage.getItem(`editable-image-${id}-size`);
-    if (saved) return JSON.parse(saved);
-    return { width: "100%", height: "auto" };
+  // ✅ 이미지 크기 저장/복원
+  const [size, setSize] = useState(() => {
+    const savedSize = localStorage.getItem(`editable-image-size-${id}`);
+    return savedSize ? JSON.parse(savedSize) : { width: 100, height: "auto" };
   });
 
   const [saved, setSaved] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
-  const fileInputRef = useRef(null);
-
-  // ✅ 크기 조절 관련 상태
   const [resizing, setResizing] = useState(false);
-  const startPos = useRef({ x: 0, width: 0 });
+  const fileInputRef = useRef(null);
+  const startPos = useRef({ x: 0, y: 0, width: 0, height: 0 });
 
-  /** ✅ 이미지 저장 (로컬스토리지 + 로그) */
+  /** ✅ 이미지 및 메타데이터 저장 */
   const saveImageData = (newSrc) => {
     const saveData = {
       src: newSrc,
@@ -60,8 +62,6 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
 
     try {
       localStorage.setItem(`editable-image-${id}`, JSON.stringify(saveData));
-
-      // ✅ 로그 남기기 (EditModeContext 있으면 사용, 없으면 직접 기록)
       if (typeof saveEditLog === "function") {
         saveEditLog({
           text: `Image updated (${id})`,
@@ -69,17 +69,6 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
           componentName: saveData.componentName,
           updatedAt: saveData.updatedAt,
         });
-      } else {
-        const prevLogs = JSON.parse(localStorage.getItem("editLogs") || "[]");
-        localStorage.setItem(
-          "editLogs",
-          JSON.stringify([...prevLogs, {
-            text: `Image updated (${id})`,
-            filePath: saveData.filePath,
-            componentName: saveData.componentName,
-            updatedAt: saveData.updatedAt,
-          }])
-        );
       }
 
       console.log(`✅ 로컬에 이미지 저장됨: ${id}`, saveData);
@@ -90,19 +79,18 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
     }
   };
 
-  /** ✅ 크기 저장 (로컬스토리지) */
-  const saveImageSize = (size) => {
-    localStorage.setItem(`editable-image-${id}-size`, JSON.stringify(size));
-    console.log(`📏 이미지 크기 저장됨: ${id}`, size);
+  /** ✅ 크기 저장 */
+  const saveSizeData = (newSize) => {
+    localStorage.setItem(`editable-image-size-${id}`, JSON.stringify(newSize));
   };
 
-  /** ✅ 파일 선택창 열기 */
+  /** ✅ 이미지 클릭 → 파일 선택 */
   const handleClick = () => {
     if (!isEditMode) return;
     fileInputRef.current?.click();
   };
 
-  /** ✅ 파일 업로드 처리 */
+  /** ✅ 이미지 업로드 */
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -111,13 +99,13 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
         const newSrc = reader.result;
         setImageSrc(newSrc);
         saveImageData(newSrc);
-        e.target.value = ""; // 같은 파일 다시 선택해도 반응
+        e.target.value = ""; // 같은 파일 재선택 시도 시에도 동작하게 함
       };
       reader.readAsDataURL(file);
     }
   };
 
-  /** ✅ URL 입력 */
+  /** ✅ 우클릭 시 URL 직접 입력 */
   const handleContextMenu = (e) => {
     if (!isEditMode) return;
     e.preventDefault();
@@ -128,30 +116,40 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
     }
   };
 
-  /** ✅ 드래그 시작 (크기조절) */
+  /** ✅ 드래그로 크기 조절 */
   const handleMouseDown = (e) => {
     if (!isEditMode) return;
+    e.stopPropagation();
     setResizing(true);
-    startPos.current = { x: e.clientX, width: e.currentTarget.offsetWidth };
+    startPos.current = {
+      x: e.clientX,
+      y: e.clientY,
+      width: size.width,
+      height: e.target.clientHeight,
+    };
   };
 
-  /** ✅ 드래그 중 */
   const handleMouseMove = (e) => {
     if (!resizing) return;
-    const diff = e.clientX - startPos.current.x;
-    const newWidth = Math.max(80, startPos.current.width + diff);
-    const newSize = { width: `${newWidth}px`, height: "auto" };
-    setImageSize(newSize);
+    const dx = e.clientX - startPos.current.x;
+    const dy = e.clientY - startPos.current.y;
+    const newWidth = Math.max(50, startPos.current.width + dx);
+    const newHeight =
+      startPos.current.height === "auto"
+        ? "auto"
+        : Math.max(50, startPos.current.height + dy);
+
+    const updated = { width: newWidth, height: newHeight };
+    setSize(updated);
   };
 
-  /** ✅ 드래그 끝 */
   const handleMouseUp = () => {
-    if (!resizing) return;
-    setResizing(false);
-    saveImageSize(imageSize);
+    if (resizing) {
+      setResizing(false);
+      saveSizeData(size);
+    }
   };
 
-  /** ✅ 드래그 이벤트 전역 등록 */
   useEffect(() => {
     if (resizing) {
       window.addEventListener("mousemove", handleMouseMove);
@@ -164,19 +162,25 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [resizing, imageSize]);
+  }, [resizing, size]);
 
   return (
     <div
       style={{
         position: "relative",
         display: "inline-block",
-        cursor: isEditMode ? (resizing ? "grabbing" : "grab") : "default",
+        cursor: isEditMode ? "pointer" : "default",
         border: isEditMode && isHovering ? "2px dashed #666" : "none",
         borderRadius: "8px",
         overflow: "hidden",
         transition: "all 0.2s ease",
-        ...imageSize,
+        width: typeof size.width === "number" ? `${size.width}px` : size.width,
+        height:
+          size.height === "auto"
+            ? "auto"
+            : typeof size.height === "number"
+            ? `${size.height}px`
+            : size.height,
         ...style,
       }}
       data-file={filePath || import.meta.url || "unknown"}
@@ -185,22 +189,23 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
       onMouseLeave={() => setIsHovering(false)}
       onClick={handleClick}
       onContextMenu={handleContextMenu}
-      onMouseDown={handleMouseDown} // ✅ 추가: 드래그 시작
     >
-      {/* ✅ 이미지 */}
       <img
         src={imageSrc}
         alt={alt || ""}
         style={{
           width: "100%",
-          height: "auto",
-          display: "block",
+          height: "100%",
+          objectFit: "cover",
           opacity: isEditMode && isHovering ? 0.8 : 1,
           transition: "opacity 0.2s ease",
           userSelect: "none",
           pointerEvents: "none",
         }}
         draggable={false}
+        onError={(e) => {
+          e.target.src = defaultSrc;
+        }}
       />
 
       <input
@@ -211,7 +216,6 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
         onChange={handleFileChange}
       />
 
-      {/* ✅ 저장 표시 */}
       {saved && (
         <span
           style={{
@@ -229,13 +233,12 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
         </span>
       )}
 
-      {/* ✅ 편집모드 안내 오버레이 */}
       {isEditMode && isHovering && (
         <div
           style={{
             position: "absolute",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.35)",
+            backgroundColor: "rgba(0,0,0,0.3)",
             color: "#fff",
             fontSize: "0.9em",
             display: "flex",
@@ -248,8 +251,24 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
         >
           클릭: 이미지 교체 <br />
           우클릭: URL 입력 <br />
-          드래그: 크기 조절
+          ↔ 드래그로 크기 조절
         </div>
+      )}
+
+      {isEditMode && (
+        <div
+          onMouseDown={handleMouseDown}
+          style={{
+            position: "absolute",
+            bottom: 0,
+            right: 0,
+            width: "16px",
+            height: "16px",
+            background: "rgba(0,0,0,0.6)",
+            cursor: "nwse-resize",
+            borderRadius: "4px 0 0 0",
+          }}
+        />
       )}
     </div>
   );

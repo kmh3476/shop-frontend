@@ -1,4 +1,3 @@
-// 📁 src/layouts/MainLayout.jsx
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
@@ -6,103 +5,203 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { useEditMode } from "../context/EditModeContext"; // ✅ 디자인 모드 context 추가
-import EditableText from "../components/EditableText"; // ✅ 수정 가능한 텍스트 추가
-import EditableImage from "../components/EditableImage"; // ✅ 이미지 편집 컴포넌트 추가
+import { useEditMode } from "../context/EditModeContext";
+import EditableText from "../components/EditableText";
+import EditableImage from "../components/EditableImage";
+import { useState, useEffect, useRef } from "react";
 
 function MainLayout() {
-  const { isEditMode, setIsEditMode } = useEditMode(); // ✅ 토글 상태 사용
+  const { isEditMode, setIsEditMode } = useEditMode();
 
-  // ✅ 추천상품 전용 카드
-  const FeaturedCard = ({ i }) => (
-    <motion.div
-      className="border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-2 hover:scale-[1.05]"
-      whileHover={{ scale: 1.05 }}
-    >
-      <div className="w-full aspect-square overflow-hidden relative">
-        {/* ✅ 이미지 편집 가능 */}
-        <EditableImage
-          id={`featured-img-${i}`}
-          src={
-            i % 3 === 1
-              ? "/clothes-sample2.png"
-              : i % 3 === 2
-              ? "/clothes-sample3.jpg"
-              : "/gorani.jpg"
-          }
-          alt={`sample-${i}`}
-        />
-      </div>
+  /** ✅ 카드 크기 조절 + 폰트 비율 동기화 Hook */
+  const useResizableCard = (id, defaultWidth = 360, defaultHeight = 520) => {
+    const [size, setSize] = useState(() => {
+      const saved = localStorage.getItem(`card-size-${id}`);
+      if (saved) return JSON.parse(saved);
+      return { width: defaultWidth, height: defaultHeight };
+    });
+    const cardRef = useRef(null);
+    const resizingRef = useRef(false);
+    const startRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
 
-      <div className="p-6 flex flex-col justify-between h-[240px] font-['Pretendard']">
-        <div>
-          <h3 className="font-bold text-3xl mb-3 text-gray-900 tracking-tight">
+    useEffect(() => {
+      const handleMouseMove = (e) => {
+        if (!resizingRef.current || !cardRef.current) return;
+        const dx = e.clientX - startRef.current.x;
+        const dy = e.clientY - startRef.current.y;
+        const newWidth = Math.max(240, startRef.current.width + dx);
+        const newHeight = Math.max(320, startRef.current.height + dy);
+        setSize({ width: newWidth, height: newHeight });
+      };
+      const handleMouseUp = () => {
+        if (resizingRef.current) {
+          resizingRef.current = false;
+          localStorage.setItem(`card-size-${id}`, JSON.stringify(size));
+        }
+      };
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+    }, [size, id]);
+
+    const startResize = (e) => {
+      resizingRef.current = true;
+      startRef.current = {
+        x: e.clientX,
+        y: e.clientY,
+        width: cardRef.current.offsetWidth,
+        height: cardRef.current.offsetHeight,
+      };
+    };
+
+    return { size, cardRef, startResize };
+  };
+
+  /** ✅ 추천 상품 카드 */
+  const FeaturedCard = ({ i }) => {
+    const { size, cardRef, startResize } = useResizableCard(`featured-${i}`, 360, 520);
+    const scale = size.width / 360; // 폰트 비율 조정 기준
+
+    return (
+      <motion.div
+        ref={cardRef}
+        className="border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl bg-white relative overflow-hidden transition-transform duration-300"
+        style={{
+          width: `${size.width}px`,
+          height: `${size.height}px`,
+          fontSize: `${scale * 1}rem`,
+          transformOrigin: "top left",
+        }}
+      >
+        <div className="w-full h-[60%] overflow-hidden relative">
+          <EditableImage
+            id={`featured-img-${i}`}
+            defaultSrc={
+              i % 3 === 1
+                ? "/clothes-sample2.png"
+                : i % 3 === 2
+                ? "/clothes-sample3.jpg"
+                : "/gorani.jpg"
+            }
+            alt={`sample-${i}`}
+            filePath="src/layouts/MainLayout.jsx"
+            componentName="FeaturedCard"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+        </div>
+
+        <div
+          className="p-6 flex flex-col justify-between h-[40%] font-['Pretendard']"
+          style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}
+        >
+          <div>
+            <h3 className="font-bold text-3xl mb-3 text-gray-900 tracking-tight">
+              <EditableText
+                id={`featured-title-${i}`}
+                defaultText={`추천 상품 ${i}`}
+                apiUrl="http://localhost:1337/api/texts"
+              />
+            </h3>
+            <p className="text-base text-gray-500 mb-4 leading-relaxed">
+              <EditableText
+                id={`featured-desc-${i}`}
+                defaultText="감각적인 디자인으로 완성된 이번 시즌 베스트."
+                apiUrl="http://localhost:1337/api/texts"
+              />
+            </p>
+          </div>
+          <div className="flex space-x-3">
+            <button className="flex-1 py-3 bg-black text-white text-base font-semibold rounded-lg hover:bg-gray-800 transition">
+              바로가기
+            </button>
+            <button className="flex-1 py-3 bg-gray-800 text-white text-base font-semibold rounded-lg hover:bg-gray-700 transition">
+              장바구니
+            </button>
+          </div>
+        </div>
+
+        {/* ✅ 크기조절 핸들 */}
+        {isEditMode && (
+          <div
+            onMouseDown={startResize}
+            className="absolute bottom-1 right-1 w-5 h-5 bg-black/60 cursor-se-resize rounded-sm z-50"
+            title="드래그로 카드 크기 조절"
+          />
+        )}
+      </motion.div>
+    );
+  };
+
+  /** ✅ 일반 상품 카드 */
+  const ProductCard = ({ i }) => {
+    const { size, cardRef, startResize } = useResizableCard(`product-${i}`, 300, 460);
+    const scale = size.width / 300;
+
+    return (
+      <motion.div
+        ref={cardRef}
+        className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-md bg-white relative overflow-hidden transition-transform duration-300"
+        style={{
+          width: `${size.width}px`,
+          height: `${size.height}px`,
+          fontSize: `${scale * 1}rem`,
+        }}
+      >
+        <div className="overflow-hidden w-full h-[70%] mx-auto relative">
+          <EditableImage
+            id={`product-img-${i}`}
+            defaultSrc={
+              i % 3 === 1
+                ? "/clothes-sample2.png"
+                : i % 3 === 2
+                ? "/clothes-sample3.jpg"
+                : "/gorani.jpg"
+            }
+            alt={`sample-${i}`}
+            filePath="src/layouts/MainLayout.jsx"
+            componentName="ProductCard"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </div>
+        <div
+          className="p-5 text-center font-['Pretendard']"
+          style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}
+        >
+          <h3 className="font-semibold text-gray-800 text-lg mb-1">
             <EditableText
-              id={`featured-title-${i}`}
-              defaultText={`추천 상품 ${i}`}
+              id={`product-name-${i}`}
+              defaultText={`상품명 ${i}`}
               apiUrl="http://localhost:1337/api/texts"
             />
           </h3>
-          <p className="text-base text-gray-500 mb-4 leading-relaxed">
+          <p className="text-sm text-gray-500">
             <EditableText
-              id={`featured-desc-${i}`}
-              defaultText="감각적인 디자인으로 완성된 이번 시즌 베스트."
+              id={`product-tag-${i}`}
+              defaultText="#데일리룩 #심플핏"
               apiUrl="http://localhost:1337/api/texts"
             />
           </p>
         </div>
-        <div className="flex space-x-3">
-          <button className="flex-1 py-3 bg-black text-white text-base font-semibold rounded-lg hover:bg-gray-800 transition">
-            바로가기
-          </button>
-          <button className="flex-1 py-3 bg-gray-800 text-white text-base font-semibold rounded-lg hover:bg-gray-700 transition">
-            장바구니
-          </button>
-        </div>
-      </div>
-    </motion.div>
-  );
 
-  // ✅ 일반 상품 카드
-  const ProductCard = ({ i }) => (
-    <motion.div
-      className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
-      whileHover={{ scale: 1.02 }}
-    >
-      <div className="overflow-hidden w-full aspect-[3/5] sm:aspect-[3/4] mx-auto relative">
-        {/* ✅ EditableImage 적용 */}
-        <EditableImage
-          id={`product-img-${i}`}
-          src={
-            i % 3 === 1
-              ? "/clothes-sample2.png"
-              : i % 3 === 2
-              ? "/clothes-sample3.jpg"
-              : "/gorani.jpg"
-          }
-          alt={`sample-${i}`}
-        />
-      </div>
-      <div className="p-5 text-center font-['Pretendard']">
-        <h3 className="font-semibold text-gray-800 text-lg mb-1">
-          <EditableText
-            id={`product-name-${i}`}
-            defaultText={`상품명 ${i}`}
-            apiUrl="http://localhost:1337/api/texts"
+        {isEditMode && (
+          <div
+            onMouseDown={startResize}
+            className="absolute bottom-1 right-1 w-4 h-4 bg-gray-700/70 cursor-se-resize rounded-sm z-50"
+            title="드래그로 카드 크기 조절"
           />
-        </h3>
-        <p className="text-sm text-gray-500">
-          <EditableText
-            id={`product-tag-${i}`}
-            defaultText="#데일리룩 #심플핏"
-            apiUrl="http://localhost:1337/api/texts"
-          />
-        </p>
-      </div>
-    </motion.div>
-  );
+        )}
+      </motion.div>
+    );
+  };
 
-  // ✅ 슬라이드 섹션
+  /** ✅ 섹션 (기존 유지) */
   const SlideSection = ({ title, id }) => (
     <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black font-['Pretendard']">
       <motion.h2
@@ -112,11 +211,7 @@ function MainLayout() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         viewport={{ once: true }}
       >
-        <EditableText
-          id={id}
-          defaultText={title}
-          apiUrl="http://localhost:1337/api/texts"
-        />
+        <EditableText id={id} defaultText={title} apiUrl="http://localhost:1337/api/texts" />
       </motion.h2>
 
       <Swiper
@@ -145,7 +240,6 @@ function MainLayout() {
 
   return (
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden font-['Pretendard']">
-      {/* 🔸 디자인 모드 버튼 */}
       <button
         onClick={() => setIsEditMode(!isEditMode)}
         className={`fixed top-6 left-6 z-50 px-5 py-2 rounded-lg text-white font-semibold shadow-lg transition ${
@@ -155,7 +249,6 @@ function MainLayout() {
         {isEditMode ? "🖊 디자인 모드 ON" : "✏ 디자인 모드 OFF"}
       </button>
 
-      {/* 🔸 메인 배경 (편집 가능 배경 이미지) */}
       <section
         className="relative flex flex-col items-center justify-center w-full min-h-[110vh]"
         style={{
@@ -166,13 +259,17 @@ function MainLayout() {
         }}
       >
         <div className="absolute inset-0 bg-black/10" />
-        {/* ✅ 대표 배경 이미지도 편집 가능하게 추가 */}
         <div className="relative z-10 mt-[20vh]">
-          <EditableImage id="main-background-img" src="/woodcard.jpg" alt="메인 배경" />
+          <EditableImage
+            id="main-background-img"
+            defaultSrc="/woodcard.jpg"
+            alt="메인 배경"
+            filePath="src/layouts/MainLayout.jsx"
+            componentName="MainBackground"
+          />
         </div>
       </section>
 
-      {/* 🔸 추천 상품 + 메뉴바 */}
       <section className="flex flex-col items-center justify-center py-[10vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
         <motion.h2
           className="text-5xl md:text-6xl font-extrabold mb-12 drop-shadow-sm tracking-tight text-gray-600"
@@ -213,12 +310,10 @@ function MainLayout() {
         </div>
       </section>
 
-      {/* 🔸 일반 상품 섹션 */}
       <SlideSection id="top-section" title="👕 상의" />
       <SlideSection id="bottom-section" title="👖 하의" />
       <SlideSection id="coordi-section" title="🧥 코디 추천" />
 
-      {/* 🔸 브랜드 스토리 (편집 가능) */}
       <section
         className="flex flex-col items-center justify-center py-[15vh] px-6 text-center bg-gray-100 font-['Pretendard']"
         style={{
@@ -254,7 +349,6 @@ function MainLayout() {
         </motion.p>
       </section>
 
-      {/* 🔸 Footer */}
       <footer className="py-6 text-black text-sm border-t border-gray-300 w-full text-center bg-white font-light tracking-tight">
         © 2025 ONYOU — All rights reserved.
       </footer>
