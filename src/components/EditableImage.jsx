@@ -1,5 +1,5 @@
 // 📁 src/components/EditableImage.jsx
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useEditMode } from "../context/EditModeContext";
 
 /**
@@ -12,12 +12,15 @@ import { useEditMode } from "../context/EditModeContext";
  *    componentName="HeroSection"
  * />
  * 
- * 이미지도 텍스트와 동일하게 브라우저 내에서만 편집 가능.
- * 선택 시 파일 업로드 또는 URL 입력 가능.
- * 로컬스토리지에 이미지 src + 메타데이터 저장됨.
+ * 이미지 교체 + 크기조절 모두 가능.
+ * - 클릭: 이미지 업로드
+ * - 우클릭: URL 직접 입력
+ * - 드래그: 편집모드에서 크기조절 가능
  */
 export default function EditableImage({ id, defaultSrc, alt, filePath, componentName, style = {} }) {
   const { isEditMode, saveEditLog } = useEditMode();
+
+  // ✅ 이미지 src 복원
   const [imageSrc, setImageSrc] = useState(() => {
     const savedData = localStorage.getItem(`editable-image-${id}`);
     if (savedData) {
@@ -31,29 +34,53 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
     return defaultSrc;
   });
 
+  // ✅ 크기 복원
+  const [imageSize, setImageSize] = useState(() => {
+    const saved = localStorage.getItem(`editable-image-${id}-size`);
+    if (saved) return JSON.parse(saved);
+    return { width: "100%", height: "auto" };
+  });
+
   const [saved, setSaved] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const fileInputRef = useRef(null);
 
-  /** ✅ 저장 함수 (로컬스토리지 + 메타데이터 포함) */
+  // ✅ 크기 조절 관련 상태
+  const [resizing, setResizing] = useState(false);
+  const startPos = useRef({ x: 0, width: 0 });
+
+  /** ✅ 이미지 저장 (로컬스토리지 + 로그) */
   const saveImageData = (newSrc) => {
     const saveData = {
       src: newSrc,
-      filePath: filePath || "unknown",
-      componentName: componentName || "unknown",
+      filePath: filePath || import.meta.url || "unknown",
+      componentName: componentName || "EditableImage",
       updatedAt: new Date().toISOString(),
     };
 
     try {
       localStorage.setItem(`editable-image-${id}`, JSON.stringify(saveData));
 
-      // 로그 저장 (EditModeContext에서 제공)
-      saveEditLog?.({
-        text: `Image updated (${id})`,
-        filePath: filePath || "unknown",
-        componentName: componentName || "unknown",
-        updatedAt: saveData.updatedAt,
-      });
+      // ✅ 로그 남기기 (EditModeContext 있으면 사용, 없으면 직접 기록)
+      if (typeof saveEditLog === "function") {
+        saveEditLog({
+          text: `Image updated (${id})`,
+          filePath: saveData.filePath,
+          componentName: saveData.componentName,
+          updatedAt: saveData.updatedAt,
+        });
+      } else {
+        const prevLogs = JSON.parse(localStorage.getItem("editLogs") || "[]");
+        localStorage.setItem(
+          "editLogs",
+          JSON.stringify([...prevLogs, {
+            text: `Image updated (${id})`,
+            filePath: saveData.filePath,
+            componentName: saveData.componentName,
+            updatedAt: saveData.updatedAt,
+          }])
+        );
+      }
 
       console.log(`✅ 로컬에 이미지 저장됨: ${id}`, saveData);
       setSaved(true);
@@ -63,13 +90,19 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
     }
   };
 
-  /** ✅ 이미지 클릭 시 파일 선택 창 열기 */
+  /** ✅ 크기 저장 (로컬스토리지) */
+  const saveImageSize = (size) => {
+    localStorage.setItem(`editable-image-${id}-size`, JSON.stringify(size));
+    console.log(`📏 이미지 크기 저장됨: ${id}`, size);
+  };
+
+  /** ✅ 파일 선택창 열기 */
   const handleClick = () => {
     if (!isEditMode) return;
     fileInputRef.current?.click();
   };
 
-  /** ✅ 파일 업로드 시 이미지 미리보기 및 저장 */
+  /** ✅ 파일 업로드 처리 */
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -78,12 +111,13 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
         const newSrc = reader.result;
         setImageSrc(newSrc);
         saveImageData(newSrc);
+        e.target.value = ""; // 같은 파일 다시 선택해도 반응
       };
       reader.readAsDataURL(file);
     }
   };
 
-  /** ✅ 우클릭 시 이미지 URL 직접 입력 */
+  /** ✅ URL 입력 */
   const handleContextMenu = (e) => {
     if (!isEditMode) return;
     e.preventDefault();
@@ -94,26 +128,66 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
     }
   };
 
+  /** ✅ 드래그 시작 (크기조절) */
+  const handleMouseDown = (e) => {
+    if (!isEditMode) return;
+    setResizing(true);
+    startPos.current = { x: e.clientX, width: e.currentTarget.offsetWidth };
+  };
+
+  /** ✅ 드래그 중 */
+  const handleMouseMove = (e) => {
+    if (!resizing) return;
+    const diff = e.clientX - startPos.current.x;
+    const newWidth = Math.max(80, startPos.current.width + diff);
+    const newSize = { width: `${newWidth}px`, height: "auto" };
+    setImageSize(newSize);
+  };
+
+  /** ✅ 드래그 끝 */
+  const handleMouseUp = () => {
+    if (!resizing) return;
+    setResizing(false);
+    saveImageSize(imageSize);
+  };
+
+  /** ✅ 드래그 이벤트 전역 등록 */
+  useEffect(() => {
+    if (resizing) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+    } else {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [resizing, imageSize]);
+
   return (
     <div
       style={{
         position: "relative",
         display: "inline-block",
-        cursor: isEditMode ? "pointer" : "default",
+        cursor: isEditMode ? (resizing ? "grabbing" : "grab") : "default",
         border: isEditMode && isHovering ? "2px dashed #666" : "none",
         borderRadius: "8px",
         overflow: "hidden",
         transition: "all 0.2s ease",
+        ...imageSize,
         ...style,
       }}
-      data-file={filePath || "unknown"}
-      data-component={componentName || "unknown"}
+      data-file={filePath || import.meta.url || "unknown"}
+      data-component={componentName || "EditableImage"}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       onClick={handleClick}
       onContextMenu={handleContextMenu}
+      onMouseDown={handleMouseDown} // ✅ 추가: 드래그 시작
     >
-      {/* ✅ 이미지는 클릭 막지 않음 (이전 문제 해결) */}
+      {/* ✅ 이미지 */}
       <img
         src={imageSrc}
         alt={alt || ""}
@@ -124,7 +198,7 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
           opacity: isEditMode && isHovering ? 0.8 : 1,
           transition: "opacity 0.2s ease",
           userSelect: "none",
-          pointerEvents: "none", // ← hover는 div가 받음, 클릭은 div로 위임됨
+          pointerEvents: "none",
         }}
         draggable={false}
       />
@@ -137,6 +211,7 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
         onChange={handleFileChange}
       />
 
+      {/* ✅ 저장 표시 */}
       {saved && (
         <span
           style={{
@@ -154,12 +229,13 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
         </span>
       )}
 
+      {/* ✅ 편집모드 안내 오버레이 */}
       {isEditMode && isHovering && (
         <div
           style={{
             position: "absolute",
             inset: 0,
-            backgroundColor: "rgba(0,0,0,0.3)",
+            backgroundColor: "rgba(0,0,0,0.35)",
             color: "#fff",
             fontSize: "0.9em",
             display: "flex",
@@ -171,7 +247,8 @@ export default function EditableImage({ id, defaultSrc, alt, filePath, component
           }}
         >
           클릭: 이미지 교체 <br />
-          우클릭: URL 입력
+          우클릭: URL 입력 <br />
+          드래그: 크기 조절
         </div>
       )}
     </div>

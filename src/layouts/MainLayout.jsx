@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useEditMode } from "../context/EditModeContext"; // ✅ 디자인 모드 context 추가
 import EditableText from "../components/EditableText"; // ✅ 수정 가능한 텍스트 추가
+import EditableImage from "../components/EditableImage"; // ✅ 이미지 편집 컴포넌트 추가
 
 function MainLayout() {
   const { isEditMode, setIsEditMode } = useEditMode(); // ✅ 토글 상태 사용
@@ -18,8 +19,10 @@ function MainLayout() {
       className="border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-2 hover:scale-[1.05]"
       whileHover={{ scale: 1.05 }}
     >
-      <div className="w-full aspect-square overflow-hidden">
-        <img
+      <div className="w-full aspect-square overflow-hidden relative">
+        {/* ✅ 이미지 편집 가능 */}
+        <EditableImage
+          id={`featured-img-${i}`}
           src={
             i % 3 === 1
               ? "/clothes-sample2.png"
@@ -28,7 +31,6 @@ function MainLayout() {
               : "/gorani.jpg"
           }
           alt={`sample-${i}`}
-          className="w-full h-full object-cover object-center"
         />
       </div>
 
@@ -67,8 +69,10 @@ function MainLayout() {
       className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-md overflow-hidden bg-white transition-transform duration-300 hover:-translate-y-1 hover:scale-[1.02]"
       whileHover={{ scale: 1.02 }}
     >
-      <div className="overflow-hidden w-full aspect-[3/5] sm:aspect-[3/4] mx-auto">
-        <img
+      <div className="overflow-hidden w-full aspect-[3/5] sm:aspect-[3/4] mx-auto relative">
+        {/* ✅ EditableImage 적용 */}
+        <EditableImage
+          id={`product-img-${i}`}
           src={
             i % 3 === 1
               ? "/clothes-sample2.png"
@@ -77,7 +81,6 @@ function MainLayout() {
               : "/gorani.jpg"
           }
           alt={`sample-${i}`}
-          className="w-full h-full object-cover object-center"
         />
       </div>
       <div className="p-5 text-center font-['Pretendard']">
@@ -152,7 +155,7 @@ function MainLayout() {
         {isEditMode ? "🖊 디자인 모드 ON" : "✏ 디자인 모드 OFF"}
       </button>
 
-      {/* 🔸 메인 배경 */}
+      {/* 🔸 메인 배경 (편집 가능 배경 이미지) */}
       <section
         className="relative flex flex-col items-center justify-center w-full min-h-[110vh]"
         style={{
@@ -163,6 +166,10 @@ function MainLayout() {
         }}
       >
         <div className="absolute inset-0 bg-black/10" />
+        {/* ✅ 대표 배경 이미지도 편집 가능하게 추가 */}
+        <div className="relative z-10 mt-[20vh]">
+          <EditableImage id="main-background-img" src="/woodcard.jpg" alt="메인 배경" />
+        </div>
       </section>
 
       {/* 🔸 추천 상품 + 메뉴바 */}
