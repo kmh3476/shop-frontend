@@ -158,8 +158,16 @@ function Navigation() {
   const [showMailModal, setShowMailModal] = useState(false);
   const { user, logout } = useAuth();
 
-  // ✅ 추가: 반응형 width 상태
+  // ✅ 반응형 width 상태
   const [panelWidth, setPanelWidth] = useState("38vw");
+
+  // ✅ Swiper처럼 breakpoints 설정
+  const breakpoints = {
+    360: { width: "90vw" },
+    768: { width: "70vw" },
+    1024: { width: "50vw" },
+    1600: { width: "38vw" },
+  };
 
   useEffect(() => {
     const checkIsMobile = () => {
@@ -168,10 +176,10 @@ function Navigation() {
 
     const updatePanelWidth = () => {
       const width = window.innerWidth;
-      if (width <= 360) setPanelWidth("90vw");
-      else if (width <= 768) setPanelWidth("70vw");
-      else if (width <= 1024) setPanelWidth("50vw");
-      else setPanelWidth("38vw");
+      if (width <= 360) setPanelWidth(breakpoints[360].width);
+      else if (width <= 768) setPanelWidth(breakpoints[768].width);
+      else if (width <= 1024) setPanelWidth(breakpoints[1024].width);
+      else setPanelWidth(breakpoints[1600].width);
     };
 
     checkIsMobile();
@@ -252,11 +260,11 @@ function Navigation() {
       {/* 🔹 메뉴 패널 */}
       <div
         style={{
-          position: "fixed",
+          position: "fixed", // ✅ 스크롤 내려도 고정
           top: 0,
           right: 0,
           width: panelWidth, // ✅ 반응형 width 적용
-          height: "100vh",
+          height: "100vh", // ✅ 전체 화면 높이
           backgroundColor: "white",
           zIndex: 250,
           transform: isOpen ? "translateX(0)" : "translateX(100%)",
@@ -264,7 +272,9 @@ function Navigation() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          justifyContent: "flex-start",
           paddingTop: "120px",
+          overflowY: "auto", // ✅ 내부 스크롤 가능
           boxShadow: isOpen ? "-8px 0 20px rgba(0,0,0,0.1)" : "none",
         }}
       >
@@ -326,11 +336,11 @@ function Navigation() {
         {user && isOpen && (
           <Mail
             style={{
-              position: "fixed",
-              top: "20px",
-              right: "600px",
-              width: "80px",
-              height: "80px",
+              position: "absolute",
+              top: "30px",
+              right: "calc(100% + 20px)",
+              width: "60px",
+              height: "60px",
               color: "#000",
               zIndex: 260,
               cursor: "pointer",
