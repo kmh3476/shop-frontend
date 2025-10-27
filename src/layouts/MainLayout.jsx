@@ -225,8 +225,8 @@ function MainLayout() {
 
       <Swiper
         modules={[Navigation, Pagination]}
-        spaceBetween={16}
-        slidesPerView={2.2}
+        spaceBetween={300}
+        slidesPerView={4}
         navigation
         pagination={{ clickable: true }}
         centeredSlides={false}
@@ -312,8 +312,8 @@ function MainLayout() {
         <div className="w-full max-w-[1200px]">
           <Swiper
             modules={[Autoplay, Navigation, Pagination]}
-            spaceBetween={24}
-            slidesPerView={1.2}
+            spaceBetween={5}
+            slidesPerView={3.2}
             navigation
             pagination={{ clickable: true }}
             autoplay={{ delay: 4500, disableOnInteraction: false }}
