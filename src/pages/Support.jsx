@@ -17,6 +17,7 @@ export default function Support() {
 
   const { user } = useAuth();
   const API = "https://shop-backend-1-dfsl.onrender.com/api/support";
+  const NOTICE_API = "https://shop-backend-1-dfsl.onrender.com/api/inquiries/notice"; // ✅ 공지글 API 추가
 
   useEffect(() => {
     fetchPosts();
@@ -26,7 +27,9 @@ export default function Support() {
   async function fetchPosts() {
     try {
       const res = await axios.get(API);
-      setPosts(res.data);
+      // 공지글이 맨 위에 오도록 정렬
+      const sorted = res.data.sort((a, b) => (b.isNotice === true) - (a.isNotice === true));
+      setPosts(sorted);
     } catch (err) {
       console.error("문의 목록 불러오기 실패:", err);
     }
@@ -65,6 +68,26 @@ export default function Support() {
     }
   }
 
+  // ✅ 공지글 작성 (관리자만)
+  async function handleNoticeSubmit() {
+    const title = prompt("공지 제목을 입력하세요:");
+    const content = prompt("공지 내용을 입력하세요:");
+    if (!title || !content) return alert("제목과 내용을 모두 입력해주세요.");
+
+    try {
+      await axios.post(NOTICE_API, {
+        question: title,
+        answer: content,
+        isNotice: true,
+      });
+      alert("공지글이 등록되었습니다!");
+      fetchPosts();
+    } catch (err) {
+      console.error("공지글 등록 실패:", err);
+      alert("공지글 등록 중 오류가 발생했습니다.");
+    }
+  }
+
   // ✅ 클릭 시 상세보기 (공개글 or 본인글만)
   function handleViewDetail(post) {
     const isOwner = user?.email && post.email.includes(user.email.slice(0, 3));
@@ -86,13 +109,23 @@ export default function Support() {
 
       {/* ✅ 글쓰기 버튼 */}
       {!showForm && !selectedPost && (
-        <div className="text-center mb-10">
+        <div className="text-center mb-10 flex flex-col items-center gap-4">
           <button
             onClick={() => setShowForm(true)}
             className="bg-black text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-gray-800 transition"
           >
             ✍️ 글쓰기
           </button>
+
+          {/* ✅ 관리자 공지글 작성 버튼 */}
+          {user?.role === "admin" && (
+            <button
+              onClick={handleNoticeSubmit}
+              className="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition"
+            >
+              📢 공지글 작성
+            </button>
+          )}
         </div>
       )}
 
@@ -211,18 +244,25 @@ export default function Support() {
               {posts.length > 0 ? (
                 posts.map((p, i) => {
                   const isOwner =
-                    user?.email && p.email.includes(user.email.slice(0, 3));
-                  const visible =
-                    !p.isPrivate || isOwner; // 공개글 또는 본인 글
+                    user?.email && p.email?.includes(user.email.slice(0, 3));
+                  const visible = !p.isPrivate || isOwner;
+
                   return (
                     <tr
                       key={p._id}
-                      className="border-b border-gray-200 hover:bg-gray-50 transition cursor-pointer"
+                      className={`border-b border-gray-200 hover:bg-gray-50 transition cursor-pointer ${
+                        p.isNotice ? "bg-gray-200" : ""
+                      }`}
                       onClick={() => handleViewDetail(p)}
                     >
                       <td className="p-3 text-center">{posts.length - i}</td>
-                      <td className="p-3 text-sm">{displayEmail(p.email)}</td>
+                      <td className="p-3 text-sm">
+                        {p.isNotice ? "관리자" : displayEmail(p.email)}
+                      </td>
                       <td className="p-3 font-semibold text-gray-800 flex items-center gap-1">
+                        {p.isNotice && (
+                          <span className="text-blue-600 font-bold">[공지]</span>
+                        )}
                         {p.subject}
                         {p.isPrivate && (
                           <span className="text-xs text-gray-500">🔒</span>
@@ -230,7 +270,7 @@ export default function Support() {
                       </td>
                       <td className="p-3 text-gray-700 text-sm">
                         {visible ? (
-                          p.message.length > 40
+                          p.message?.length > 40
                             ? p.message.slice(0, 40) + "..."
                             : p.message
                         ) : (
@@ -243,6 +283,10 @@ export default function Support() {
                         {p.reply ? (
                           <span className="text-green-600 font-medium">
                             답변 완료
+                          </span>
+                        ) : p.isNotice ? (
+                          <span className="text-blue-600 font-medium">
+                            공지
                           </span>
                         ) : (
                           <span className="text-gray-500">처리 중</span>

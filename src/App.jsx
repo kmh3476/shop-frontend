@@ -168,19 +168,19 @@ function Navigation() {
       // ✅ 해상도별 width / height 구분 지정
       if (width <= 360) {
         setPanelWidth("400px");
-        setPanelHeight("300vh");
+        setPanelHeight("400vh");
       } else if (width <= 768) {
         setPanelWidth("400px");
-        setPanelHeight("300vh");
+        setPanelHeight("400vh");
       } else if (width <= 1024) {
         setPanelWidth("400px");
-        setPanelHeight("300vh");
+        setPanelHeight("400vh");
       } else if (width <= 1600) {
         setPanelWidth("400px");
-        setPanelHeight("300vh");
+        setPanelHeight("400vh");
       } else {
         setPanelWidth("400px");
-        setPanelHeight("300vh");
+        setPanelHeight("400vh");
       }
     };
 
