@@ -302,16 +302,6 @@ function MainLayout() {
           backgroundPosition: "center",
         }}
       >
-        <div className="absolute inset-0 bg-black/10" />
-        <div className="relative z-10 mt-[20vh]">
-          <EditableImage
-            id="main-background-img"
-            defaultSrc="/woodcard.jpg"
-            alt="메인 배경"
-            filePath="src/layouts/MainLayout.jsx"
-            componentName="MainBackground"
-          />
-        </div>
       </section>
 
       {/* 🔸 추천 상품 섹션 */}
