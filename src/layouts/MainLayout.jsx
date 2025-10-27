@@ -1,3 +1,4 @@
+// 📁 src/layouts/MainLayout.jsx
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
@@ -9,10 +10,29 @@ import { useEditMode } from "../context/EditModeContext";
 import EditableText from "../components/EditableText";
 import EditableImage from "../components/EditableImage";
 import { useState, useEffect, useRef } from "react";
+import { useAuth } from "../context/AuthContext"; // ✅ 수정: 관리자 확인용 추가
 
 function MainLayout() {
   const { isEditMode, setIsEditMode } = useEditMode();
-  const [isResizeMode, setIsResizeMode] = useState(false); // ✅ 새로 추가: 크기 조절 모드
+  const [isResizeMode, setIsResizeMode] = useState(false);
+  const { user } = useAuth(); // ✅ 로그인한 사용자 정보 가져오기
+
+  /** ✅ 관리자 전용 토글 */
+  const toggleEditMode = () => {
+    if (!user?.isAdmin) {
+      alert("⚠ 관리자만 디자인 모드를 사용할 수 있습니다.");
+      return;
+    }
+    setIsEditMode(!isEditMode);
+  };
+
+  const toggleResizeMode = () => {
+    if (!user?.isAdmin) {
+      alert("⚠ 관리자만 크기 조절 모드를 사용할 수 있습니다.");
+      return;
+    }
+    setIsResizeMode(!isResizeMode);
+  };
 
   /** ✅ 카드 크기 조절 + 폰트 비율 동기화 Hook */
   const useResizableCard = (id, defaultWidth = 360, defaultHeight = 520) => {
@@ -31,7 +51,6 @@ function MainLayout() {
         const dx = e.clientX - startRef.current.x;
         const dy = e.clientY - startRef.current.y;
 
-        // ✅ Swiper 영역 초과 확대 가능 (최대 폭 제한 완화)
         const newWidth = Math.min(Math.max(240, startRef.current.width + dx), 900);
         const newHeight = Math.min(Math.max(320, startRef.current.height + dy), 900);
 
@@ -54,7 +73,7 @@ function MainLayout() {
 
     const startResize = (e) => {
       e.stopPropagation();
-      if (!isResizeMode) return; // ✅ 크기조절모드일 때만 실행
+      if (!isResizeMode) return;
       resizingRef.current = true;
       startRef.current = {
         x: e.clientX,
@@ -62,7 +81,7 @@ function MainLayout() {
         width: cardRef.current.offsetWidth,
         height: cardRef.current.offsetHeight,
       };
-      document.body.style.userSelect = "none"; // 드래그 중 텍스트 선택 방지
+      document.body.style.userSelect = "none";
     };
 
     return { size, cardRef, startResize };
@@ -136,7 +155,7 @@ function MainLayout() {
           </div>
         </div>
 
-        {isResizeMode && (
+        {isResizeMode && user?.isAdmin && ( // ✅ 수정: 관리자만 리사이즈 핸들 표시
           <div
             onMouseDown={startResize}
             className="absolute bottom-1 right-1 w-5 h-5 bg-black/70 cursor-se-resize rounded-sm z-50"
@@ -199,7 +218,7 @@ function MainLayout() {
           </p>
         </div>
 
-        {isResizeMode && (
+        {isResizeMode && user?.isAdmin && ( // ✅ 수정: 관리자만 크기조절 핸들 표시
           <div
             onMouseDown={startResize}
             className="absolute bottom-1 right-1 w-4 h-4 bg-gray-700/70 cursor-se-resize rounded-sm z-50"
@@ -225,12 +244,12 @@ function MainLayout() {
 
       <Swiper
         modules={[Navigation, Pagination]}
-        spaceBetween={300}
+        spaceBetween={100}
         slidesPerView={4}
         navigation
         pagination={{ clickable: true }}
         centeredSlides={false}
-        allowTouchMove={!isResizeMode} // ✅ 크기조절모드에서는 Swiper 드래그 비활성화
+        allowTouchMove={!isResizeMode}
         breakpoints={{
           360: { slidesPerView: 2.2 },
           640: { slidesPerView: 3 },
@@ -250,26 +269,28 @@ function MainLayout() {
 
   return (
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden font-['Pretendard']">
-      {/* 🔸 디자인 모드 및 크기조절 모드 버튼 */}
-      <div className="fixed top-6 left-6 z-50 flex gap-3">
-        <button
-          onClick={() => setIsEditMode(!isEditMode)}
-          className={`px-5 py-2 rounded-lg text-white font-semibold shadow-lg transition ${
-            isEditMode ? "bg-green-600 hover:bg-green-700" : "bg-gray-800 hover:bg-gray-900"
-          }`}
-        >
-          {isEditMode ? "🖊 디자인 모드 ON" : "✏ 디자인 모드 OFF"}
-        </button>
+      {/* 🔸 디자인 모드 및 크기조절 모드 버튼 (관리자만 표시) */}
+      {user?.isAdmin && ( // ✅ 수정: 관리자만 버튼 표시
+        <div className="fixed top-6 left-6 z-50 flex gap-3">
+          <button
+            onClick={toggleEditMode}
+            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-lg transition ${
+              isEditMode ? "bg-green-600 hover:bg-green-700" : "bg-gray-800 hover:bg-gray-900"
+            }`}
+          >
+            {isEditMode ? "🖊 디자인 모드 ON" : "✏ 디자인 모드 OFF"}
+          </button>
 
-        <button
-          onClick={() => setIsResizeMode(!isResizeMode)}
-          className={`px-5 py-2 rounded-lg text-white font-semibold shadow-lg transition ${
-            isResizeMode ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-700 hover:bg-gray-800"
-          }`}
-        >
-          {isResizeMode ? "📐 크기 조절 ON" : "📏 크기 조절 OFF"}
-        </button>
-      </div>
+          <button
+            onClick={toggleResizeMode}
+            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-lg transition ${
+              isResizeMode ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-700 hover:bg-gray-800"
+            }`}
+          >
+            {isResizeMode ? "📐 크기 조절 ON" : "📏 크기 조절 OFF"}
+          </button>
+        </div>
+      )}
 
       {/* 🔸 메인 배경 */}
       <section
@@ -312,12 +333,12 @@ function MainLayout() {
         <div className="w-full max-w-[1200px]">
           <Swiper
             modules={[Autoplay, Navigation, Pagination]}
-            spaceBetween={5}
+            spaceBetween={10}
             slidesPerView={3.2}
             navigation
             pagination={{ clickable: true }}
             autoplay={{ delay: 4500, disableOnInteraction: false }}
-            allowTouchMove={!isResizeMode} // ✅ 크기조절모드일 때 swiper 드래그 중지
+            allowTouchMove={!isResizeMode}
             loop
             className="pb-12 swiper-initialized swiper-horizontal swiper-backface-hidden"
           >
