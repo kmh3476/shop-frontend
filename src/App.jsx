@@ -49,17 +49,26 @@ function Login() {
 
     try {
       setLoading(true);
-      const payload = { identifier: loginInput, password };
+
+      // ✅ 수정: identifier → userId / email 자동 구분 처리
+      const payload = loginInput.includes("@")
+        ? { email: loginInput, password }
+        : { userId: loginInput, password };
+
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error?.message || "로그인 실패");
 
-      if (data.jwt && data.user) {
-        login(data.user, data.jwt);
+      const data = await res.json();
+
+      // ✅ 수정: 백엔드 구조에 맞게 에러 핸들링
+      if (!res.ok) throw new Error(data?.message || "로그인 실패");
+
+      // ✅ 수정: 백엔드 응답 구조는 { token, user }
+      if (data.token && data.user) {
+        login(data.user, data.token);
         alert("로그인 성공!");
         navigate("/products");
       } else throw new Error("로그인 응답이 올바르지 않습니다.");
@@ -349,8 +358,7 @@ function Navigation() {
                   {item.label}
                 </Link>
               </li>
-            ))}
-          </ul>
+            ))}</ul>
         </nav>
       </div>
 
