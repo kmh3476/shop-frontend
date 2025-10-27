@@ -118,7 +118,7 @@ export default function Support() {
           </button>
 
           {/* ✅ 관리자 공지글 작성 버튼 */}
-          {user?.role === "admin" && (
+          {user?.isAdmin && (
             <button
               onClick={handleNoticeSubmit}
               className="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition"

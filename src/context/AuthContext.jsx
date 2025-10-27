@@ -22,8 +22,11 @@ export function AuthProvider({ children }) {
           parsedUser?.role === "admin" ||
           parsedUser?.email === "admin@onyou.com"; // 필요시 이메일 기준 변경 가능
 
+        // ✅ role 필드 자동 설정 (Support.jsx에서도 인식되게)
+        const role = isAdmin ? "admin" : "user";
+
         setToken(storedToken);
-        setUser({ ...parsedUser, isAdmin });
+        setUser({ ...parsedUser, isAdmin, role }); // ✅ role 필드 추가
       } catch (err) {
         console.error("❌ 유저 복원 실패:", err);
       }
@@ -38,7 +41,10 @@ export function AuthProvider({ children }) {
       userData?.role === "admin" ||
       userData?.email === "admin@onyou.com"; // ✅ 관리자 이메일 지정 가능
 
-    const userWithAdmin = { ...userData, isAdmin };
+    // ✅ role 필드 자동 설정
+    const role = isAdmin ? "admin" : "user";
+
+    const userWithAdmin = { ...userData, isAdmin, role };
 
     localStorage.setItem("token", newToken);
     localStorage.setItem("user", JSON.stringify(userWithAdmin));
@@ -62,8 +68,11 @@ export function AuthProvider({ children }) {
         user?.isAdmin === true ||
         user?.role === "admin" ||
         user?.email === "admin@onyou.com";
-      if (user.isAdmin !== isAdmin) {
-        setUser({ ...user, isAdmin });
+
+      const role = isAdmin ? "admin" : "user";
+
+      if (user.isAdmin !== isAdmin || user.role !== role) {
+        setUser({ ...user, isAdmin, role }); // ✅ role까지 항상 동기화
       }
     }
   }, [user]);
