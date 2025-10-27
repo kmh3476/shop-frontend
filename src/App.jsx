@@ -154,46 +154,44 @@ function Navigation() {
   const location = useLocation();
   const isHome = location.pathname === "/";
   const [isOpen, setIsOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [showMailModal, setShowMailModal] = useState(false);
   const { user, logout } = useAuth();
 
-  // ✅ 반응형 width 상태
-  const [panelWidth, setPanelWidth] = useState("38vw");
-
-  // ✅ Swiper처럼 breakpoints 설정
-  const breakpoints = {
-    360: { width: "90vw" },
-    768: { width: "70vw" },
-    1024: { width: "50vw" },
-    1600: { width: "38vw" },
-  };
+  // ✅ width, height 둘 다 상태로 조절 가능하게 설정
+  const [panelWidth, setPanelWidth] = useState("800px");
+  const [panelHeight, setPanelHeight] = useState("100vh");
 
   useEffect(() => {
-    const checkIsMobile = () => {
-      setIsMobile(window.matchMedia("(max-width: 768px)").matches);
-    };
-
-    const updatePanelWidth = () => {
+    const updatePanelSize = () => {
       const width = window.innerWidth;
-      if (width <= 360) setPanelWidth(breakpoints[360].width);
-      else if (width <= 768) setPanelWidth(breakpoints[768].width);
-      else if (width <= 1024) setPanelWidth(breakpoints[1024].width);
-      else setPanelWidth(breakpoints[1600].width);
+
+      // ✅ 해상도별 width / height 구분 지정
+      if (width <= 360) {
+        setPanelWidth("400px");
+        setPanelHeight("300vh");
+      } else if (width <= 768) {
+        setPanelWidth("400px");
+        setPanelHeight("300vh");
+      } else if (width <= 1024) {
+        setPanelWidth("400px");
+        setPanelHeight("300vh");
+      } else if (width <= 1600) {
+        setPanelWidth("400px");
+        setPanelHeight("300vh");
+      } else {
+        setPanelWidth("400px");
+        setPanelHeight("300vh");
+      }
     };
 
-    checkIsMobile();
-    updatePanelWidth();
-
-    window.addEventListener("resize", checkIsMobile);
-    window.addEventListener("resize", updatePanelWidth);
+    updatePanelSize();
+    window.addEventListener("resize", updatePanelSize);
 
     document.body.style.overflow = isOpen ? "hidden" : "auto";
 
     return () => {
       document.body.style.overflow = "auto";
-      window.removeEventListener("resize", checkIsMobile);
-      window.removeEventListener("resize", updatePanelWidth);
+      window.removeEventListener("resize", updatePanelSize);
     };
   }, [isOpen]);
 
@@ -260,21 +258,22 @@ function Navigation() {
       {/* 🔹 메뉴 패널 */}
       <div
         style={{
-          position: "fixed", // ✅ 스크롤 내려도 고정
+          position: "fixed",
           top: 0,
           right: 0,
-          width: panelWidth, // ✅ 반응형 width 적용
-          height: "100vh", // ✅ 전체 화면 높이
+          width: panelWidth,
+          height: panelHeight,
           backgroundColor: "white",
           zIndex: 250,
           transform: isOpen ? "translateX(0)" : "translateX(100%)",
-          transition: "transform 0.4s ease-in-out, width 0.3s ease",
+          transition:
+            "transform 0.4s ease-in-out, width 0.3s ease, height 0.3s ease",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "flex-start",
           paddingTop: "120px",
-          overflowY: "auto", // ✅ 내부 스크롤 가능
+          overflowY: "auto",
           boxShadow: isOpen ? "-8px 0 20px rgba(0,0,0,0.1)" : "none",
         }}
       >
