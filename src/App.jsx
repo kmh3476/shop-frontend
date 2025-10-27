@@ -50,7 +50,6 @@ function Login() {
     try {
       setLoading(true);
 
-      // ✅ 수정: identifier → userId / email 자동 구분 처리
       const payload = loginInput.includes("@")
         ? { email: loginInput, password }
         : { userId: loginInput, password };
@@ -63,10 +62,8 @@ function Login() {
 
       const data = await res.json();
 
-      // ✅ 수정: 백엔드 구조에 맞게 에러 핸들링
       if (!res.ok) throw new Error(data?.message || "로그인 실패");
 
-      // ✅ 수정: 백엔드 응답 구조는 { token, user }
       if (data.token && data.user) {
         login(data.user, data.token);
         alert("로그인 성공!");
@@ -161,16 +158,34 @@ function Navigation() {
   const [showMailModal, setShowMailModal] = useState(false);
   const { user, logout } = useAuth();
 
+  // ✅ 추가: 반응형 width 상태
+  const [panelWidth, setPanelWidth] = useState("38vw");
+
   useEffect(() => {
     const checkIsMobile = () => {
       setIsMobile(window.matchMedia("(max-width: 768px)").matches);
     };
+
+    const updatePanelWidth = () => {
+      const width = window.innerWidth;
+      if (width <= 360) setPanelWidth("90vw");
+      else if (width <= 768) setPanelWidth("70vw");
+      else if (width <= 1024) setPanelWidth("50vw");
+      else setPanelWidth("38vw");
+    };
+
     checkIsMobile();
+    updatePanelWidth();
+
     window.addEventListener("resize", checkIsMobile);
+    window.addEventListener("resize", updatePanelWidth);
+
     document.body.style.overflow = isOpen ? "hidden" : "auto";
+
     return () => {
       document.body.style.overflow = "auto";
       window.removeEventListener("resize", checkIsMobile);
+      window.removeEventListener("resize", updatePanelWidth);
     };
   }, [isOpen]);
 
@@ -240,12 +255,12 @@ function Navigation() {
           position: "fixed",
           top: 0,
           right: 0,
-          width: isMobile ? "90vw" : "38vw",
+          width: panelWidth, // ✅ 반응형 width 적용
           height: "100vh",
           backgroundColor: "white",
           zIndex: 250,
           transform: isOpen ? "translateX(0)" : "translateX(100%)",
-          transition: "transform 0.4s ease-in-out",
+          transition: "transform 0.4s ease-in-out, width 0.3s ease",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -352,13 +367,16 @@ function Navigation() {
                   onClick={() => setIsOpen(false)}
                   style={{
                     color: isActive(item.path) ? "#000" : "#444",
-                    textDecoration: isActive(item.path) ? "underline" : "none",
+                    textDecoration: isActive(item.path)
+                      ? "underline"
+                      : "none",
                   }}
                 >
                   {item.label}
                 </Link>
               </li>
-            ))}</ul>
+            ))}
+          </ul>
         </nav>
       </div>
 
@@ -369,9 +387,8 @@ function Navigation() {
 
 /* -------------------- ✅ 라우팅 -------------------- */
 function InnerApp() {
-  const { setIsEditMode } = useEditMode(); // ✅ 이 위치로 이동
+  const { setIsEditMode } = useEditMode();
 
-  // ✅ App.jsx 파일 자체 로드 시 추적 로그 남기기
   useEffect(() => {
     const logEntry = {
       text: "App.jsx loaded",
