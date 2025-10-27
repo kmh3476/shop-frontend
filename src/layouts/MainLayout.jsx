@@ -244,7 +244,7 @@ function MainLayout() {
 
       <Swiper
         modules={[Navigation, Pagination]}
-        spaceBetween={100}
+        spaceBetween={5}
         slidesPerView={4}
         navigation
         pagination={{ clickable: true }}
@@ -254,7 +254,7 @@ function MainLayout() {
           360: { slidesPerView: 2.2 },
           640: { slidesPerView: 3 },
           1024: { slidesPerView: 4 },
-          1280: { slidesPerView: 5 },
+          1280: { slidesPerView: 4 },
         }}
         className="pb-12 swiper-backface-hidden"
       >
@@ -315,7 +315,7 @@ function MainLayout() {
         >
           <EditableText
             id="featured-section-title"
-            defaultText="🥝 추천 상품"
+            defaultText="추천 상품"
             apiUrl="http://localhost:1337/api/texts"
           />
         </motion.h2>
@@ -341,9 +341,9 @@ function MainLayout() {
         </div>
       </section>
 
-      <SlideSection id="top-section" title="👕 상의" />
-      <SlideSection id="bottom-section" title="👖 하의" />
-      <SlideSection id="coordi-section" title="🧥 코디 추천" />
+      <SlideSection id="top-section" title="상의" />
+      <SlideSection id="bottom-section" title="하의" />
+      <SlideSection id="coordi-section" title="코디 추천" />
 
       <section
         className="flex flex-col items-center justify-center py-[15vh] px-6 text-center bg-gray-100 font-['Pretendard']"
