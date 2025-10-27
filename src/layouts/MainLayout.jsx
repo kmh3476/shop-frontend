@@ -12,6 +12,7 @@ import { useState, useEffect, useRef } from "react";
 
 function MainLayout() {
   const { isEditMode, setIsEditMode } = useEditMode();
+  const [isResizeMode, setIsResizeMode] = useState(false); // ✅ 새로 추가: 크기 조절 모드
 
   /** ✅ 카드 크기 조절 + 폰트 비율 동기화 Hook */
   const useResizableCard = (id, defaultWidth = 360, defaultHeight = 520) => {
@@ -29,14 +30,18 @@ function MainLayout() {
         if (!resizingRef.current || !cardRef.current) return;
         const dx = e.clientX - startRef.current.x;
         const dy = e.clientY - startRef.current.y;
-        const newWidth = Math.max(240, startRef.current.width + dx);
-        const newHeight = Math.max(320, startRef.current.height + dy);
+
+        // ✅ Swiper 영역 초과 확대 가능 (최대 폭 제한 완화)
+        const newWidth = Math.min(Math.max(240, startRef.current.width + dx), 900);
+        const newHeight = Math.min(Math.max(320, startRef.current.height + dy), 900);
+
         setSize({ width: newWidth, height: newHeight });
       };
       const handleMouseUp = () => {
         if (resizingRef.current) {
           resizingRef.current = false;
           localStorage.setItem(`card-size-${id}`, JSON.stringify(size));
+          document.body.style.userSelect = "auto";
         }
       };
       window.addEventListener("mousemove", handleMouseMove);
@@ -48,6 +53,8 @@ function MainLayout() {
     }, [size, id]);
 
     const startResize = (e) => {
+      e.stopPropagation();
+      if (!isResizeMode) return; // ✅ 크기조절모드일 때만 실행
       resizingRef.current = true;
       startRef.current = {
         x: e.clientX,
@@ -55,6 +62,7 @@ function MainLayout() {
         width: cardRef.current.offsetWidth,
         height: cardRef.current.offsetHeight,
       };
+      document.body.style.userSelect = "none"; // 드래그 중 텍스트 선택 방지
     };
 
     return { size, cardRef, startResize };
@@ -63,7 +71,7 @@ function MainLayout() {
   /** ✅ 추천 상품 카드 */
   const FeaturedCard = ({ i }) => {
     const { size, cardRef, startResize } = useResizableCard(`featured-${i}`, 360, 520);
-    const scale = size.width / 360; // 폰트 비율 조정 기준
+    const scale = size.width / 360;
 
     return (
       <motion.div
@@ -74,6 +82,7 @@ function MainLayout() {
           height: `${size.height}px`,
           fontSize: `${scale * 1}rem`,
           transformOrigin: "top left",
+          cursor: isResizeMode ? "se-resize" : "default",
         }}
       >
         <div className="w-full h-[60%] overflow-hidden relative">
@@ -127,11 +136,10 @@ function MainLayout() {
           </div>
         </div>
 
-        {/* ✅ 크기조절 핸들 */}
-        {isEditMode && (
+        {isResizeMode && (
           <div
             onMouseDown={startResize}
-            className="absolute bottom-1 right-1 w-5 h-5 bg-black/60 cursor-se-resize rounded-sm z-50"
+            className="absolute bottom-1 right-1 w-5 h-5 bg-black/70 cursor-se-resize rounded-sm z-50"
             title="드래그로 카드 크기 조절"
           />
         )}
@@ -152,6 +160,7 @@ function MainLayout() {
           width: `${size.width}px`,
           height: `${size.height}px`,
           fontSize: `${scale * 1}rem`,
+          cursor: isResizeMode ? "se-resize" : "default",
         }}
       >
         <div className="overflow-hidden w-full h-[70%] mx-auto relative">
@@ -190,7 +199,7 @@ function MainLayout() {
           </p>
         </div>
 
-        {isEditMode && (
+        {isResizeMode && (
           <div
             onMouseDown={startResize}
             className="absolute bottom-1 right-1 w-4 h-4 bg-gray-700/70 cursor-se-resize rounded-sm z-50"
@@ -201,7 +210,7 @@ function MainLayout() {
     );
   };
 
-  /** ✅ 섹션 (기존 유지) */
+  /** ✅ 슬라이드 섹션 */
   const SlideSection = ({ title, id }) => (
     <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black font-['Pretendard']">
       <motion.h2
@@ -221,13 +230,14 @@ function MainLayout() {
         navigation
         pagination={{ clickable: true }}
         centeredSlides={false}
+        allowTouchMove={!isResizeMode} // ✅ 크기조절모드에서는 Swiper 드래그 비활성화
         breakpoints={{
           360: { slidesPerView: 2.2 },
           640: { slidesPerView: 3 },
           1024: { slidesPerView: 4 },
           1280: { slidesPerView: 5 },
         }}
-        className="pb-12"
+        className="pb-12 swiper-backface-hidden"
       >
         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
           <SwiperSlide key={i}>
@@ -240,15 +250,28 @@ function MainLayout() {
 
   return (
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden font-['Pretendard']">
-      <button
-        onClick={() => setIsEditMode(!isEditMode)}
-        className={`fixed top-6 left-6 z-50 px-5 py-2 rounded-lg text-white font-semibold shadow-lg transition ${
-          isEditMode ? "bg-green-600 hover:bg-green-700" : "bg-gray-800 hover:bg-gray-900"
-        }`}
-      >
-        {isEditMode ? "🖊 디자인 모드 ON" : "✏ 디자인 모드 OFF"}
-      </button>
+      {/* 🔸 디자인 모드 및 크기조절 모드 버튼 */}
+      <div className="fixed top-6 left-6 z-50 flex gap-3">
+        <button
+          onClick={() => setIsEditMode(!isEditMode)}
+          className={`px-5 py-2 rounded-lg text-white font-semibold shadow-lg transition ${
+            isEditMode ? "bg-green-600 hover:bg-green-700" : "bg-gray-800 hover:bg-gray-900"
+          }`}
+        >
+          {isEditMode ? "🖊 디자인 모드 ON" : "✏ 디자인 모드 OFF"}
+        </button>
 
+        <button
+          onClick={() => setIsResizeMode(!isResizeMode)}
+          className={`px-5 py-2 rounded-lg text-white font-semibold shadow-lg transition ${
+            isResizeMode ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-700 hover:bg-gray-800"
+          }`}
+        >
+          {isResizeMode ? "📐 크기 조절 ON" : "📏 크기 조절 OFF"}
+        </button>
+      </div>
+
+      {/* 🔸 메인 배경 */}
       <section
         className="relative flex flex-col items-center justify-center w-full min-h-[110vh]"
         style={{
@@ -270,6 +293,7 @@ function MainLayout() {
         </div>
       </section>
 
+      {/* 🔸 추천 상품 섹션 */}
       <section className="flex flex-col items-center justify-center py-[10vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
         <motion.h2
           className="text-5xl md:text-6xl font-extrabold mb-12 drop-shadow-sm tracking-tight text-gray-600"
@@ -293,13 +317,9 @@ function MainLayout() {
             navigation
             pagination={{ clickable: true }}
             autoplay={{ delay: 4500, disableOnInteraction: false }}
+            allowTouchMove={!isResizeMode} // ✅ 크기조절모드일 때 swiper 드래그 중지
             loop
-            breakpoints={{
-              480: { slidesPerView: 1.4 },
-              768: { slidesPerView: 2 },
-              1024: { slidesPerView: 3 },
-            }}
-            className="pb-12"
+            className="pb-12 swiper-initialized swiper-horizontal swiper-backface-hidden"
           >
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <SwiperSlide key={i}>
