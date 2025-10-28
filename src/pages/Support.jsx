@@ -216,7 +216,7 @@ export default function Support() {
               {selectedPost.answer}
             </div>
 
-            {/* ✅ 관리자 답변 표시 추가 */}
+            {/* ✅ 관리자 답변 표시 */}
             {selectedPost.reply && (
               <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
                 <h3 className="font-semibold text-green-700 mb-2">
@@ -269,12 +269,24 @@ export default function Support() {
                         <span className="text-blue-600 font-bold">[공지]</span>
                       )}{" "}
                       {p.question}
+                      {p.isPrivate && (
+                        <span className="ml-1 text-gray-500 text-xs">🔒</span>
+                      )}
                     </td>
+
+                    {/* ✅ 비공개일 경우 모자이크 처리 */}
                     <td className="p-3 text-gray-700 text-sm">
-                      {p.answer?.length > 40
-                        ? p.answer.slice(0, 40) + "..."
-                        : p.answer}
+                      {p.isPrivate ? (
+                        <span className="italic text-gray-400">
+                          🔒 비공개 문의입니다.
+                        </span>
+                      ) : p.answer?.length > 40 ? (
+                        p.answer.slice(0, 40) + "..."
+                      ) : (
+                        p.answer
+                      )}
                     </td>
+
                     <td className="p-3 text-center">
                       {p.reply ? (
                         <span className="text-green-600 font-medium">
