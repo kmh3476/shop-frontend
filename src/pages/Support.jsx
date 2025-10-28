@@ -203,14 +203,16 @@ export default function Support() {
             >
               ✕
             </button>
-            <h2 className="text-2xl font-bold mb-4">{selectedPost.subject}</h2>
+            <h2 className="text-2xl font-bold mb-4">
+  {selectedPost.isNotice ? selectedPost.question : selectedPost.subject}
+</h2>
             <p className="text-sm text-gray-500 mb-4">
               {displayEmail(selectedPost.email)} •{" "}
               {new Date(selectedPost.createdAt).toLocaleString("ko-KR")}
             </p>
             <div className="border-t border-gray-200 pt-4 text-gray-800 whitespace-pre-wrap">
-              {selectedPost.message}
-            </div>
+  {selectedPost.isNotice ? selectedPost.answer : selectedPost.message}
+</div>
 
             {selectedPost.reply && (
               <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
