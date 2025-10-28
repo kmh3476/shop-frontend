@@ -16,7 +16,7 @@ export default function Support() {
   const [selectedPost, setSelectedPost] = useState(null);
 
   const { user } = useAuth();
-  const API = "https://shop-backend-1-dfsl.onrender.com/api/inquiries/all";
+  const API = "https://shop-backend-1-dfsl.onrender.com/api/inquiries";
   const NOTICE_API = "https://shop-backend-1-dfsl.onrender.com/api/inquiries/notice"; // ✅ 공지글 API 추가
 
   useEffect(() => {
