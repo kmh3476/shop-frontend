@@ -30,21 +30,23 @@ export default function Support() {
 
   // ✅ 문의 목록 불러오기
   async function fetchPosts() {
-    try {
-      console.log("📡 문의 목록 요청 시작:", `${API}/all`);
-      const res = await axios.get(`${API}/all`); // ✅ 수정: 전체 조회용 엔드포인트
-      console.log("✅ 문의 목록 응답 데이터:", res.data);
+  try {
+    const res = await axios.get(API);
 
-      const sorted = res.data.sort((a, b) => {
-        if (a.isNotice && !b.isNotice) return -1; // 공지 먼저
-        if (!a.isNotice && b.isNotice) return 1;
-        return new Date(b.createdAt) - new Date(a.createdAt); // 최신순
-      });
-      setPosts(sorted);
-    } catch (err) {
-      console.error("❌ 문의 목록 불러오기 실패:", err);
-    }
+    // ✅ 상품에서 작성된 문의(productId 존재)는 제외
+    const filtered = res.data.filter((p) => !p.productId);
+
+    const sorted = filtered.sort((a, b) => {
+      if (a.isNotice && !b.isNotice) return -1; // 공지 먼저
+      if (!a.isNotice && b.isNotice) return 1;
+      return new Date(b.createdAt) - new Date(a.createdAt); // 최신순
+    });
+
+    setPosts(sorted);
+  } catch (err) {
+    console.error("문의 목록 불러오기 실패:", err);
   }
+}
 
   // ✅ 이메일 표시
   function displayEmail(email) {
