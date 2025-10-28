@@ -8,8 +8,8 @@ export default function Support() {
   const [showForm, setShowForm] = useState(false);
   const [newPost, setNewPost] = useState({
     email: "",
-    title: "",
-    message: "",
+    question: "",
+    answer: "",
     isPrivate: false,
   });
   const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ export default function Support() {
 
   const { user } = useAuth();
   const API = "https://shop-backend-1-dfsl.onrender.com/api/inquiries";
-  const NOTICE_API = "https://shop-backend-1-dfsl.onrender.com/api/inquiries/notice"; // ✅ 공지글 API 추가
+  const NOTICE_API = `${API}/notice`;
 
   useEffect(() => {
     fetchPosts();
@@ -27,7 +27,6 @@ export default function Support() {
   async function fetchPosts() {
     try {
       const res = await axios.get(API);
-      // 공지글이 맨 위에 오도록 정렬
       const sorted = res.data.sort((a, b) => (b.isNotice === true) - (a.isNotice === true));
       setPosts(sorted);
     } catch (err) {
@@ -35,34 +34,32 @@ export default function Support() {
     }
   }
 
-  // ✅ 이메일(닉네임 형태) 표시
+  // ✅ 이메일 표시
   function displayEmail(email) {
-  if (!email || typeof email !== "string") return "익명";
-  if (!email.includes("@")) return email;
-  const [id] = email.split("@");
-  return id.slice(0, 2) + "****";
-}
+    if (!email || typeof email !== "string") return "익명";
+    if (!email.includes("@")) return email;
+    const [id] = email.split("@");
+    return id.slice(0, 2) + "****";
+  }
 
   // ✅ 문의 작성
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!newPost.email || !newPost.title || !newPost.message)
+    if (!newPost.email || !newPost.question || !newPost.answer)
       return alert("모든 항목을 입력해주세요.");
 
     try {
       setLoading(true);
       await axios.post(API, {
         email: newPost.email,
-        subject: newPost.title,
-        message: newPost.message,
+        question: newPost.question,   // ✅ subject → question
+        answer: newPost.answer,       // ✅ message → answer
         isPrivate: newPost.isPrivate,
       });
       alert("문의가 등록되었습니다! 답변은 이메일로 발송됩니다.");
-      setNewPost({ email: "", title: "", message: "", isPrivate: false });
+      setNewPost({ email: "", question: "", answer: "", isPrivate: false });
       setShowForm(false);
-     setTimeout(() => {
-  fetchPosts();
-}, 500);
+      setTimeout(fetchPosts, 500);
     } catch (err) {
       console.error("문의 작성 실패:", err);
       alert("문의 등록 중 오류가 발생했습니다.");
@@ -71,7 +68,7 @@ export default function Support() {
     }
   }
 
-  // ✅ 공지글 작성 (관리자만)
+  // ✅ 공지글 작성 (관리자)
   async function handleNoticeSubmit() {
     const title = prompt("공지 제목을 입력하세요:");
     const content = prompt("공지 내용을 입력하세요:");
@@ -91,7 +88,7 @@ export default function Support() {
     }
   }
 
-  // ✅ 클릭 시 상세보기 (공개글 or 본인글만)
+  // ✅ 상세 보기
   function handleViewDetail(post) {
     const isOwner = user?.email && post.email?.includes(user.email.slice(0, 3));
     if (post.isPrivate && !isOwner) {
@@ -101,7 +98,6 @@ export default function Support() {
     setSelectedPost(post);
   }
 
-  // ✅ 상세보기 닫기
   function closeDetail() {
     setSelectedPost(null);
   }
@@ -110,7 +106,7 @@ export default function Support() {
     <div className="min-h-screen bg-white text-black py-16 px-4 font-['Pretendard']">
       <h1 className="text-5xl font-extrabold text-center mb-14">고객센터</h1>
 
-      {/* ✅ 글쓰기 버튼 */}
+      {/* ✅ 버튼들 */}
       {!showForm && !selectedPost && (
         <div className="text-center mb-10 flex flex-col items-center gap-4">
           <button
@@ -120,7 +116,6 @@ export default function Support() {
             ✍️ 글쓰기
           </button>
 
-          {/* ✅ 관리자 공지글 작성 버튼 */}
           {user?.isAdmin && (
             <button
               onClick={handleNoticeSubmit}
@@ -142,31 +137,27 @@ export default function Support() {
               placeholder="답변 받을 이메일"
               value={newPost.email}
               onChange={(e) => setNewPost({ ...newPost, email: e.target.value })}
-              className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-black"
+              className="border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black"
             />
             <input
               type="text"
               placeholder="제목을 입력하세요"
-              value={newPost.title}
-              onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-              className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-black"
+              value={newPost.question}
+              onChange={(e) => setNewPost({ ...newPost, question: e.target.value })}
+              className="border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black"
             />
             <textarea
               placeholder="문의 내용을 입력하세요"
               rows="4"
-              value={newPost.message}
-              onChange={(e) =>
-                setNewPost({ ...newPost, message: e.target.value })
-              }
-              className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-black resize-none"
+              value={newPost.answer}
+              onChange={(e) => setNewPost({ ...newPost, answer: e.target.value })}
+              className="border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black resize-none"
             />
             <label className="flex items-center gap-2 text-gray-700 text-sm">
               <input
                 type="checkbox"
                 checked={newPost.isPrivate}
-                onChange={(e) =>
-                  setNewPost({ ...newPost, isPrivate: e.target.checked })
-                }
+                onChange={(e) => setNewPost({ ...newPost, isPrivate: e.target.checked })}
               />
               비공개 문의로 등록하기
             </label>
@@ -192,41 +183,22 @@ export default function Support() {
           </form>
         </div>
       )}
- {/* ✅ 상세 보기 모달 */}
-      {/* ✅ 상세 보기 모달 */}
+
+      {/* ✅ 상세 보기 */}
       {selectedPost && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl w-[90%] relative">
-            <button
-              onClick={closeDetail}
-              className="absolute top-3 right-4 text-gray-500 hover:text-black text-2xl"
-            >
-              ✕
-            </button>
+            <button onClick={closeDetail} className="absolute top-3 right-4 text-gray-500 hover:text-black text-2xl">✕</button>
             <h2 className="text-2xl font-bold mb-4">
-  {selectedPost.isNotice ? selectedPost.question : selectedPost.subject}
-</h2>
+              {selectedPost.question}
+            </h2>
             <p className="text-sm text-gray-500 mb-4">
               {displayEmail(selectedPost.email)} •{" "}
               {new Date(selectedPost.createdAt).toLocaleString("ko-KR")}
             </p>
             <div className="border-t border-gray-200 pt-4 text-gray-800 whitespace-pre-wrap">
-  {selectedPost.isNotice ? selectedPost.answer : selectedPost.message}
-</div>
-
-            {selectedPost.reply && (
-              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <h3 className="font-semibold text-green-700 mb-2">
-                  💬 관리자 답변
-                </h3>
-                <p className="text-gray-800 whitespace-pre-wrap">
-                  {selectedPost.reply}
-                </p>
-                <p className="text-xs text-gray-500 mt-2">
-                  {new Date(selectedPost.repliedAt).toLocaleString("ko-KR")}
-                </p>
-              </div>
-            )}
+              {selectedPost.answer}
+            </div>
           </div>
         </div>
       )}
@@ -247,65 +219,38 @@ export default function Support() {
             </thead>
             <tbody>
               {posts.length > 0 ? (
-                posts.map((p, i) => {
-                  const isOwner =
-                    user?.email && p.email?.includes(user.email.slice(0, 3));
-                  const visible = !p.isPrivate || isOwner;
-
-                  return (
-                    <tr
-                      key={p._id}
-                      className={`border-b border-gray-200 hover:bg-gray-50 transition cursor-pointer ${
-                        p.isNotice ? "bg-gray-200" : ""
-                      }`}
-                      onClick={() => handleViewDetail(p)}
-                    >
-                      <td className="p-3 text-center">{posts.length - i}</td>
-                      <td className="p-3 text-sm">
-                        {p.isNotice ? "관리자" : displayEmail(p.email)}
-                      </td>
-                      <td className="p-3 font-semibold text-gray-800 flex items-center gap-1">
-                        {p.isNotice && (
-                          <span className="text-blue-600 font-bold">[공지]</span>
-                        )}
-                        {p.subject}
-                        {p.isPrivate && (
-                          <span className="text-xs text-gray-500">🔒</span>
-                        )}
-                      </td>
-                      <td className="p-3 text-gray-700 text-sm">
-                        {visible ? (
-                          p.message?.length > 40
-                            ? p.message.slice(0, 40) + "..."
-                            : p.message
-                        ) : (
-                          <span className="italic text-gray-400">
-                            🔒 비공개 문의입니다.
-                          </span>
-                        )}
-                      </td>
-                      <td className="p-3 text-center">
-                        {p.reply ? (
-                          <span className="text-green-600 font-medium">
-                            답변 완료
-                          </span>
-                        ) : p.isNotice ? (
-                          <span className="text-blue-600 font-medium">
-                            공지
-                          </span>
-                        ) : (
-                          <span className="text-gray-500">처리 중</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
+                posts.map((p, i) => (
+                  <tr
+                    key={p._id}
+                    className={`border-b border-gray-200 hover:bg-gray-50 transition cursor-pointer ${
+                      p.isNotice ? "bg-gray-200" : ""
+                    }`}
+                    onClick={() => handleViewDetail(p)}
+                  >
+                    <td className="p-3 text-center">{posts.length - i}</td>
+                    <td className="p-3 text-sm">
+                      {p.isNotice ? "관리자" : displayEmail(p.email)}
+                    </td>
+                    <td className="p-3 font-semibold text-gray-800">
+                      {p.isNotice && <span className="text-blue-600 font-bold">[공지]</span>} {p.question}
+                    </td>
+                    <td className="p-3 text-gray-700 text-sm">
+                      {p.answer?.length > 40 ? p.answer.slice(0, 40) + "..." : p.answer}
+                    </td>
+                    <td className="p-3 text-center">
+                      {p.answer ? (
+                        <span className="text-green-600 font-medium">답변 완료</span>
+                      ) : p.isNotice ? (
+                        <span className="text-blue-600 font-medium">공지</span>
+                      ) : (
+                        <span className="text-gray-500">처리 중</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
               ) : (
                 <tr>
-                  <td
-                    colSpan="5"
-                    className="text-center text-gray-500 py-8 text-lg"
-                  >
+                  <td colSpan="5" className="text-center text-gray-500 py-8 text-lg">
                     등록된 문의가 없습니다.
                   </td>
                 </tr>
