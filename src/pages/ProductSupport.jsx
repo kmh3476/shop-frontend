@@ -1,21 +1,321 @@
 // 📁 src/pages/ProductSupport.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useAuth } from "../context/AuthContext";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function ProductSupport() {
+  const [posts, setPosts] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [newPost, setNewPost] = useState({
+    email: "",
+    question: "",
+    answer: "",
+    productId: "", // ✅ 상품 페이지에서 작성 시 productId 포함
+    isPrivate: false,
+  });
+  const [loading, setLoading] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
+
+  const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const API = "https://shop-backend-1-dfsl.onrender.com/api/inquiries";
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  // ✅ 상품 문의만 불러오기 (productId 존재하는 글만)
+  async function fetchPosts() {
+    try {
+      const res = await axios.get(`${API}/all`);
+      const productPosts = res.data
+        .filter((post) => post.productId) // ✅ 상품에서 작성된 문의만 필터링
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // 최신순
+      setPosts(productPosts);
+    } catch (err) {
+      console.error("상품 문의 목록 불러오기 실패:", err);
+    }
+  }
+
+  // ✅ 이메일 마스킹
+  function displayEmail(email) {
+    if (!email || typeof email !== "string") return "익명";
+    if (!email.includes("@")) return email;
+    const [id] = email.split("@");
+    return id.slice(0, 2) + "****";
+  }
+
+  // ✅ 상품 문의 작성
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!newPost.email || !newPost.question || !newPost.answer)
+      return alert("모든 항목을 입력해주세요.");
+
+    try {
+      setLoading(true);
+      await axios.post(API, {
+        email: newPost.email,
+        question: newPost.question,
+        answer: newPost.answer,
+        productId: newPost.productId || "default-product", // ✅ 상품 페이지에서 설정됨
+        isPrivate: newPost.isPrivate,
+      });
+      alert("상품 문의가 등록되었습니다!");
+      setNewPost({
+        email: "",
+        question: "",
+        answer: "",
+        productId: "",
+        isPrivate: false,
+      });
+      setShowForm(false);
+      setTimeout(fetchPosts, 500);
+    } catch (err) {
+      console.error("상품 문의 등록 실패:", err);
+      alert("상품 문의 등록 중 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ✅ 상세 보기
+  function handleViewDetail(post) {
+    const isOwner = user?.email && post.email?.includes(user.email.slice(0, 3));
+    if (post.isPrivate && !isOwner) {
+      alert("비공개 문의는 작성자만 볼 수 있습니다.");
+      return;
+    }
+    setSelectedPost(post);
+  }
+
+  function closeDetail() {
+    setSelectedPost(null);
+  }
+
   return (
     <div className="min-h-screen bg-white text-black py-16 px-4 font-['Pretendard']">
-      <h1 className="text-5xl font-extrabold text-center mb-12">
-        상품 문의
-      </h1>
+      {/* ✅ 상단 탭 - Support.jsx 동일 UI */}
+      <div className="flex justify-center items-center mb-14 relative">
+        <div className="w-[90%] max-w-3xl flex justify-between items-center relative">
+          {/* 수평선 */}
+          <div className="absolute top-1/2 left-0 w-full border-t border-black"></div>
+          {/* 세로 구분선 */}
+          <div className="absolute top-0 left-1/2 h-8 border-l-2 border-black transform -translate-x-1/2"></div>
 
-      <div className="max-w-4xl mx-auto text-center text-gray-700">
-        <p className="text-lg mb-6">
-          상품 관련 문의를 남겨주세요. 최대한 빠르게 답변드리겠습니다.
-        </p>
-        <p className="text-gray-500">
-          (이 페이지는 Support.jsx처럼 따로 API를 연동해도 됩니다.)
-        </p>
+          {/* 사용자 문의 */}
+          <button
+            onClick={() => navigate("/support")}
+            className={`bg-white relative px-4 z-10 text-xl font-semibold ${
+              location.pathname === "/support"
+                ? "text-black font-bold underline underline-offset-4"
+                : "text-gray-500 hover:text-black"
+            }`}
+          >
+            사용자 문의
+          </button>
+
+          {/* 상품 문의 */}
+          <button
+            onClick={() => navigate("/product-support")}
+            className={`bg-white relative px-4 z-10 text-xl font-semibold ${
+              location.pathname === "/product-support"
+                ? "text-black font-bold underline underline-offset-4"
+                : "text-gray-500 hover:text-black"
+            }`}
+          >
+            상품 문의
+          </button>
+        </div>
       </div>
+
+      {/* ✅ 제목 */}
+      <h1 className="text-4xl font-extrabold text-center mb-14">상품 문의</h1>
+
+      {/* ✅ 버튼 */}
+      {!showForm && !selectedPost && (
+        <div className="text-center mb-10 flex flex-col items-center gap-4">
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-black text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-gray-800 transition"
+          >
+            ✍️ 상품 문의 작성
+          </button>
+        </div>
+      )}
+
+      {/* ✅ 문의 작성 폼 */}
+      {showForm && !selectedPost && (
+        <div className="max-w-3xl mx-auto mb-16 bg-gray-50 rounded-2xl p-8 shadow">
+          <h2 className="text-2xl font-bold mb-6">상품 문의 작성</h2>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <input
+              type="email"
+              placeholder="답변 받을 이메일"
+              value={newPost.email}
+              onChange={(e) =>
+                setNewPost({ ...newPost, email: e.target.value })
+              }
+              className="border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black"
+            />
+            <input
+              type="text"
+              placeholder="문의 제목 (상품명 등)"
+              value={newPost.question}
+              onChange={(e) =>
+                setNewPost({ ...newPost, question: e.target.value })
+              }
+              className="border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black"
+            />
+            <textarea
+              placeholder="문의 내용을 입력하세요"
+              rows="4"
+              value={newPost.answer}
+              onChange={(e) =>
+                setNewPost({ ...newPost, answer: e.target.value })
+              }
+              className="border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black resize-none"
+            />
+            <label className="flex items-center gap-2 text-gray-700 text-sm">
+              <input
+                type="checkbox"
+                checked={newPost.isPrivate}
+                onChange={(e) =>
+                  setNewPost({ ...newPost, isPrivate: e.target.checked })
+                }
+              />
+              비공개 문의로 등록하기
+            </label>
+
+            <div className="flex gap-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className={`flex-1 bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition font-semibold ${
+                  loading ? "opacity-70 cursor-not-allowed" : ""
+                }`}
+              >
+                {loading ? "등록 중..." : "문의 등록"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="flex-1 bg-gray-300 text-black py-3 rounded-lg hover:bg-gray-400 transition font-semibold"
+              >
+                취소
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ✅ 상세 보기 */}
+      {selectedPost && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl w-[90%] relative">
+            <button
+              onClick={closeDetail}
+              className="absolute top-3 right-4 text-gray-500 hover:text-black text-2xl"
+            >
+              ✕
+            </button>
+            <h2 className="text-2xl font-bold mb-4">{selectedPost.question}</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              {displayEmail(selectedPost.email)} •{" "}
+              {new Date(selectedPost.createdAt).toLocaleString("ko-KR")}
+            </p>
+
+            <div className="border-t border-gray-200 pt-4 text-gray-800 whitespace-pre-wrap">
+              {selectedPost.answer}
+            </div>
+
+            {selectedPost.reply && (
+              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h3 className="font-semibold text-green-700 mb-2">
+                  💬 관리자 답변
+                </h3>
+                <p className="text-gray-800 whitespace-pre-wrap">
+                  {selectedPost.reply}
+                </p>
+                {selectedPost.updatedAt && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    {new Date(selectedPost.updatedAt).toLocaleString("ko-KR")}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ✅ 문의 목록 */}
+      {!selectedPost && (
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold mb-6">상품 문의 목록</h2>
+          <table className="w-full border-collapse border-t border-gray-300">
+            <thead className="bg-gray-100">
+              <tr className="text-left">
+                <th className="p-3 w-[8%] text-center">번호</th>
+                <th className="p-3 w-[20%]">작성자</th>
+                <th className="p-3 w-[25%]">제목</th>
+                <th className="p-3 w-[35%]">내용</th>
+                <th className="p-3 w-[12%] text-center">상태</th>
+              </tr>
+            </thead>
+            <tbody>
+              {posts.length > 0 ? (
+                posts.map((p, i) => (
+                  <tr
+                    key={p._id}
+                    className="border-b border-gray-200 hover:bg-gray-50 transition cursor-pointer"
+                    onClick={() => handleViewDetail(p)}
+                  >
+                    <td className="p-3 text-center">{i + 1}</td>
+                    <td className="p-3 text-sm">{displayEmail(p.email)}</td>
+                    <td className="p-3 font-semibold text-gray-800">
+                      {p.question}
+                      {p.isPrivate && (
+                        <span className="ml-1 text-gray-500 text-xs">🔒</span>
+                      )}
+                    </td>
+                    <td className="p-3 text-gray-700 text-sm">
+                      {p.isPrivate ? (
+                        <span className="italic text-gray-400">
+                          🔒 비공개 문의입니다.
+                        </span>
+                      ) : p.answer?.length > 40 ? (
+                        p.answer.slice(0, 40) + "..."
+                      ) : (
+                        p.answer
+                      )}
+                    </td>
+                    <td className="p-3 text-center">
+                      {p.reply ? (
+                        <span className="text-green-600 font-medium">
+                          답변 완료
+                        </span>
+                      ) : (
+                        <span className="text-gray-500">처리 중</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="5"
+                    className="text-center text-gray-500 py-8 text-lg"
+                  >
+                    등록된 상품 문의가 없습니다.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
