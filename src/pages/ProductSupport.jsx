@@ -98,38 +98,31 @@ export default function ProductSupport() {
   return (
     <div className="min-h-screen bg-white text-black py-16 px-4 font-['Pretendard']">
       {/* ✅ 상단 탭 - Support.jsx 동일 UI */}
-      <div className="flex justify-center items-center mb-14 relative">
-        <div className="w-[90%] max-w-3xl flex justify-between items-center relative">
-          {/* 수평선 */}
-          <div className="absolute top-1/2 left-0 w-full border-t border-black"></div>
-          {/* 세로 구분선 */}
-          <div className="absolute top-0 left-1/2 h-8 border-l-2 border-black transform -translate-x-1/2"></div>
-
-          {/* 사용자 문의 */}
-          <button
-            onClick={() => navigate("/support")}
-            className={`bg-white relative px-4 z-10 text-xl font-semibold ${
-              location.pathname === "/support"
-                ? "text-black font-bold underline underline-offset-4"
-                : "text-gray-500 hover:text-black"
-            }`}
-          >
-            사용자 문의
-          </button>
-
-          {/* 상품 문의 */}
-          <button
-            onClick={() => navigate("/product-support")}
-            className={`bg-white relative px-4 z-10 text-xl font-semibold ${
-              location.pathname === "/product-support"
-                ? "text-black font-bold underline underline-offset-4"
-                : "text-gray-500 hover:text-black"
-            }`}
-          >
-            상품 문의
-          </button>
-        </div>
-      </div>
+      {/* ✅ 상단 탭 - 심플하고 깔끔한 버전 */}
+<div className="flex justify-center mb-12">
+  <div className="inline-flex bg-gray-100 rounded-full p-1 shadow-sm">
+    <button
+      onClick={() => navigate("/support")}
+      className={`px-6 py-2 rounded-full text-base font-medium transition-all duration-200 ${
+        location.pathname === "/support"
+          ? "bg-black text-white shadow-sm"
+          : "text-gray-600 hover:text-black"
+      }`}
+    >
+      사용자 문의
+    </button>
+    <button
+      onClick={() => navigate("/product-support")}
+      className={`px-6 py-2 rounded-full text-base font-medium transition-all duration-200 ${
+        location.pathname === "/product-support"
+          ? "bg-black text-white shadow-sm"
+          : "text-gray-600 hover:text-black"
+      }`}
+    >
+      상품 문의
+    </button>
+  </div>
+</div>
 
       {/* ✅ 제목 */}
       <h1 className="text-4xl font-extrabold text-center mb-14">상품 문의</h1>
