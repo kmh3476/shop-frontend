@@ -90,7 +90,7 @@ export default function Support() {
 
   // ✅ 클릭 시 상세보기 (공개글 or 본인글만)
   function handleViewDetail(post) {
-    const isOwner = user?.email && post.email.includes(user.email.slice(0, 3));
+    const isOwner = user?.email && post.email?.includes(user.email.slice(0, 3));
     if (post.isPrivate && !isOwner) {
       alert("비공개 문의는 작성자만 볼 수 있습니다.");
       return;
