@@ -37,10 +37,11 @@ export default function Support() {
 
   // ✅ 이메일(닉네임 형태) 표시
   function displayEmail(email) {
-    if (!email.includes("@")) return email;
-    const [id] = email.split("@");
-    return id.slice(0, 2) + "****";
-  }
+  if (!email || typeof email !== "string") return "익명";
+  if (!email.includes("@")) return email;
+  const [id] = email.split("@");
+  return id.slice(0, 2) + "****";
+}
 
   // ✅ 문의 작성
   async function handleSubmit(e) {
