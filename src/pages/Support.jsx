@@ -59,7 +59,9 @@ export default function Support() {
       alert("문의가 등록되었습니다! 답변은 이메일로 발송됩니다.");
       setNewPost({ email: "", title: "", message: "", isPrivate: false });
       setShowForm(false);
-      fetchPosts();
+     setTimeout(() => {
+  fetchPosts();
+}, 500);
     } catch (err) {
       console.error("문의 작성 실패:", err);
       alert("문의 등록 중 오류가 발생했습니다.");
