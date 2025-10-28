@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function Support() {
   const [posts, setPosts] = useState([]);
@@ -16,6 +17,9 @@ export default function Support() {
   const [selectedPost, setSelectedPost] = useState(null);
 
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const API = "https://shop-backend-1-dfsl.onrender.com/api/inquiries";
   const NOTICE_API = `${API}/notice`;
 
@@ -27,9 +31,11 @@ export default function Support() {
   async function fetchPosts() {
     try {
       const res = await axios.get(API);
-      const sorted = res.data.sort(
-        (a, b) => (b.isNotice === true) - (a.isNotice === true)
-      );
+      const sorted = res.data.sort((a, b) => {
+        if (a.isNotice && !b.isNotice) return -1; // 공지 먼저
+        if (!a.isNotice && b.isNotice) return 1;
+        return new Date(b.createdAt) - new Date(a.createdAt); // 최신순
+      });
       setPosts(sorted);
     } catch (err) {
       console.error("문의 목록 불러오기 실패:", err);
@@ -107,7 +113,42 @@ export default function Support() {
 
   return (
     <div className="min-h-screen bg-white text-black py-16 px-4 font-['Pretendard']">
-      <h1 className="text-5xl font-extrabold text-center mb-14">고객센터</h1>
+      {/* ✅ 상단 탭 */}
+      <div className="flex justify-center items-center mb-14 relative">
+        <div className="w-[90%] max-w-3xl flex justify-between items-center relative">
+          {/* 수평선 */}
+          <div className="absolute top-1/2 left-0 w-full border-t border-black"></div>
+          {/* 세로 구분선 */}
+          <div className="absolute top-0 left-1/2 h-8 border-l-2 border-black transform -translate-x-1/2"></div>
+
+          {/* 사용자 문의 */}
+          <button
+            onClick={() => navigate("/support")}
+            className={`bg-white relative px-4 z-10 text-xl font-semibold ${
+              location.pathname === "/support"
+                ? "text-black font-bold underline underline-offset-4"
+                : "text-gray-500 hover:text-black"
+            }`}
+          >
+            사용자 문의
+          </button>
+
+          {/* 상품 문의 */}
+          <button
+            onClick={() => navigate("/product-support")}
+            className={`bg-white relative px-4 z-10 text-xl font-semibold ${
+              location.pathname === "/product-support"
+                ? "text-black font-bold underline underline-offset-4"
+                : "text-gray-500 hover:text-black"
+            }`}
+          >
+            상품 문의
+          </button>
+        </div>
+      </div>
+
+      {/* ✅ 제목 */}
+      <h1 className="text-4xl font-extrabold text-center mb-14">고객센터</h1>
 
       {/* ✅ 버튼들 */}
       {!showForm && !selectedPost && (
@@ -211,12 +252,10 @@ export default function Support() {
               {new Date(selectedPost.createdAt).toLocaleString("ko-KR")}
             </p>
 
-            {/* ✅ 문의 본문 */}
             <div className="border-t border-gray-200 pt-4 text-gray-800 whitespace-pre-wrap">
               {selectedPost.answer}
             </div>
 
-            {/* ✅ 관리자 답변 표시 */}
             {selectedPost.reply && (
               <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
                 <h3 className="font-semibold text-green-700 mb-2">
@@ -243,11 +282,11 @@ export default function Support() {
           <table className="w-full border-collapse border-t border-gray-300">
             <thead className="bg-gray-100">
               <tr className="text-left">
-                <th className="p-3 w-[8%]">번호</th>
+                <th className="p-3 w-[8%] text-center">번호</th>
                 <th className="p-3 w-[20%]">작성자</th>
                 <th className="p-3 w-[25%]">제목</th>
                 <th className="p-3 w-[35%]">내용</th>
-                <th className="p-3 w-[12%]">상태</th>
+                <th className="p-3 w-[12%] text-center">상태</th>
               </tr>
             </thead>
             <tbody>
@@ -260,7 +299,7 @@ export default function Support() {
                     }`}
                     onClick={() => handleViewDetail(p)}
                   >
-                    <td className="p-3 text-center">{posts.length - i}</td>
+                    <td className="p-3 text-center">{i + 1}</td>
                     <td className="p-3 text-sm">
                       {p.isNotice ? "관리자" : displayEmail(p.email)}
                     </td>
@@ -273,8 +312,6 @@ export default function Support() {
                         <span className="ml-1 text-gray-500 text-xs">🔒</span>
                       )}
                     </td>
-
-                    {/* ✅ 비공개일 경우 모자이크 처리 */}
                     <td className="p-3 text-gray-700 text-sm">
                       {p.isPrivate ? (
                         <span className="italic text-gray-400">
@@ -286,7 +323,6 @@ export default function Support() {
                         p.answer
                       )}
                     </td>
-
                     <td className="p-3 text-center">
                       {p.reply ? (
                         <span className="text-green-600 font-medium">

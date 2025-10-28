@@ -20,6 +20,10 @@ import FindId from "./pages/FindId";
 import ForgotPassword from "./pages/ForgotPassword";
 import Support from "./pages/Support";
 import AdminSupport from "./pages/AdminSupport";
+
+// ✅ 추가
+import ProductSupport from "./pages/ProductSupport"; // 상품 문의 페이지 임포트 추가
+
 import { useState, useEffect } from "react";
 import { useAuth } from "./context/AuthContext";
 import { useAuth as useAuthContext } from "./context/AuthContext";
@@ -157,25 +161,13 @@ function Navigation() {
   const [showMailModal, setShowMailModal] = useState(false);
   const { user, logout } = useAuth();
 
-  // ✅ width, height 둘 다 상태로 조절 가능하게 설정
   const [panelWidth, setPanelWidth] = useState("800px");
   const [panelHeight, setPanelHeight] = useState("100vh");
 
   useEffect(() => {
     const updatePanelSize = () => {
       const width = window.innerWidth;
-
-      // ✅ 해상도별 width / height 구분 지정
-      if (width <= 360) {
-        setPanelWidth("400px");
-        setPanelHeight("400vh");
-      } else if (width <= 768) {
-        setPanelWidth("400px");
-        setPanelHeight("400vh");
-      } else if (width <= 1024) {
-        setPanelWidth("400px");
-        setPanelHeight("400vh");
-      } else if (width <= 1600) {
+      if (width <= 1600) {
         setPanelWidth("400px");
         setPanelHeight("400vh");
       } else {
@@ -183,12 +175,9 @@ function Navigation() {
         setPanelHeight("400vh");
       }
     };
-
     updatePanelSize();
     window.addEventListener("resize", updatePanelSize);
-
     document.body.style.overflow = isOpen ? "hidden" : "auto";
-
     return () => {
       document.body.style.overflow = "auto";
       window.removeEventListener("resize", updatePanelSize);
@@ -277,6 +266,7 @@ function Navigation() {
           boxShadow: isOpen ? "-8px 0 20px rgba(0,0,0,0.1)" : "none",
         }}
       >
+        {/* 상단 사용자 정보 */}
         <div
           style={{
             backgroundColor: "black",
@@ -438,6 +428,8 @@ function InnerApp() {
             <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/support" element={<Support />} />
+            {/* ✅ 추가된 상품 문의 라우트 */}
+            <Route path="/product-support" element={<ProductSupport />} />
             <Route
               path="/admin"
               element={
