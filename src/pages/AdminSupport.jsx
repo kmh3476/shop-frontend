@@ -2,12 +2,16 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function AdminSupport() {
   const [posts, setPosts] = useState([]);
   const [reply, setReply] = useState({});
   const [editMode, setEditMode] = useState({});
   const { token, user } = useAuth();
+
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // ✅ API 경로 수정 (inquiries API 사용)
   const API = "https://shop-backend-1-dfsl.onrender.com/api/inquiries";
@@ -35,15 +39,28 @@ export default function AdminSupport() {
       return;
     }
     fetchPosts();
-  }, [token]);
+  }, [token, location.pathname]); // 탭 변경 시 새로 불러오기
 
   async function fetchPosts() {
     try {
       console.log("📡 관리자 문의 목록 요청 시작:", API);
       const res = await axios.get(`${API}/all`, axiosConfig);
+      let filtered = res.data;
 
-      console.log("✅ 관리자 문의 목록 응답:", res.status, res.data);
-      setPosts(res.data);
+      // ✅ 탭별 데이터 필터링
+      if (location.pathname === "/admin/support") {
+        // 사용자 문의 → productId 없는 것만
+        filtered = res.data.filter((p) => !p.productId);
+      } else if (location.pathname === "/admin/product-support") {
+        // 상품 문의 → productId 있는 것만
+        filtered = res.data.filter((p) => p.productId);
+      }
+
+      // 최신순 정렬
+      filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      console.log("✅ 관리자 문의 목록 응답:", filtered.length);
+      setPosts(filtered);
     } catch (err) {
       console.error("❌ 문의 목록 조회 실패:", err.response || err.message);
 
@@ -63,7 +80,6 @@ export default function AdminSupport() {
   async function handleReply(id) {
     if (!reply[id]) return alert("답변 내용을 입력하세요.");
     try {
-      // ✅ reply API 호출 (POST /:id/reply)
       const res = await axios.post(
         `${API}/${id}/reply`,
         { reply: reply[id] },
@@ -118,7 +134,35 @@ export default function AdminSupport() {
 
   return (
     <div className="min-h-screen bg-white text-black py-12 px-6 font-['Pretendard']">
-      <h1 className="text-4xl font-bold text-center mb-12">📨 고객 문의 관리</h1>
+      {/* ✅ 상단 탭 (Support.jsx와 동일 스타일) */}
+      <div className="flex justify-center mb-10">
+        <div className="inline-flex bg-gray-100 rounded-full p-1 shadow-sm">
+          <button
+            onClick={() => navigate("/admin/support")}
+            className={`px-6 py-2 rounded-full text-base font-medium transition-all duration-200 ${
+              location.pathname === "/admin/support"
+                ? "bg-black text-white shadow-sm"
+                : "text-gray-600 hover:text-black"
+            }`}
+          >
+            사용자 문의 관리
+          </button>
+          <button
+            onClick={() => navigate("/admin/product-support")}
+            className={`px-6 py-2 rounded-full text-base font-medium transition-all duration-200 ${
+              location.pathname === "/admin/product-support"
+                ? "bg-black text-white shadow-sm"
+                : "text-gray-600 hover:text-black"
+            }`}
+          >
+            상품 문의 관리
+          </button>
+        </div>
+      </div>
+
+      <h1 className="text-4xl font-bold text-center mb-8">
+        {location.pathname === "/admin/product-support" ? "🛍️ 상품 문의 관리" : "📨 고객 문의 관리"}
+      </h1>
 
       <div className="max-w-7xl mx-auto overflow-x-auto">
         <table className="w-full border-collapse border-t border-gray-300 text-sm">
