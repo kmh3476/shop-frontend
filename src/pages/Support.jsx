@@ -24,13 +24,17 @@ export default function Support() {
   const NOTICE_API = `${API}/notice`;
 
   useEffect(() => {
+    console.log("✅ Support 페이지 렌더링됨");
     fetchPosts();
   }, []);
 
   // ✅ 문의 목록 불러오기
   async function fetchPosts() {
     try {
-      const res = await axios.get(API);
+      console.log("📡 문의 목록 요청 시작:", `${API}/all`);
+      const res = await axios.get(`${API}/all`); // ✅ 수정: 전체 조회용 엔드포인트
+      console.log("✅ 문의 목록 응답 데이터:", res.data);
+
       const sorted = res.data.sort((a, b) => {
         if (a.isNotice && !b.isNotice) return -1; // 공지 먼저
         if (!a.isNotice && b.isNotice) return 1;
@@ -38,7 +42,7 @@ export default function Support() {
       });
       setPosts(sorted);
     } catch (err) {
-      console.error("문의 목록 불러오기 실패:", err);
+      console.error("❌ 문의 목록 불러오기 실패:", err);
     }
   }
 
