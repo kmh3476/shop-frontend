@@ -9,7 +9,7 @@ export default function AdminSupport() {
   const [editMode, setEditMode] = useState({});
   const { token, user } = useAuth();
 
-  // ✅ API 경로 수정 (기존 /api/support → /api/inquiries)
+  // ✅ API 경로 수정 (inquiries API 사용)
   const API = "https://shop-backend-1-dfsl.onrender.com/api/inquiries";
 
   /* ✅ 공통 Axios 헤더 설정 */
@@ -63,10 +63,10 @@ export default function AdminSupport() {
   async function handleReply(id) {
     if (!reply[id]) return alert("답변 내용을 입력하세요.");
     try {
-      // ✅ 기존 /reply → DB에 맞게 answer 필드로 전달
-      const res = await axios.patch(
-        `${API}/${id}`,
-        { answer: reply[id] },
+      // ✅ reply API 호출 (POST /:id/reply)
+      const res = await axios.post(
+        `${API}/${id}/reply`,
+        { reply: reply[id] },
         axiosConfig
       );
       console.log("✅ 답변 전송 완료:", res.data);
@@ -139,7 +139,7 @@ export default function AdminSupport() {
                 <tr
                   key={p._id}
                   className={`border-b border-gray-200 transition ${
-                    p.answer
+                    p.reply
                       ? "bg-green-50"
                       : p.isRead
                       ? "bg-blue-50"
@@ -176,14 +176,14 @@ export default function AdminSupport() {
                     <button
                       onClick={() => toggleRead(p._id, p.isRead)}
                       className={`px-2 py-1 rounded text-xs font-semibold ${
-                        p.answer
+                        p.reply
                           ? "bg-green-100 text-green-700"
                           : p.isRead
                           ? "bg-blue-100 text-blue-700"
                           : "bg-gray-200 text-gray-600"
                       }`}
                     >
-                      {p.answer
+                      {p.reply
                         ? "답변 완료"
                         : p.isRead
                         ? "읽음"
@@ -193,12 +193,14 @@ export default function AdminSupport() {
 
                   {/* 답변 */}
                   <td className="p-3">
-                    {p.answer && !editMode[p._id] ? (
+                    {p.reply && !editMode[p._id] ? (
                       <div>
-                        <p className="text-green-700 font-medium">{p.answer}</p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          ({new Date(p.updatedAt).toLocaleString("ko-KR")})
-                        </p>
+                        <p className="text-green-700 font-medium">{p.reply}</p>
+                        {p.repliedAt && (
+                          <p className="text-xs text-gray-400 mt-1">
+                            ({new Date(p.repliedAt).toLocaleString("ko-KR")})
+                          </p>
+                        )}
                         <button
                           onClick={() =>
                             setEditMode({ ...editMode, [p._id]: true })
@@ -211,7 +213,7 @@ export default function AdminSupport() {
                     ) : (
                       <div className="flex flex-col gap-2">
                         <textarea
-                          value={reply[p._id] || p.answer || ""}
+                          value={reply[p._id] || p.reply || ""}
                           onChange={(e) =>
                             setReply({ ...reply, [p._id]: e.target.value })
                           }
@@ -224,9 +226,9 @@ export default function AdminSupport() {
                             onClick={() => handleReply(p._id)}
                             className="flex-1 bg-black text-white text-sm py-1 rounded hover:bg-gray-800"
                           >
-                            {p.answer ? "수정 완료" : "전송"}
+                            {p.reply ? "수정 완료" : "전송"}
                           </button>
-                          {p.answer && (
+                          {p.reply && (
                             <button
                               onClick={() =>
                                 setEditMode({ ...editMode, [p._id]: false })
