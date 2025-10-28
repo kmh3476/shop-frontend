@@ -27,7 +27,9 @@ export default function Support() {
   async function fetchPosts() {
     try {
       const res = await axios.get(API);
-      const sorted = res.data.sort((a, b) => (b.isNotice === true) - (a.isNotice === true));
+      const sorted = res.data.sort(
+        (a, b) => (b.isNotice === true) - (a.isNotice === true)
+      );
       setPosts(sorted);
     } catch (err) {
       console.error("문의 목록 불러오기 실패:", err);
@@ -52,8 +54,8 @@ export default function Support() {
       setLoading(true);
       await axios.post(API, {
         email: newPost.email,
-        question: newPost.question,   // ✅ subject → question
-        answer: newPost.answer,       // ✅ message → answer
+        question: newPost.question,
+        answer: newPost.answer,
         isPrivate: newPost.isPrivate,
       });
       alert("문의가 등록되었습니다! 답변은 이메일로 발송됩니다.");
@@ -90,7 +92,8 @@ export default function Support() {
 
   // ✅ 상세 보기
   function handleViewDetail(post) {
-    const isOwner = user?.email && post.email?.includes(user.email.slice(0, 3));
+    const isOwner =
+      user?.email && post.email?.includes(user.email.slice(0, 3));
     if (post.isPrivate && !isOwner) {
       alert("비공개 문의는 작성자만 볼 수 있습니다.");
       return;
@@ -136,28 +139,36 @@ export default function Support() {
               type="email"
               placeholder="답변 받을 이메일"
               value={newPost.email}
-              onChange={(e) => setNewPost({ ...newPost, email: e.target.value })}
+              onChange={(e) =>
+                setNewPost({ ...newPost, email: e.target.value })
+              }
               className="border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black"
             />
             <input
               type="text"
               placeholder="제목을 입력하세요"
               value={newPost.question}
-              onChange={(e) => setNewPost({ ...newPost, question: e.target.value })}
+              onChange={(e) =>
+                setNewPost({ ...newPost, question: e.target.value })
+              }
               className="border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black"
             />
             <textarea
               placeholder="문의 내용을 입력하세요"
               rows="4"
               value={newPost.answer}
-              onChange={(e) => setNewPost({ ...newPost, answer: e.target.value })}
+              onChange={(e) =>
+                setNewPost({ ...newPost, answer: e.target.value })
+              }
               className="border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black resize-none"
             />
             <label className="flex items-center gap-2 text-gray-700 text-sm">
               <input
                 type="checkbox"
                 checked={newPost.isPrivate}
-                onChange={(e) => setNewPost({ ...newPost, isPrivate: e.target.checked })}
+                onChange={(e) =>
+                  setNewPost({ ...newPost, isPrivate: e.target.checked })
+                }
               />
               비공개 문의로 등록하기
             </label>
@@ -188,17 +199,39 @@ export default function Support() {
       {selectedPost && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl w-[90%] relative">
-            <button onClick={closeDetail} className="absolute top-3 right-4 text-gray-500 hover:text-black text-2xl">✕</button>
-            <h2 className="text-2xl font-bold mb-4">
-              {selectedPost.question}
-            </h2>
+            <button
+              onClick={closeDetail}
+              className="absolute top-3 right-4 text-gray-500 hover:text-black text-2xl"
+            >
+              ✕
+            </button>
+            <h2 className="text-2xl font-bold mb-4">{selectedPost.question}</h2>
             <p className="text-sm text-gray-500 mb-4">
               {displayEmail(selectedPost.email)} •{" "}
               {new Date(selectedPost.createdAt).toLocaleString("ko-KR")}
             </p>
+
+            {/* ✅ 문의 본문 */}
             <div className="border-t border-gray-200 pt-4 text-gray-800 whitespace-pre-wrap">
               {selectedPost.answer}
             </div>
+
+            {/* ✅ 관리자 답변 표시 추가 */}
+            {selectedPost.reply && (
+              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h3 className="font-semibold text-green-700 mb-2">
+                  💬 관리자 답변
+                </h3>
+                <p className="text-gray-800 whitespace-pre-wrap">
+                  {selectedPost.reply}
+                </p>
+                {selectedPost.updatedAt && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    {new Date(selectedPost.updatedAt).toLocaleString("ko-KR")}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -232,14 +265,21 @@ export default function Support() {
                       {p.isNotice ? "관리자" : displayEmail(p.email)}
                     </td>
                     <td className="p-3 font-semibold text-gray-800">
-                      {p.isNotice && <span className="text-blue-600 font-bold">[공지]</span>} {p.question}
+                      {p.isNotice && (
+                        <span className="text-blue-600 font-bold">[공지]</span>
+                      )}{" "}
+                      {p.question}
                     </td>
                     <td className="p-3 text-gray-700 text-sm">
-                      {p.answer?.length > 40 ? p.answer.slice(0, 40) + "..." : p.answer}
+                      {p.answer?.length > 40
+                        ? p.answer.slice(0, 40) + "..."
+                        : p.answer}
                     </td>
                     <td className="p-3 text-center">
-                      {p.answer ? (
-                        <span className="text-green-600 font-medium">답변 완료</span>
+                      {p.reply ? (
+                        <span className="text-green-600 font-medium">
+                          답변 완료
+                        </span>
                       ) : p.isNotice ? (
                         <span className="text-blue-600 font-medium">공지</span>
                       ) : (
@@ -250,7 +290,10 @@ export default function Support() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="text-center text-gray-500 py-8 text-lg">
+                  <td
+                    colSpan="5"
+                    className="text-center text-gray-500 py-8 text-lg"
+                  >
                     등록된 문의가 없습니다.
                   </td>
                 </tr>
