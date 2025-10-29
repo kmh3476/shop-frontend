@@ -1,4 +1,3 @@
-// 📁 src/context/EditModeContext.jsx
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext"; // ✅ 관리자 권한 확인용
 
@@ -6,7 +5,7 @@ const EditModeContext = createContext();
 
 export function EditModeProvider({ children }) {
   const [isEditMode, setIsEditMode] = useState(false);
-  const [isResizeMode, setIsResizeMode] = useState(false); // ✅ 추가: 전역 크기조절 모드 상태
+  const [isResizeMode, setIsResizeMode] = useState(false); // ✅ 전역 크기조절 모드 상태
   const { user } = useAuth(); // ✅ 현재 로그인된 사용자 정보 가져오기
 
   /** ✅ 앱 로드시 localStorage에서 이전 모드 복원 */
@@ -42,13 +41,18 @@ export function EditModeProvider({ children }) {
       const prevLogs = JSON.parse(localStorage.getItem("editLogs") || "[]");
       const newLogs = [...prevLogs, logEntry];
       localStorage.setItem("editLogs", JSON.stringify(newLogs));
+
+      // ✅ 모드 변경 이벤트 브로드캐스트 (EditableText, Image 등에서 감지 가능)
+      window.dispatchEvent(
+        new CustomEvent("editModeChange", { detail: { enabled: isEditMode } })
+      );
     } else {
       if (isEditMode) setIsEditMode(false);
       localStorage.setItem("editMode", "false");
     }
   }, [isEditMode, user]);
 
-  /** ✅ 크기조절 모드 로깅 추가 */
+  /** ✅ 크기조절 모드 로깅 및 이벤트 브로드캐스트 추가 */
   useEffect(() => {
     if (user?.isAdmin) {
       localStorage.setItem("resizeMode", isResizeMode);
@@ -64,6 +68,11 @@ export function EditModeProvider({ children }) {
       const prevLogs = JSON.parse(localStorage.getItem("editLogs") || "[]");
       const newLogs = [...prevLogs, logEntry];
       localStorage.setItem("editLogs", JSON.stringify(newLogs));
+
+      // ✅ 크기조절 모드 변경 이벤트 브로드캐스트
+      window.dispatchEvent(
+        new CustomEvent("resizeModeChange", { detail: { enabled: isResizeMode } })
+      );
     } else {
       if (isResizeMode) setIsResizeMode(false);
       localStorage.setItem("resizeMode", "false");
@@ -88,8 +97,8 @@ export function EditModeProvider({ children }) {
       value={{
         isEditMode,
         setIsEditMode,
-        isResizeMode, // ✅ 추가
-        setIsResizeMode, // ✅ 추가
+        isResizeMode,
+        setIsResizeMode,
         saveEditLog,
       }}
     >

@@ -1,4 +1,3 @@
-// 📁 src/layouts/MainLayout.jsx
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
@@ -10,14 +9,14 @@ import { useEditMode } from "../context/EditModeContext";
 import EditableText from "../components/EditableText";
 import EditableImage from "../components/EditableImage";
 import { useState, useEffect, useRef } from "react";
-import { useAuth } from "../context/AuthContext"; // ✅ 수정: 관리자 확인용 추가
+import { useAuth } from "../context/AuthContext"; // ✅ 관리자 확인용
 
 function MainLayout() {
-  const { isEditMode, setIsEditMode } = useEditMode();
-  const [isResizeMode, setIsResizeMode] = useState(false);
-  const { user } = useAuth(); // ✅ 로그인한 사용자 정보 가져오기
+  // ✅ 수정: 전역 EditMode + ResizeMode 불러오기
+  const { isEditMode, setIsEditMode, isResizeMode, setIsResizeMode } = useEditMode();
+  const { user } = useAuth();
 
-  /** ✅ 관리자 전용 토글 */
+  /** ✅ 관리자 전용 토글 (로컬 X, 전역 상태만 제어) */
   const toggleEditMode = () => {
     if (!user?.isAdmin) {
       alert("⚠ 관리자만 디자인 모드를 사용할 수 있습니다.");
@@ -34,20 +33,21 @@ function MainLayout() {
     setIsResizeMode(!isResizeMode);
   };
 
-  /** ✅ 카드 크기 조절 + 폰트 비율 동기화 Hook */
+  /** ✅ 카드 크기 조절 Hook (전역 상태에 반응하도록 개선) */
   const useResizableCard = (id, defaultWidth = 360, defaultHeight = 520) => {
     const [size, setSize] = useState(() => {
       const saved = localStorage.getItem(`card-size-${id}`);
       if (saved) return JSON.parse(saved);
       return { width: defaultWidth, height: defaultHeight };
     });
+
     const cardRef = useRef(null);
     const resizingRef = useRef(false);
     const startRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
 
     useEffect(() => {
       const handleMouseMove = (e) => {
-        if (!resizingRef.current || !cardRef.current) return;
+        if (!resizingRef.current || !cardRef.current || !isResizeMode) return;
         const dx = e.clientX - startRef.current.x;
         const dy = e.clientY - startRef.current.y;
 
@@ -56,20 +56,29 @@ function MainLayout() {
 
         setSize({ width: newWidth, height: newHeight });
       };
+
       const handleMouseUp = () => {
         if (resizingRef.current) {
           resizingRef.current = false;
-          localStorage.setItem(`card-size-${id}`, JSON.stringify(size));
           document.body.style.userSelect = "auto";
+          localStorage.setItem(`card-size-${id}`, JSON.stringify(size));
         }
       };
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
+
+      // ✅ 수정: 리사이즈 모드가 켜져 있을 때만 이벤트 리스너 등록
+      if (isResizeMode) {
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
+      }
+
+      // ✅ 리사이즈 모드가 꺼질 때 이벤트 정리
       return () => {
         window.removeEventListener("mousemove", handleMouseMove);
         window.removeEventListener("mouseup", handleMouseUp);
+        resizingRef.current = false;
+        document.body.style.userSelect = "auto";
       };
-    }, [size, id]);
+    }, [size, id, isResizeMode]);
 
     const startResize = (e) => {
       e.stopPropagation();
@@ -117,11 +126,7 @@ function MainLayout() {
             alt={`sample-${i}`}
             filePath="src/layouts/MainLayout.jsx"
             componentName="FeaturedCard"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-            }}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         </div>
 
@@ -155,10 +160,10 @@ function MainLayout() {
           </div>
         </div>
 
-        {isResizeMode && user?.isAdmin && ( // ✅ 수정: 관리자만 리사이즈 핸들 표시
+        {isResizeMode && user?.isAdmin && (
           <div
             onMouseDown={startResize}
-            className="absolute bottom-1 right-1 w-5 h-5 bg-black/70 cursor-se-resize rounded-sm z-50"
+            className="absolute bottom-1 right-1 w-5 h-5 bg-black/70 cursor-se-resize rounded-sm z-50 transition-transform duration-200 hover:scale-125"
             title="드래그로 카드 크기 조절"
           />
         )}
@@ -218,10 +223,10 @@ function MainLayout() {
           </p>
         </div>
 
-        {isResizeMode && user?.isAdmin && ( // ✅ 수정: 관리자만 크기조절 핸들 표시
+        {isResizeMode && user?.isAdmin && (
           <div
             onMouseDown={startResize}
-            className="absolute bottom-1 right-1 w-4 h-4 bg-gray-700/70 cursor-se-resize rounded-sm z-50"
+            className="absolute bottom-1 right-1 w-4 h-4 bg-gray-700/70 cursor-se-resize rounded-sm z-50 transition-transform duration-200 hover:scale-125"
             title="드래그로 카드 크기 조절"
           />
         )}
@@ -229,7 +234,7 @@ function MainLayout() {
     );
   };
 
-  /** ✅ 슬라이드 섹션 */
+  /** ✅ 섹션 구성 */
   const SlideSection = ({ title, id }) => (
     <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black font-['Pretendard']">
       <motion.h2
@@ -269,13 +274,13 @@ function MainLayout() {
 
   return (
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden font-['Pretendard']">
-      {/* 🔸 디자인 모드 및 크기조절 모드 버튼 (관리자만 표시) */}
-      {user?.isAdmin && ( // ✅ 수정: 관리자만 버튼 표시
+      {/* 🔸 관리자 전용 디자인/크기조절 모드 버튼 */}
+      {user?.isAdmin && (
         <div className="fixed top-6 left-6 z-50 flex gap-3">
           <button
             onClick={toggleEditMode}
-            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-lg transition ${
-              isEditMode ? "bg-green-600 hover:bg-green-700" : "bg-gray-800 hover:bg-gray-900"
+            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-lg transition duration-200 transform ${
+              isEditMode ? "bg-green-600 scale-105" : "bg-gray-800 hover:scale-105"
             }`}
           >
             {isEditMode ? "🖊 디자인 모드 ON" : "✏ 디자인 모드 OFF"}
@@ -283,8 +288,8 @@ function MainLayout() {
 
           <button
             onClick={toggleResizeMode}
-            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-lg transition ${
-              isResizeMode ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-700 hover:bg-gray-800"
+            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-lg transition duration-200 transform ${
+              isResizeMode ? "bg-blue-600 scale-105" : "bg-gray-700 hover:scale-105"
             }`}
           >
             {isResizeMode ? "📐 크기 조절 ON" : "📏 크기 조절 OFF"}
@@ -292,7 +297,7 @@ function MainLayout() {
         </div>
       )}
 
-      {/* 🔸 메인 배경 */}
+      {/* 🔸 메인 비주얼 영역 */}
       <section
         className="relative flex flex-col items-center justify-center w-full min-h-[110vh]"
         style={{
@@ -301,8 +306,7 @@ function MainLayout() {
           backgroundRepeat: "no-repeat",
           backgroundPosition: "center",
         }}
-      >
-      </section>
+      />
 
       {/* 🔸 추천 상품 섹션 */}
       <section className="flex flex-col items-center justify-center py-[10vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
@@ -345,6 +349,7 @@ function MainLayout() {
       <SlideSection id="bottom-section" title="하의" />
       <SlideSection id="coordi-section" title="코디 추천" />
 
+      {/* 🔸 브랜드 스토리 */}
       <section
         className="flex flex-col items-center justify-center py-[15vh] px-6 text-center bg-gray-100 font-['Pretendard']"
         style={{
