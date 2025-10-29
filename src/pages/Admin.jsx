@@ -98,8 +98,16 @@ function Admin() {
       const res = await api.get("/products?populate=categoryPage", {
         headers: getAuthHeader(),
       });
-      setProducts(res.data);
-      setFilteredProducts(res.data);
+      // 🔧 categoryPage가 없는 경우도 처리
+      const data = res.data.map((p) => ({
+        ...p,
+        categoryPage:
+          typeof p.categoryPage === "object" && p.categoryPage !== null
+            ? p.categoryPage
+            : null,
+      }));
+      setProducts(data);
+      setFilteredProducts(data);
     } catch (err) {
       console.error("❌ 상품 불러오기 실패:", err);
     }
@@ -122,9 +130,14 @@ function Admin() {
     if (tabId === "all") {
       setFilteredProducts(products);
     } else {
-      const filtered = products.filter(
-        (p) => p.categoryPage?._id === tabId
-      );
+      const filtered = products.filter((p) => {
+        // 🔧 categoryPage가 ObjectId이거나 문자열인 경우 모두 대비
+        const categoryId =
+          typeof p.categoryPage === "object"
+            ? p.categoryPage?._id
+            : p.categoryPage;
+        return categoryId === tabId;
+      });
       setFilteredProducts(filtered);
     }
   };
@@ -260,7 +273,7 @@ function Admin() {
       description: form.description.trim(),
       images: cleanImages,
       mainImage: mainImg,
-      categoryPage: form.categoryPage || null,
+      categoryPage: form.categoryPage || null, // 🔧 ObjectId 그대로 전달
     };
 
     try {
@@ -272,7 +285,7 @@ function Admin() {
       } else {
         await api.post("/products", productData, { headers: getAuthHeader() });
       }
-      fetchProducts();
+      await fetchProducts(); // 🔧 저장 후 다시 불러오기
       setEditingId(null);
       setForm({
         name: "",
@@ -297,7 +310,10 @@ function Admin() {
       description: p.description,
       images: p.images || [],
       mainImage: p.mainImage || p.images?.[0] || "",
-      categoryPage: p.categoryPage?._id || "",
+      categoryPage:
+        typeof p.categoryPage === "object"
+          ? p.categoryPage?._id || ""
+          : p.categoryPage || "",
     });
   };
 
