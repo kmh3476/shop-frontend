@@ -268,13 +268,16 @@ function Admin() {
         : cleanImages[0] || "https://placehold.co/250x200?text=No+Image";
 
     const productData = {
-      name: form.name.trim(),
-      price: Number(form.price),
-      description: form.description.trim(),
-      images: cleanImages,
-      mainImage: mainImg,
-      categoryPage: form.categoryPage || null, // 🔧 ObjectId 그대로 전달
-    };
+  name: form.name.trim(),
+  price: Number(form.price),
+  description: form.description.trim(),
+  images: cleanImages,
+  mainImage: mainImg,
+  categoryPage:
+    form.categoryPage && form.categoryPage !== "null" && form.categoryPage !== ""
+      ? form.categoryPage
+      : null, // ✅ 문자열이면 그대로 유지 (ObjectId로 변환됨)
+};
 
     try {
       setUploading("🕓 상품 저장 중...");
