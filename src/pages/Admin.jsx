@@ -70,9 +70,10 @@ function Admin() {
     description: "",
     images: [],
     mainImage: "",
-    categoryPage: "", // ✅ 상품이 속한 탭 정보 추가
+    categoryPage: "",
   });
-  const [pages, setPages] = useState([]); // ✅ 탭 목록 저장
+  const [pages, setPages] = useState([]);
+  const [newPage, setNewPage] = useState({ name: "", label: "", order: 0 });
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [modalImages, setModalImages] = useState([]);
@@ -80,7 +81,7 @@ function Admin() {
 
   useEffect(() => {
     fetchProducts();
-    fetchPages(); // ✅ 탭 목록 불러오기
+    fetchPages();
   }, []);
 
   const fetchProducts = async () => {
@@ -92,22 +93,88 @@ function Admin() {
     }
   };
 
-  // ✅ 탭 목록 불러오기 (경로 수정됨)
   const fetchPages = async () => {
     try {
-      const res = await api.get("/api/pages"); // ✅ 수정됨
-      setPages(res.data);
+      const res = await api.get("/api/pages");
+      // ✅ order 기준 정렬
+      const sorted = res.data.sort((a, b) => a.order - b.order);
+      setPages(sorted);
     } catch (err) {
       console.error("❌ 탭 목록 불러오기 실패:", err);
     }
   };
 
-  // ✅ 단일 업로드 함수 (Cloudinary용)
+  // ✅ 새 탭 생성
+  const addPage = async () => {
+    if (!newPage.name || !newPage.label) {
+      alert("탭 이름(name)과 표시명(label)을 입력해주세요!");
+      return;
+    }
+    try {
+      const res = await api.post("/api/pages", newPage);
+      alert("✅ 새 탭이 추가되었습니다!");
+      setNewPage({ name: "", label: "", order: 0 });
+      fetchPages();
+    } catch (err) {
+      console.error("❌ 탭 추가 실패:", err);
+      alert(err.response?.data?.message || "탭 생성 실패");
+    }
+  };
+
+  // ✅ 탭 순서 변경
+  const movePage = async (id, direction) => {
+    const index = pages.findIndex((p) => p._id === id);
+    if (index === -1) return;
+
+    const newPages = [...pages];
+    if (direction === "up" && index > 0) {
+      [newPages[index - 1], newPages[index]] = [newPages[index], newPages[index - 1]];
+    } else if (direction === "down" && index < newPages.length - 1) {
+      [newPages[index + 1], newPages[index]] = [newPages[index], newPages[index + 1]];
+    } else return;
+
+    // ✅ order 재정렬
+    const updated = newPages.map((p, i) => ({ ...p, order: i + 1 }));
+    setPages(updated);
+
+    // 서버 반영
+    try {
+      await Promise.all(
+        updated.map((p) =>
+          api.put(`/api/pages/${p._id}`, { order: p.order })
+        )
+      );
+      console.log("✅ 순서 업데이트 완료");
+    } catch (err) {
+      console.error("❌ 순서 업데이트 실패:", err);
+    }
+  };
+
+  // ✅ 탭 삭제
+  const deletePage = async (id) => {
+    if (!window.confirm("정말 이 탭을 삭제할까요? (상품 연결도 해제됨)")) return;
+    try {
+      await api.delete(`/api/pages/${id}`);
+      fetchPages();
+    } catch (err) {
+      console.error("❌ 탭 삭제 실패:", err);
+    }
+  };
+
+  // ✅ 탭 이름 수정
+  const renamePage = async (id, label) => {
+    try {
+      await api.put(`/api/pages/${id}`, { label });
+      fetchPages();
+    } catch (err) {
+      console.error("❌ 이름 수정 실패:", err);
+    }
+  };
+
   const uploadSingle = async (file) => {
     try {
       const formData = new FormData();
       formData.append("image", file);
-
       const res = await api.post("/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -118,38 +185,27 @@ function Admin() {
     }
   };
 
-  // ✅ 여러 이미지 순차 업로드
   const handleImageUpload = async (filesToUpload) => {
     const uploadedUrls = [];
     setUploading("🕓 이미지 업로드 중...");
-
     for (let i = 0; i < filesToUpload.length; i++) {
       const file = filesToUpload[i];
       const url = await uploadSingle(file);
-      if (url) {
-        console.log(`✅ 업로드 완료 (${i + 1}/${filesToUpload.length}):`, url);
-        uploadedUrls.push(url);
-      }
-      await new Promise((r) => setTimeout(r, 500)); // Cloudinary 안정화 대기
+      if (url) uploadedUrls.push(url);
+      await new Promise((r) => setTimeout(r, 500));
     }
-
     setUploading(false);
     return uploadedUrls;
   };
 
-  // ✅ 파일 선택 → 자동 업로드 (수정/추가 모두 지원)
   const handleFileChange = async (e) => {
     const selected = Array.from(e.target.files);
     if (!selected.length) return;
-
-    // 미리보기 추가
     const previews = selected.map((f) => URL.createObjectURL(f));
     setForm((prev) => ({
       ...prev,
       images: [...prev.images, ...previews],
     }));
-
-    // 자동 업로드
     const uploaded = await handleImageUpload(selected);
     if (uploaded.length) {
       setForm((prev) => {
@@ -165,7 +221,6 @@ function Admin() {
     }
   };
 
-  // ✅ 상품 저장
   const saveProduct = async () => {
     if (!form.name || !form.price) {
       alert("상품명과 가격은 필수입니다!");
@@ -187,27 +242,17 @@ function Admin() {
       description: form.description.trim(),
       images: cleanImages,
       mainImage: mainImg,
-      categoryPage: form.categoryPage || null, // ✅ 선택된 탭 정보 포함
+      categoryPage: form.categoryPage || null,
     };
 
     try {
       setUploading("🕓 상품 저장 중...");
-      let result;
-
       if (editingId) {
-        result = await api.put(`/products/${editingId}`, productData);
-        setProducts((prev) =>
-          prev.map((p) => (p._id === editingId ? result.data : p))
-        );
-        console.log("✅ 상품 수정 완료:", result.data);
+        await api.put(`/products/${editingId}`, productData);
       } else {
-        result = await api.post("/products", productData);
-        await new Promise((r) => setTimeout(r, 1000));
-        const refreshed = await api.get("/products?populate=categoryPage");
-        setProducts(refreshed.data);
-        console.log("✅ 상품 추가 완료:", result.data);
+        await api.post("/products", productData);
       }
-
+      fetchProducts();
       setEditingId(null);
       setForm({
         name: "",
@@ -232,7 +277,7 @@ function Admin() {
       description: p.description,
       images: p.images || [],
       mainImage: p.mainImage || p.images?.[0] || "",
-      categoryPage: p.categoryPage?._id || "", // ✅ 기존 탭 설정 불러오기
+      categoryPage: p.categoryPage?._id || "",
     });
   };
 
@@ -263,7 +308,6 @@ function Admin() {
     try {
       await api.delete(`/products/${id}`);
       setProducts((prev) => prev.filter((p) => p._id !== id));
-      console.log("🗑 상품 삭제 완료:", id);
     } catch (err) {
       console.error("❌ 상품 삭제 실패:", err);
     }
@@ -272,6 +316,8 @@ function Admin() {
   return (
     <div style={{ padding: "20px" }}>
       <h1>📦 관리자 페이지</h1>
+
+      {/* 상품 등록 영역 */}
       <h2>{editingId ? "상품 수정" : "상품 추가"}</h2>
 
       <div
@@ -301,7 +347,7 @@ function Admin() {
           onChange={(e) => setForm({ ...form, description: e.target.value })}
         />
 
-        {/* ✅ 상품 탭 선택 */}
+        {/* 탭 선택 */}
         <select
           value={form.categoryPage}
           onChange={(e) => setForm({ ...form, categoryPage: e.target.value })}
@@ -309,11 +355,50 @@ function Admin() {
           <option value="">탭 선택 없음</option>
           {pages.map((p) => (
             <option key={p._id} value={p._id}>
-              {p.label}
+              {p.label} ({p.order})
             </option>
           ))}
         </select>
 
+        {/* 새 탭 추가 */}
+        <div
+          style={{
+            border: "1px solid #ccc",
+            borderRadius: "8px",
+            padding: "10px",
+            marginTop: "5px",
+          }}
+        >
+          <h4>🆕 새 탭 추가</h4>
+          <input
+            type="text"
+            placeholder="탭 이름 (name)"
+            value={newPage.name}
+            onChange={(e) => setNewPage({ ...newPage, name: e.target.value })}
+            style={{ width: "100%", marginBottom: "6px" }}
+          />
+          <input
+            type="text"
+            placeholder="표시명 (label)"
+            value={newPage.label}
+            onChange={(e) => setNewPage({ ...newPage, label: e.target.value })}
+            style={{ width: "100%", marginBottom: "6px" }}
+          />
+          <input
+            type="number"
+            placeholder="순서 (order)"
+            value={newPage.order}
+            onChange={(e) =>
+              setNewPage({ ...newPage, order: Number(e.target.value) })
+            }
+            style={{ width: "100%", marginBottom: "6px" }}
+          />
+          <button onClick={addPage} style={{ width: "100%" }}>
+            ➕ 탭 추가
+          </button>
+        </div>
+
+        {/* 파일 업로드 */}
         <input type="file" accept="image/*" multiple onChange={handleFileChange} />
 
         {uploading && (
@@ -386,6 +471,39 @@ function Admin() {
         {editingId && <button onClick={cancelEdit}>취소</button>}
       </div>
 
+      {/* ✅ 탭 목록 및 순서 조정 */}
+      <h2 style={{ marginTop: "50px" }}>🗂 등록된 탭 목록</h2>
+      <ul style={{ listStyle: "none", padding: 0 }}>
+        {pages.map((p, i) => (
+          <li
+            key={p._id}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              borderBottom: "1px solid #ddd",
+              padding: "5px 0",
+            }}
+          >
+            <span>
+              {p.order}. <strong>{p.label}</strong> ({p.name})
+            </span>
+            <button onClick={() => movePage(p._id, "up")}>▲</button>
+            <button onClick={() => movePage(p._id, "down")}>▼</button>
+            <button
+              onClick={() => {
+                const newLabel = prompt("새 탭 이름을 입력하세요", p.label);
+                if (newLabel) renamePage(p._id, newLabel);
+              }}
+            >
+              ✏️ 이름수정
+            </button>
+            <button onClick={() => deletePage(p._id)}>🗑 삭제</button>
+          </li>
+        ))}
+      </ul>
+
+      {/* 상품 목록 */}
       <h2 style={{ marginTop: "40px" }}>상품 목록</h2>
       <ul style={{ listStyle: "none", padding: 0 }}>
         {products.map((p) => (
