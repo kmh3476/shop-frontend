@@ -70,7 +70,9 @@ function Admin() {
     description: "",
     images: [],
     mainImage: "",
+    categoryPage: "", // ✅ 상품이 속한 탭 정보 추가
   });
+  const [pages, setPages] = useState([]); // ✅ 탭 목록 저장
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [modalImages, setModalImages] = useState([]);
@@ -78,14 +80,25 @@ function Admin() {
 
   useEffect(() => {
     fetchProducts();
+    fetchPages(); // ✅ 탭 목록 불러오기
   }, []);
 
   const fetchProducts = async () => {
     try {
-      const res = await api.get("/products");
+      const res = await api.get("/products?populate=categoryPage");
       setProducts(res.data);
     } catch (err) {
       console.error("❌ 상품 불러오기 실패:", err);
+    }
+  };
+
+  // ✅ 탭 목록 불러오기
+  const fetchPages = async () => {
+    try {
+      const res = await api.get("/pages");
+      setPages(res.data);
+    } catch (err) {
+      console.error("❌ 탭 목록 불러오기 실패:", err);
     }
   };
 
@@ -174,6 +187,7 @@ function Admin() {
       description: form.description.trim(),
       images: cleanImages,
       mainImage: mainImg,
+      categoryPage: form.categoryPage || null, // ✅ 선택된 탭 정보 포함
     };
 
     try {
@@ -188,8 +202,8 @@ function Admin() {
         console.log("✅ 상품 수정 완료:", result.data);
       } else {
         result = await api.post("/products", productData);
-        await new Promise((r) => setTimeout(r, 1000)); // Cloudinary 반영 대기
-        const refreshed = await api.get("/products");
+        await new Promise((r) => setTimeout(r, 1000));
+        const refreshed = await api.get("/products?populate=categoryPage");
         setProducts(refreshed.data);
         console.log("✅ 상품 추가 완료:", result.data);
       }
@@ -201,6 +215,7 @@ function Admin() {
         description: "",
         images: [],
         mainImage: "",
+        categoryPage: "",
       });
       setUploading(false);
     } catch (err) {
@@ -217,6 +232,7 @@ function Admin() {
       description: p.description,
       images: p.images || [],
       mainImage: p.mainImage || p.images?.[0] || "",
+      categoryPage: p.categoryPage?._id || "", // ✅ 기존 탭 설정 불러오기
     });
   };
 
@@ -228,6 +244,7 @@ function Admin() {
       description: "",
       images: [],
       mainImage: "",
+      categoryPage: "",
     });
   };
 
@@ -283,6 +300,20 @@ function Admin() {
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
         />
+
+        {/* ✅ 상품 탭 선택 */}
+        <select
+          value={form.categoryPage}
+          onChange={(e) => setForm({ ...form, categoryPage: e.target.value })}
+        >
+          <option value="">탭 선택 없음</option>
+          {pages.map((p) => (
+            <option key={p._id} value={p._id}>
+              {p.label}
+            </option>
+          ))}
+        </select>
+
         <input type="file" accept="image/*" multiple onChange={handleFileChange} />
 
         {uploading && (
@@ -392,6 +423,11 @@ function Admin() {
             <div style={{ flex: 1 }}>
               <strong>{p.name}</strong> - {p.price}원 <br />
               <small>{p.description}</small>
+              {p.categoryPage?.label && (
+                <p style={{ fontSize: "12px", color: "gray" }}>
+                  📂 탭: {p.categoryPage.label}
+                </p>
+              )}
             </div>
             <button onClick={() => startEdit(p)}>✏️ 수정</button>
             <button onClick={() => deleteProduct(p._id)}>🗑 삭제</button>
