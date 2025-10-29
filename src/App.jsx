@@ -26,9 +26,9 @@ import { useAuth } from "./context/AuthContext";
 import { Mail } from "lucide-react";
 import MailModal from "./components/MailModal";
 import { SiteSettingsProvider } from "./context/SiteSettingsContext";
-import { EditModeProvider, useEditMode } from "./context/EditModeContext";
-import AdminToolbar from "./components/AdminToolbar"; // ✅ 관리자 툴바
-import Page from "./pages/Page"; // 유지용 (현재 사용 X)
+import { EditModeProvider } from "./context/EditModeContext";
+import AdminToolbar from "./components/AdminToolbar"; // ✅ 전역 관리자 툴바
+import Page from "./pages/Page"; // 유지용
 
 /* -------------------- ✅ 로그인 페이지 -------------------- */
 function Login() {
@@ -386,7 +386,10 @@ function InnerApp() {
         <AdminToolbar />
 
         <Routes>
+          {/* 홈 페이지 */}
           <Route path="/" element={<><MainLayout /><Navigation /></>} />
+
+          {/* 일반 페이지 */}
           <Route
             element={
               <>
@@ -422,6 +425,7 @@ function InnerApp() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
           </Route>
 
+          {/* 404 페이지 */}
           <Route
             path="*"
             element={

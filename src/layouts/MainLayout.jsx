@@ -228,7 +228,7 @@ function MainLayout() {
     );
   };
 
-  /** ✅ 섹션 */
+  /** ✅ 섹션 (상의/하의/코디 추천) */
   const SlideSection = ({ title, id }) => (
     <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black font-['Pretendard']">
       <motion.h2
@@ -243,7 +243,7 @@ function MainLayout() {
 
       <Swiper
         modules={[Navigation, Pagination]}
-        spaceBetween={5}
+        spaceBetween={10}
         slidesPerView={4}
         navigation
         pagination={{ clickable: true }}
@@ -268,15 +268,14 @@ function MainLayout() {
           <button
             onClick={toggleEditMode}
             className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md 
-              transition-all duration-200 ease-out 
+              transition-colors duration-200 ease-out 
               focus:outline-none focus:ring-0
               ${
                 isEditMode
-                  ? "bg-green-600 hover:bg-green-700 active:scale-[0.98]"
-                  : "bg-gray-800 hover:bg-gray-900 active:scale-[0.98]"
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-gray-800 hover:bg-gray-900"
               }`}
             style={{
-              transformOrigin: "center",
               boxShadow: isEditMode
                 ? "0 0 0 2px rgba(34,197,94,0.4)"
                 : "0 0 0 1px rgba(0,0,0,0.2)",
@@ -289,15 +288,14 @@ function MainLayout() {
           <button
             onClick={toggleResizeMode}
             className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md 
-              transition-all duration-200 ease-out 
+              transition-colors duration-200 ease-out 
               focus:outline-none focus:ring-0
               ${
                 isResizeMode
-                  ? "bg-blue-600 hover:bg-blue-700 active:scale-[0.98]"
-                  : "bg-gray-700 hover:bg-gray-800 active:scale-[0.98]"
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : "bg-gray-700 hover:bg-gray-800"
               }`}
             style={{
-              transformOrigin: "center",
               boxShadow: isResizeMode
                 ? "0 0 0 2px rgba(37,99,235,0.4)"
                 : "0 0 0 1px rgba(0,0,0,0.2)",
@@ -308,7 +306,7 @@ function MainLayout() {
         </div>
       )}
 
-      {/* 🔸 나머지 메인 섹션 */}
+      {/* 🔸 메인 배경 */}
       <section
         className="relative flex flex-col items-center justify-center w-full min-h-[110vh]"
         style={{
@@ -316,8 +314,90 @@ function MainLayout() {
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
-      />
-      {/* 이하 동일 */}
+      ></section>
+
+      {/* 🔸 추천 상품 섹션 */}
+      <section className="flex flex-col items-center justify-center py-[10vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
+        <motion.h2
+          className="text-5xl md:text-6xl font-extrabold mb-12 drop-shadow-sm tracking-tight text-gray-600"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          viewport={{ once: true }}
+        >
+          <EditableText
+            id="featured-section-title"
+            defaultText="추천 상품"
+            apiUrl="http://localhost:1337/api/texts"
+          />
+        </motion.h2>
+
+        <div className="w-full max-w-[1200px]">
+          <Swiper
+            modules={[Autoplay, Navigation, Pagination]}
+            spaceBetween={10}
+            slidesPerView={3.2}
+            navigation
+            pagination={{ clickable: true }}
+            autoplay={{ delay: 4500, disableOnInteraction: false }}
+            allowTouchMove={!isResizeMode}
+            loop
+            className="pb-12 swiper-initialized swiper-horizontal swiper-backface-hidden"
+          >
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <SwiperSlide key={i}>
+                <FeaturedCard i={i} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+      </section>
+
+      {/* 🔸 상품 섹션 */}
+      <SlideSection id="top-section" title="상의" />
+      <SlideSection id="bottom-section" title="하의" />
+      <SlideSection id="coordi-section" title="코디 추천" />
+
+      {/* 🔸 브랜드 스토리 */}
+      <section
+        className="flex flex-col items-center justify-center py-[15vh] px-6 text-center bg-gray-100 font-['Pretendard']"
+        style={{
+          backgroundImage: "url('/texture.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <motion.h2
+          className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <EditableText
+            id="brand-title"
+            defaultText="브랜드 스토리"
+            apiUrl="http://localhost:1337/api/texts"
+          />
+        </motion.h2>
+        <motion.p
+          className="max-w-[700px] text-gray-700 leading-relaxed text-lg md:text-xl font-light"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
+        >
+          <EditableText
+            id="brand-description"
+            defaultText={`ONYOU는 심플하지만 감각적인 디자인을 통해 일상 속의 편안함을 추구합니다.
+자연, 색감, 질감에서 영감을 받아 제작된 제품들은 당신의 일상을 새롭게 만듭니다.`}
+            apiUrl="http://localhost:1337/api/texts"
+          />
+        </motion.p>
+      </section>
+
+      {/* 🔸 푸터 */}
+      <footer className="py-6 text-black text-sm border-t border-gray-300 w-full text-center bg-white font-light tracking-tight">
+        © 2025 ONYOU — All rights reserved.
+      </footer>
     </div>
   );
 }
