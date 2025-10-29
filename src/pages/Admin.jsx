@@ -71,6 +71,7 @@ function ImageModal({ images = [], startIndex = 0, onClose }) {
 
 function Admin() {
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [form, setForm] = useState({
     name: "",
     price: "",
@@ -85,6 +86,7 @@ function Admin() {
   const [uploading, setUploading] = useState(false);
   const [modalImages, setModalImages] = useState([]);
   const [modalIndex, setModalIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState("all"); // ✅ 현재 선택된 탭
 
   useEffect(() => {
     fetchProducts();
@@ -97,6 +99,7 @@ function Admin() {
         headers: getAuthHeader(),
       });
       setProducts(res.data);
+      setFilteredProducts(res.data);
     } catch (err) {
       console.error("❌ 상품 불러오기 실패:", err);
     }
@@ -113,7 +116,20 @@ function Admin() {
     }
   };
 
-  // ✅ 새 탭 생성
+  // ✅ 탭 선택 시 필터링
+  const handleTabClick = (tabId) => {
+    setActiveTab(tabId);
+    if (tabId === "all") {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter(
+        (p) => p.categoryPage?._id === tabId
+      );
+      setFilteredProducts(filtered);
+    }
+  };
+
+  // ✅ 새 탭 추가
   const addPage = async () => {
     if (!newPage.name || !newPage.label) {
       alert("탭 이름(name)과 표시명(label)을 입력해주세요!");
@@ -143,17 +159,6 @@ function Admin() {
     } catch (err) {
       console.error("❌ 탭 삭제 실패:", err);
       alert("탭 삭제 실패 (인증 필요)");
-    }
-  };
-
-  // ✅ 탭 이름 수정
-  const renamePage = async (id, label) => {
-    try {
-      await api.put(`/api/pages/${id}`, { label }, { headers: getAuthHeader() });
-      fetchPages();
-    } catch (err) {
-      console.error("❌ 이름 수정 실패:", err);
-      alert("탭 이름 수정 실패 (인증 필요)");
     }
   };
 
@@ -190,7 +195,6 @@ function Admin() {
     try {
       const formData = new FormData();
       formData.append("image", file);
-
       const res = await api.post("/api/upload", formData, {
         headers: { "Content-Type": "multipart/form-data", ...getAuthHeader() },
       });
@@ -322,7 +326,7 @@ function Admin() {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
     try {
       await api.delete(`/products/${id}`, { headers: getAuthHeader() });
-      setProducts((prev) => prev.filter((p) => p._id !== id));
+      fetchProducts();
     } catch (err) {
       console.error("❌ 상품 삭제 실패:", err);
     }
@@ -332,14 +336,14 @@ function Admin() {
     <div style={{ padding: "20px" }}>
       <h1>📦 관리자 페이지</h1>
 
-      {/* ✅ 새 탭 추가 영역 */}
+      {/* ✅ 탭 추가 섹션 */}
       <div
         style={{
           border: "1px solid #ccc",
           padding: "10px",
           borderRadius: "8px",
           marginBottom: "20px",
-          maxWidth: "320px",
+          maxWidth: "350px",
         }}
       >
         <h3>🆕 새 탭 추가</h3>
@@ -348,62 +352,196 @@ function Admin() {
           placeholder="탭 이름 (name)"
           value={newPage.name}
           onChange={(e) => setNewPage({ ...newPage, name: e.target.value })}
-          style={{ width: "100%", marginBottom: "6px" }}
         />
         <input
           type="text"
           placeholder="표시명 (label)"
           value={newPage.label}
           onChange={(e) => setNewPage({ ...newPage, label: e.target.value })}
-          style={{ width: "100%", marginBottom: "6px" }}
         />
         <input
           type="number"
           placeholder="순서 (order)"
           value={newPage.order}
-          onChange={(e) => setNewPage({ ...newPage, order: Number(e.target.value) })}
-          style={{ width: "100%", marginBottom: "6px" }}
+          onChange={(e) =>
+            setNewPage({ ...newPage, order: Number(e.target.value) })
+          }
         />
-        <button onClick={addPage} style={{ width: "100%" }}>
-          ➕ 탭 추가
-        </button>
+        <button onClick={addPage}>➕ 탭 추가</button>
       </div>
 
-      {/* ✅ 탭 목록 */}
-      <h2>🗂 등록된 탭 목록</h2>
-      <ul style={{ listStyle: "none", padding: 0 }}>
+      {/* ✅ 탭 목록 및 선택 */}
+      <h2>🗂 탭 목록 / 상품 분류</h2>
+      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+        <button
+          onClick={() => handleTabClick("all")}
+          style={{
+            background: activeTab === "all" ? "#007bff" : "#eee",
+            color: activeTab === "all" ? "white" : "black",
+            borderRadius: "6px",
+            padding: "6px 12px",
+          }}
+        >
+          전체 보기
+        </button>
         {pages.map((p) => (
-          <li
+          <button
             key={p._id}
+            onClick={() => handleTabClick(p._id)}
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              borderBottom: "1px solid #ddd",
-              padding: "5px 0",
+              background: activeTab === p._id ? "#007bff" : "#eee",
+              color: activeTab === p._id ? "white" : "black",
+              borderRadius: "6px",
+              padding: "6px 12px",
             }}
           >
-            <span>
-              {p.order}. <strong>{p.label}</strong> ({p.name})
-            </span>
-            <button onClick={() => movePage(p._id, "up")}>▲</button>
-            <button onClick={() => movePage(p._id, "down")}>▼</button>
-            <button
-              onClick={() => {
-                const newLabel = prompt("새 탭 이름을 입력하세요", p.label);
-                if (newLabel) renamePage(p._id, newLabel);
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ✅ 상품 등록 폼 */}
+      <h2 style={{ marginTop: "30px" }}>{editingId ? "상품 수정" : "상품 추가"}</h2>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "8px",
+          maxWidth: "350px",
+          marginBottom: "30px",
+        }}
+      >
+        <input
+          type="text"
+          placeholder="상품명"
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+        />
+        <input
+          type="number"
+          placeholder="가격"
+          value={form.price}
+          onChange={(e) => setForm({ ...form, price: e.target.value })}
+        />
+        <textarea
+          placeholder="설명"
+          rows={3}
+          value={form.description}
+          onChange={(e) => setForm({ ...form, description: e.target.value })}
+        />
+        <select
+          value={form.categoryPage}
+          onChange={(e) => setForm({ ...form, categoryPage: e.target.value })}
+        >
+          <option value="">탭 선택 없음</option>
+          {pages.map((p) => (
+            <option key={p._id} value={p._id}>
+              {p.label}
+            </option>
+          ))}
+        </select>
+        <input type="file" accept="image/*" multiple onChange={handleFileChange} />
+        {uploading && <p style={{ color: "blue" }}>{uploading}</p>}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+          {form.images.map((img, idx) => (
+            <div key={idx} style={{ position: "relative" }}>
+              <img
+                src={img}
+                alt="preview"
+                style={{
+                  width: "80px",
+                  height: "80px",
+                  objectFit: "cover",
+                  border:
+                    img === form.mainImage ? "3px solid blue" : "1px solid #ccc",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                }}
+                onClick={() => setAsMainImage(img)}
+              />
+              <button
+                onClick={() => removeImage(idx)}
+                style={{
+                  position: "absolute",
+                  top: "-6px",
+                  right: "-6px",
+                  background: "rgba(0,0,0,0.6)",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: "20px",
+                  height: "20px",
+                  cursor: "pointer",
+                }}
+              >
+                ✖
+              </button>
+            </div>
+          ))}
+        </div>
+        <button onClick={saveProduct}>
+          {editingId ? "💾 수정 완료" : "➕ 상품 추가"}
+        </button>
+        {editingId && <button onClick={cancelEdit}>취소</button>}
+      </div>
+
+      {/* ✅ 상품 목록 */}
+      <h2>📋 상품 목록</h2>
+      {filteredProducts.length === 0 ? (
+        <p style={{ color: "gray" }}>상품이 없습니다.</p>
+      ) : (
+        <ul style={{ listStyle: "none", padding: 0 }}>
+          {filteredProducts.map((p) => (
+            <li
+              key={p._id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "10px",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+                marginBottom: "10px",
               }}
             >
-              ✏️ 이름수정
-            </button>
-            <button onClick={() => deletePage(p._id)}>🗑 삭제</button>
-          </li>
-        ))}
-      </ul>
+              <img
+                src={
+                  p.mainImage ||
+                  p.images?.[0] ||
+                  "https://placehold.co/100x100?text=No+Image"
+                }
+                alt={p.name}
+                style={{
+                  width: "80px",
+                  height: "80px",
+                  objectFit: "cover",
+                  borderRadius: "8px",
+                }}
+              />
+              <div style={{ flex: 1 }}>
+                <strong>{p.name}</strong> - {p.price}원
+                <br />
+                <small>{p.description}</small>
+                {p.categoryPage?.label && (
+                  <p style={{ fontSize: "12px", color: "gray" }}>
+                    📂 탭: {p.categoryPage.label}
+                  </p>
+                )}
+              </div>
+              <button onClick={() => startEdit(p)}>✏️ 수정</button>
+              <button onClick={() => deleteProduct(p._id)}>🗑 삭제</button>
+            </li>
+          ))}
+        </ul>
+      )}
 
-      {/* ✅ 상품 관리 및 목록 */}
-      {/* 아래 기존 상품 추가/수정 부분은 그대로 유지 */}
-      {/* ... */}
+      {modalImages.length > 0 && (
+        <ImageModal
+          images={modalImages}
+          startIndex={modalIndex}
+          onClose={() => setModalImages([])}
+        />
+      )}
     </div>
   );
 }
