@@ -20,9 +20,7 @@ import FindId from "./pages/FindId";
 import ForgotPassword from "./pages/ForgotPassword";
 import Support from "./pages/Support";
 import AdminSupport from "./pages/AdminSupport";
-
-// ✅ 추가
-import ProductSupport from "./pages/ProductSupport"; // 상품 문의 페이지 임포트 추가
+import ProductSupport from "./pages/ProductSupport";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "./context/AuthContext";
@@ -30,7 +28,8 @@ import { useAuth as useAuthContext } from "./context/AuthContext";
 import { Mail } from "lucide-react";
 import MailModal from "./components/MailModal";
 import { SiteSettingsProvider } from "./context/SiteSettingsContext";
-import { EditModeProvider, useEditMode } from "./context/EditModeContext"; // ✅ 수정: useEditMode 추가
+import { EditModeProvider, useEditMode } from "./context/EditModeContext";
+import AdminToolbar from "./components/AdminToolbar"; // ✅ 관리자 툴바 추가
 import Page from "./pages/Page"; // 혹시 나중에 사용할 수도 있으니 유지
 
 /* -------------------- ✅ 로그인 페이지 -------------------- */
@@ -160,7 +159,6 @@ function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [showMailModal, setShowMailModal] = useState(false);
   const { user, logout } = useAuth();
-
   const [panelWidth, setPanelWidth] = useState("800px");
   const [panelHeight, setPanelHeight] = useState("100vh");
 
@@ -188,7 +186,7 @@ function Navigation() {
 
   return (
     <>
-      {/* 🔹 햄버거 버튼 */}
+      {/* 🔹 햄버거 메뉴 버튼 */}
       <div
         onClick={() => setIsOpen(!isOpen)}
         style={{
@@ -266,7 +264,7 @@ function Navigation() {
           boxShadow: isOpen ? "-8px 0 20px rgba(0,0,0,0.1)" : "none",
         }}
       >
-        {/* 상단 사용자 정보 */}
+        {/* 사용자 정보 영역 */}
         <div
           style={{
             backgroundColor: "black",
@@ -374,7 +372,7 @@ function Navigation() {
                   {item.label}
                 </Link>
               </li>
-            ))}
+            ))}{" "}
           </ul>
         </nav>
       </div>
@@ -402,6 +400,9 @@ function InnerApp() {
   return (
     <SiteSettingsProvider>
       <Router>
+        {/* ✅ 전역 관리자 툴바 */}
+        <AdminToolbar />
+
         <Routes>
           <Route
             path="/"
@@ -428,7 +429,6 @@ function InnerApp() {
             <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/support" element={<Support />} />
-            {/* ✅ 추가된 상품 문의 라우트 */}
             <Route path="/product-support" element={<ProductSupport />} />
             <Route
               path="/admin"
@@ -447,18 +447,20 @@ function InnerApp() {
               }
             />
             <Route
-  path="/admin/product-support"
-  element={
-    <AdminRoute>
-      <AdminSupport />
-    </AdminRoute>
-  }
-/>
+              path="/admin/product-support"
+              element={
+                <AdminRoute>
+                  <AdminSupport />
+                </AdminRoute>
+              }
+            />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/find-id" element={<FindId />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
           </Route>
+
+          {/* 404 페이지 */}
           <Route
             path="*"
             element={
@@ -484,10 +486,11 @@ function InnerApp() {
   );
 }
 
+/* -------------------- ✅ 전체 앱 구조 -------------------- */
 function App() {
   return (
     <EditModeProvider>
-      <InnerApp /> {/* ✅ Provider 내부에서 호출 */}
+      <InnerApp />
     </EditModeProvider>
   );
 }
