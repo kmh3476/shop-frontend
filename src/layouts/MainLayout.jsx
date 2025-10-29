@@ -48,9 +48,9 @@ function MainLayout() {
         if (!resizingRef.current || !cardRef.current || !isResizeMode) return;
         const dx = e.clientX - startRef.current.x;
         const dy = e.clientY - startRef.current.y;
-        const newWidth = Math.min(Math.max(240, startRef.current.width + dx), 900);
-        const newHeight = Math.min(Math.max(320, startRef.current.height + dy), 900);
-        setSize({ width: newWidth, height: newHeight });
+        const newWidth = Math.max(100, startRef.current.width + dx);  // 최소 100px까지만 제한
+const newHeight = Math.max(100, startRef.current.height + dy); // 최소 100px까지만 제한
+setSize({ width: newWidth, height: newHeight });
       };
 
       const handleMouseUp = () => {
