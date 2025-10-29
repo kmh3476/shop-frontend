@@ -1,5 +1,4 @@
-﻿// 📁 src/App.jsx
-import {
+﻿import {
   BrowserRouter as Router,
   Routes,
   Route,
@@ -24,18 +23,17 @@ import ProductSupport from "./pages/ProductSupport";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "./context/AuthContext";
-import { useAuth as useAuthContext } from "./context/AuthContext";
 import { Mail } from "lucide-react";
 import MailModal from "./components/MailModal";
 import { SiteSettingsProvider } from "./context/SiteSettingsContext";
 import { EditModeProvider, useEditMode } from "./context/EditModeContext";
-import AdminToolbar from "./components/AdminToolbar"; // ✅ 관리자 툴바 추가
-import Page from "./pages/Page"; // 혹시 나중에 사용할 수도 있으니 유지
+import AdminToolbar from "./components/AdminToolbar"; // ✅ 관리자 툴바
+import Page from "./pages/Page"; // 유지용 (현재 사용 X)
 
 /* -------------------- ✅ 로그인 페이지 -------------------- */
 function Login() {
   const navigate = useNavigate();
-  const { login } = useAuthContext();
+  const { login } = useAuth();
   const [loginInput, setLoginInput] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -64,7 +62,6 @@ function Login() {
       });
 
       const data = await res.json();
-
       if (!res.ok) throw new Error(data?.message || "로그인 실패");
 
       if (data.token && data.user) {
@@ -159,19 +156,14 @@ function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [showMailModal, setShowMailModal] = useState(false);
   const { user, logout } = useAuth();
-  const [panelWidth, setPanelWidth] = useState("800px");
+  const [panelWidth, setPanelWidth] = useState("400px");
   const [panelHeight, setPanelHeight] = useState("100vh");
 
   useEffect(() => {
     const updatePanelSize = () => {
       const width = window.innerWidth;
-      if (width <= 1600) {
-        setPanelWidth("400px");
-        setPanelHeight("400vh");
-      } else {
-        setPanelWidth("400px");
-        setPanelHeight("400vh");
-      }
+      setPanelWidth(width <= 1600 ? "400px" : "400px");
+      setPanelHeight("400vh");
     };
     updatePanelSize();
     window.addEventListener("resize", updatePanelSize);
@@ -264,7 +256,7 @@ function Navigation() {
           boxShadow: isOpen ? "-8px 0 20px rgba(0,0,0,0.1)" : "none",
         }}
       >
-        {/* 사용자 정보 영역 */}
+        {/* 사용자 정보 */}
         <div
           style={{
             backgroundColor: "black",
@@ -277,7 +269,6 @@ function Navigation() {
             fontWeight: "600",
             padding: "20px 0",
             width: "100%",
-            position: "relative",
           }}
         >
           {user ? (
@@ -301,19 +292,11 @@ function Navigation() {
             </>
           ) : (
             <>
-              <Link
-                to="/login"
-                onClick={() => setIsOpen(false)}
-                style={{ color: "white" }}
-              >
+              <Link to="/login" onClick={() => setIsOpen(false)} style={{ color: "white" }}>
                 로그인
               </Link>
               <span>|</span>
-              <Link
-                to="/signup"
-                onClick={() => setIsOpen(false)}
-                style={{ color: "white" }}
-              >
+              <Link to="/signup" onClick={() => setIsOpen(false)} style={{ color: "white" }}>
                 회원가입
               </Link>
             </>
@@ -346,8 +329,6 @@ function Navigation() {
               : []),
               { path: "/products", label: "상품" },
               { path: "/cart", label: "장바구니" },
-              { path: "/style", label: "스타일룸" },
-              { path: "/sale", label: "이벤트/세일" },
               { path: "/support", label: "고객센터" },
             ].map((item) => (
               <li
@@ -372,7 +353,7 @@ function Navigation() {
                   {item.label}
                 </Link>
               </li>
-            ))}{" "}
+            ))}
           </ul>
         </nav>
       </div>
@@ -384,7 +365,7 @@ function Navigation() {
 
 /* -------------------- ✅ 라우팅 -------------------- */
 function InnerApp() {
-  const { setIsEditMode } = useEditMode();
+  const { user } = useAuth();
 
   useEffect(() => {
     const logEntry = {
@@ -392,10 +373,11 @@ function InnerApp() {
       filePath: import.meta.url,
       componentName: "App",
       updatedAt: new Date().toISOString(),
+      triggeredBy: user?.email || "unknown",
     };
     const prevLogs = JSON.parse(localStorage.getItem("editLogs") || "[]");
     localStorage.setItem("editLogs", JSON.stringify([...prevLogs, logEntry]));
-  }, []);
+  }, [user]);
 
   return (
     <SiteSettingsProvider>
@@ -404,24 +386,12 @@ function InnerApp() {
         <AdminToolbar />
 
         <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <MainLayout>
-                  <h1 className="text-center mt-20 text-3xl font-bold">
-                    홈 페이지
-                  </h1>
-                </MainLayout>
-                <Navigation />
-              </>
-            }
-          />
+          <Route path="/" element={<><MainLayout /><Navigation /></>} />
           <Route
             element={
               <>
-                <Navigation />
                 <CleanLayout />
+                <Navigation />
               </>
             }
           >
@@ -446,21 +416,12 @@ function InnerApp() {
                 </AdminRoute>
               }
             />
-            <Route
-              path="/admin/product-support"
-              element={
-                <AdminRoute>
-                  <AdminSupport />
-                </AdminRoute>
-              }
-            />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/find-id" element={<FindId />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
           </Route>
 
-          {/* 404 페이지 */}
           <Route
             path="*"
             element={
