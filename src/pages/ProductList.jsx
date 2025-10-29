@@ -4,8 +4,9 @@ import api from "../lib/api";
 
 function ProductList() {
   const [products, setProducts] = useState([]);
-  const [pages, setPages] = useState([]); // ✅ 페이지(탭) 목록
-  const [activePage, setActivePage] = useState(null); // ✅ 현재 선택된 탭
+  const [filteredProducts, setFilteredProducts] = useState([]); // ✅ 현재 탭에 해당하는 상품 목록
+  const [pages, setPages] = useState([]); // ✅ 탭 목록
+  const [activePage, setActivePage] = useState("all"); // ✅ 현재 선택된 탭
   const [cart, setCart] = useState(() => {
     const saved = localStorage.getItem("cart");
     return saved ? JSON.parse(saved) : [];
@@ -13,48 +14,53 @@ function ProductList() {
 
   const navigate = useNavigate();
 
+  // ✅ 페이지(탭) + 상품 둘 다 불러오기
   useEffect(() => {
     fetchPages();
     fetchProducts();
   }, []);
 
-  // ✅ 페이지(탭) 목록 가져오기
+  // ✅ 탭 목록 불러오기
   const fetchPages = async () => {
     try {
-      const baseURL = import.meta.env.VITE_API_BASE_URL;
-      const endpoint = baseURL.endsWith("/api")
-        ? `${baseURL}/pages`
-        : `${baseURL}/api/pages`;
-
-      console.log("📡 Fetching pages from:", endpoint);
-      const res = await api.get(endpoint);
+      const res = await api.get("/api/pages"); // ✅ 관리자에서 만든 탭 목록 불러오기
       setPages(res.data);
-
-      // ✅ 첫 번째 탭 자동 선택
-      if (res.data.length > 0) setActivePage(res.data[0]._id);
     } catch (err) {
-      console.error("❌ 탭 목록 불러오기 실패:", err.message, err);
+      console.error("❌ 탭 불러오기 실패:", err.message);
     }
   };
 
-  // ✅ 상품 목록 가져오기
+  // ✅ 상품 불러오기
   const fetchProducts = async () => {
     try {
       const baseURL = import.meta.env.VITE_API_BASE_URL;
       const endpoint = baseURL.endsWith("/api")
-        ? `${baseURL}/products?populate=categoryPage`
-        : `${baseURL}/api/products?populate=categoryPage`;
+        ? `${baseURL}/products`
+        : `${baseURL}/api/products`;
 
-      console.log("📡 Fetching products from:", endpoint);
+      console.log("📡 Fetching from:", endpoint);
       const res = await api.get(endpoint);
       setProducts(res.data);
+      setFilteredProducts(res.data); // 초기엔 전체 상품
     } catch (err) {
       console.error("❌ 상품 불러오기 실패:", err.message, err);
       alert("서버 연결 실패: 백엔드가 켜져 있는지 확인하세요!");
     }
   };
 
-  // ✅ 카트 담기
+  // ✅ 탭 클릭 시 상품 필터링
+  const handlePageChange = (pageId) => {
+    setActivePage(pageId);
+    if (pageId === "all") {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter(
+        (p) => p.categoryPage === pageId || p.categoryPage?._id === pageId
+      );
+      setFilteredProducts(filtered);
+    }
+  };
+
   const addToCart = (product) => {
     const exists = cart.find((item) => item._id === product._id);
     let newCart;
@@ -72,37 +78,41 @@ function ProductList() {
     localStorage.setItem("cart", JSON.stringify(newCart));
   };
 
-  // ✅ 현재 탭에 맞는 상품 필터링
-  const filteredProducts = activePage
-    ? products.filter((p) => p.categoryPage?._id === activePage)
-    : products;
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start p-8">
       {/* 🔹 상단 헤더 */}
-      <header className="w-full max-w-6xl text-center mb-6">
+      <header className="w-full max-w-6xl text-center mb-8">
         <h1 className="text-3xl font-bold text-blue-600">🛍 상품 목록</h1>
         <p className="text-gray-500 mt-2">지금 바로 쇼핑을 시작해보세요!</p>
       </header>
 
-      {/* 🔹 페이지(탭) 목록 */}
-      {pages.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-3 mb-10">
-          {pages.map((page) => (
-            <button
-              key={page._id}
-              onClick={() => setActivePage(page._id)}
-              className={`px-5 py-2 rounded-full font-medium transition ${
-                activePage === page._id
-                  ? "bg-blue-600 text-white"
-                  : "bg-white border text-gray-700 hover:bg-blue-100"
-              }`}
-            >
-              {page.label}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* 🔹 탭 네비게이션 */}
+      <div className="flex flex-wrap justify-center gap-3 mb-10">
+        <button
+          onClick={() => handlePageChange("all")}
+          className={`px-4 py-2 rounded-full border transition ${
+            activePage === "all"
+              ? "bg-blue-500 text-white border-blue-500"
+              : "bg-white text-gray-600 border-gray-300 hover:bg-blue-50"
+          }`}
+        >
+          전체 보기
+        </button>
+
+        {pages.map((p) => (
+          <button
+            key={p._id}
+            onClick={() => handlePageChange(p._id)}
+            className={`px-4 py-2 rounded-full border transition ${
+              activePage === p._id
+                ? "bg-blue-500 text-white border-blue-500"
+                : "bg-white text-gray-600 border-gray-300 hover:bg-blue-50"
+            }`}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
 
       {/* 🔹 상품 리스트 */}
       <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full max-w-6xl">
@@ -117,7 +127,7 @@ function ProductList() {
               onClick={() => navigate(`/products/${p._id}`)}
               className="border rounded-xl p-5 shadow hover:shadow-lg transition bg-white flex flex-col items-center cursor-pointer"
             >
-              {/* ✅ 이미지 표시 (mainImage + images + 기존 필드 모두 지원) */}
+              {/* ✅ 이미지 표시 */}
               <img
                 src={
                   p.mainImage?.startsWith("http")

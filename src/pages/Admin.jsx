@@ -92,10 +92,10 @@ function Admin() {
     }
   };
 
-  // ✅ 탭 목록 불러오기
+  // ✅ 탭 목록 불러오기 (경로 수정됨)
   const fetchPages = async () => {
     try {
-      const res = await api.get("/pages");
+      const res = await api.get("/api/pages"); // ✅ 수정됨
       setPages(res.data);
     } catch (err) {
       console.error("❌ 탭 목록 불러오기 실패:", err);
