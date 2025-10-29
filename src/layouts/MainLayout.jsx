@@ -44,35 +44,48 @@ function MainLayout() {
     const startRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
 
     useEffect(() => {
-      const handleMouseMove = (e) => {
-        if (!resizingRef.current || !cardRef.current || !isResizeMode) return;
-        const dx = e.clientX - startRef.current.x;
-        const dy = e.clientY - startRef.current.y;
-        const newWidth = Math.max(100, startRef.current.width + dx);  // 최소 100px까지만 제한
-const newHeight = Math.max(100, startRef.current.height + dy); // 최소 100px까지만 제한
-setSize({ width: newWidth, height: newHeight });
-      };
+  let frameId = null; // ✅ 애니메이션 프레임 ID 저장용
 
-      const handleMouseUp = () => {
-        if (resizingRef.current) {
-          resizingRef.current = false;
-          document.body.style.userSelect = "auto";
-          localStorage.setItem(`card-size-${id}`, JSON.stringify(size));
-        }
-      };
+  const handleMouseMove = (e) => {
+    if (!resizingRef.current || !cardRef.current || !isResizeMode) return;
 
-      if (isResizeMode) {
-        window.addEventListener("mousemove", handleMouseMove);
-        window.addEventListener("mouseup", handleMouseUp);
-      }
+    const dx = e.clientX - startRef.current.x;
+    const dy = e.clientY - startRef.current.y;
 
-      return () => {
-        window.removeEventListener("mousemove", handleMouseMove);
-        window.removeEventListener("mouseup", handleMouseUp);
-        resizingRef.current = false;
-        document.body.style.userSelect = "auto";
-      };
-    }, [size, id, isResizeMode]);
+    const newWidth = Math.max(100, startRef.current.width + dx);
+    const newHeight = Math.max(100, startRef.current.height + dy);
+
+    // ✅ 렌더링 최적화: 한 프레임에 한 번만 setSize 실행
+    if (!frameId) {
+      frameId = requestAnimationFrame(() => {
+        setSize({ width: newWidth, height: newHeight });
+        frameId = null;
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    if (resizingRef.current) {
+      resizingRef.current = false;
+      document.body.style.userSelect = "auto";
+      localStorage.setItem(`card-size-${id}`, JSON.stringify(size));
+    }
+  };
+
+  if (isResizeMode) {
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+  }
+
+  return () => {
+    cancelAnimationFrame(frameId);
+    window.removeEventListener("mousemove", handleMouseMove);
+    window.removeEventListener("mouseup", handleMouseUp);
+    resizingRef.current = false;
+    document.body.style.userSelect = "auto";
+  };
+}, [size, id, isResizeMode]);
+
 
     const startResize = (e) => {
       e.stopPropagation();
