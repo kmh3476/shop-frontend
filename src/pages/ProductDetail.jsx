@@ -36,14 +36,11 @@ function ImageModal({ images, currentIndex, onClose, onNavigate }) {
           src={imageUrl || noImage}
           alt="Product"
           className="rounded-lg shadow-2xl transition-transform duration-300 cursor-zoom-out"
-          style={{
-            maxWidth: "90vw",
-            maxHeight: "85vh",
-            objectFit: "contain",
-          }}
+          style={{ maxWidth: "90vw", maxHeight: "85vh", objectFit: "contain" }}
           onError={(e) => (e.currentTarget.src = noImage)}
         />
 
+        {/* 닫기 버튼 */}
         <button
           className="absolute top-3 right-3 text-white bg-black/60 px-3 py-2 rounded-full hover:bg-black/80 transition"
           onClick={onClose}
@@ -51,6 +48,7 @@ function ImageModal({ images, currentIndex, onClose, onNavigate }) {
           ✖
         </button>
 
+        {/* 좌우 탐색 버튼 */}
         {images.length > 1 && (
           <>
             <button
@@ -86,22 +84,22 @@ function ProductDetail() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [mainImage, setMainImage] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(null);
-
-  // ✅ 탭 / 섹션 상태
   const [activeTab, setActiveTab] = useState("detail");
+
   const detailRef = useRef(null);
   const sizeRef = useRef(null);
   const reviewRef = useRef(null);
   const inquiryRef = useRef(null);
 
-  // ✅ 리뷰 / 문의 상태
   const [reviews, setReviews] = useState([]);
   const [inquiries, setInquiries] = useState([]);
   const [reviewInput, setReviewInput] = useState({ name: "", rating: 5, comment: "" });
   const [inquiryInput, setInquiryInput] = useState({ name: "", question: "" });
 
+  // ✅ 상품 및 리뷰/문의 불러오기
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -115,6 +113,7 @@ function ProductDetail() {
         setMainImage(imageList[0]);
       } catch (err) {
         console.error("❌ 상품 불러오기 실패:", err);
+        setError("상품 정보를 불러오는 데 실패했습니다.");
       } finally {
         setLoading(false);
       }
@@ -143,7 +142,7 @@ function ProductDetail() {
     fetchExtras();
   }, [id]);
 
-  // ✅ 리뷰 추가
+  // ✅ 후기 등록 함수
   const handleAddReview = async () => {
     if (!reviewInput.name || !reviewInput.comment) return alert("이름과 내용을 입력해주세요.");
     try {
@@ -162,7 +161,7 @@ function ProductDetail() {
     }
   };
 
-  // ✅ 문의 추가
+  // ✅ 문의 등록 함수
   const handleAddInquiry = async () => {
     if (!inquiryInput.name || !inquiryInput.question)
       return alert("이름과 문의 내용을 입력해주세요.");
@@ -176,7 +175,7 @@ function ProductDetail() {
     }
   };
 
-  // ✅ 모달 이미지 넘기기
+  // ✅ 이미지 모달 내 네비게이션
   const handleNavigate = (direction) => {
     setSelectedIndex((prev) => {
       if (!product?.images?.length) return prev;
@@ -186,7 +185,7 @@ function ProductDetail() {
     });
   };
 
-  // ✅ 스크롤 시 현재 탭 변경
+  // ✅ 탭 스크롤 연동
   useEffect(() => {
     const sections = [
       { key: "detail", ref: detailRef },
@@ -205,6 +204,7 @@ function ProductDetail() {
         }
       }
     };
+
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -213,8 +213,13 @@ function ProductDetail() {
     ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  if (loading)
-    return <p className="text-center mt-10 text-gray-600">불러오는 중...</p>;
+  if (loading) return <p className="text-center mt-10 text-gray-600">불러오는 중...</p>;
+  if (error)
+    return (
+      <p className="text-center mt-10 text-red-600 font-semibold">
+        ⚠ {error}
+      </p>
+    );
   if (!product)
     return <p className="text-center mt-10 text-red-500">상품을 찾을 수 없습니다.</p>;
 
@@ -225,7 +230,7 @@ function ProductDetail() {
           ← 상품 목록으로 돌아가기
         </Link>
 
-        {/* 상품 상단 정보 */}
+        {/* 상품 상단 */}
         <div className="bg-white shadow-md rounded-lg overflow-hidden mb-8">
           <div className="relative bg-gray-100">
             <img
@@ -242,6 +247,7 @@ function ProductDetail() {
             )}
           </div>
 
+          {/* 썸네일 */}
           {product.images?.length > 1 && (
             <div className="flex gap-3 justify-center flex-wrap p-4 bg-gray-100">
               {product.images.map((img, idx) => (
@@ -261,6 +267,7 @@ function ProductDetail() {
             </div>
           )}
 
+          {/* 상품 설명 */}
           <div className="p-6">
             <h2 className="text-2xl font-semibold text-gray-800 mb-3">{product.name}</h2>
             <p className="text-gray-600 mb-4 whitespace-pre-line">
@@ -275,7 +282,7 @@ function ProductDetail() {
           </div>
         </div>
 
-        {/* ✅ 상단 고정 탭 */}
+        {/* 탭 메뉴 */}
         <div className="sticky top-0 bg-white border-b z-40 flex justify-around py-3 shadow-sm">
           {[
             { key: "detail", label: "상세정보", ref: detailRef },
@@ -297,7 +304,7 @@ function ProductDetail() {
           ))}
         </div>
 
-        {/* ✅ 섹션들 */}
+        {/* 상세 섹션 */}
         <div className="bg-white p-6 mt-2 rounded-lg shadow-sm space-y-16 leading-relaxed">
           {/* 상세정보 */}
           <section ref={detailRef}>
@@ -329,7 +336,7 @@ function ProductDetail() {
             </p>
           </section>
 
-          {/* ✅ 상품 후기 */}
+          {/* 상품 후기 */}
           <section ref={reviewRef}>
             <h2 className="text-lg font-semibold mb-4">⭐ 상품 후기</h2>
             <div className="space-y-3">
@@ -390,7 +397,7 @@ function ProductDetail() {
             </div>
           </section>
 
-          {/* ✅ 상품 문의 */}
+          {/* 상품 문의 */}
           <section ref={inquiryRef}>
             <h2 className="text-lg font-semibold mb-4">💬 상품 문의</h2>
             <div className="space-y-3">
