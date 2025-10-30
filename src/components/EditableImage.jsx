@@ -183,9 +183,8 @@ export default function EditableImage({
             ? `${size.height}px`
             : size.height,
         // ✅ 크기조절 모드에서만 카드 테두리 표시
-        border:
-          isResizeMode ? "2px dashed rgba(59,130,246,0.9)" : "none",
-        borderRadius: isResizeMode ? "12px" : "0",
+        border: "none",
+borderRadius: "0",
         transition: "border 0.2s ease",
         ...style,
       }}
