@@ -81,7 +81,7 @@ function ImageModal({ images, currentIndex, onClose, onNavigate }) {
 }
 
 // ✅ 리사이즈 훅
-function useResizableBox(id, defaultSize = { width: 800, height: 420 }, active) {
+function useResizableBox(id, defaultSize = { width: 900, height: 400 }, active) {
   const [size, setSize] = useState(() => {
     const saved = localStorage.getItem(`resizable-${id}`);
     return saved ? JSON.parse(saved) : defaultSize;
@@ -107,7 +107,6 @@ function useResizableBox(id, defaultSize = { width: 800, height: 420 }, active) 
         localStorage.setItem(`resizable-${id}`, JSON.stringify(size));
       }
     };
-
     window.addEventListener("mousemove", move);
     window.addEventListener("mouseup", up);
     return () => {
@@ -153,11 +152,10 @@ export default function ProductDetail() {
     inquiry: useRef(null),
   };
 
-  const { ref: heroRef, size: heroSize, startResize } = useResizableBox(
-    `hero-${id}`,
-    { width: 1000, height: 420 },
-    isResizeMode
-  );
+  // ✅ 각 섹션별 리사이즈 훅
+  const hero = useResizableBox(`hero-${id}`, { width: 1000, height: 420 }, isResizeMode);
+  const detailBox = useResizableBox(`detail-box-${id}`, { width: 900, height: 600 }, isResizeMode);
+  const sizeBox = useResizableBox(`size-box-${id}`, { width: 900, height: 300 }, isResizeMode);
 
   // ✅ 관리자 모드 토글
   const toggleEdit = () => {
@@ -180,15 +178,12 @@ export default function ProductDetail() {
         ]);
         const product = p.data;
         const imgs = product.images?.filter(Boolean) || [product.imageUrl || noImage];
-
-        // 저장된 편집 내용 반영
-        const nameLS = localStorage.getItem(`detail-name-${id}`);
-        const descLS = localStorage.getItem(`detail-desc-${id}`);
-
         setProduct({
           ...product,
-          name: nameLS ?? product.name,
-          description: descLS ?? product.description,
+          name: localStorage.getItem(`detail-name-${id}`) ?? product.name,
+          description: localStorage.getItem(`detail-desc-${id}`) ?? product.description,
+          detailText: localStorage.getItem(`detail-info-${id}`) ?? "",
+          sizeText: localStorage.getItem(`size-info-${id}`) ?? "",
           images: imgs,
         });
         setMainImage(imgs[0]);
@@ -202,7 +197,6 @@ export default function ProductDetail() {
     };
     load();
   }, [id]);
-
   // ✅ 후기 등록
   const addReview = async () => {
     if (!reviewInput.name || !reviewInput.comment) return alert("이름과 내용을 입력해주세요.");
@@ -218,7 +212,7 @@ export default function ProductDetail() {
   // ✅ 문의 등록
   const addInquiry = async () => {
     if (!inquiryInput.name || !inquiryInput.question)
-      return alert("이름과 내용을 입력해주세요.");
+      return alert("이름과 문의 내용을 입력해주세요.");
     try {
       const res = await api.post(`/api/inquiries`, { productId: id, ...inquiryInput });
       setInquiries((p) => [res.data, ...p]);
@@ -228,7 +222,7 @@ export default function ProductDetail() {
     }
   };
 
-  // ✅ 스크롤 탭
+  // ✅ 탭 스크롤 연동
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY + 200;
@@ -250,12 +244,12 @@ export default function ProductDetail() {
   if (!product) return <p className="text-center mt-10 text-red-500">상품을 찾을 수 없습니다.</p>;
 
   return (
-    <div className={`bg-gray-50 min-h-screen pb-20 ${isResizeMode ? "outline-green-400 outline-2" : ""}`}>
+    <div className="bg-gray-50 min-h-screen pb-20">
       {/* 관리자 툴바 */}
       {user?.isAdmin && (
         <div className="fixed top-6 left-6 z-50 flex gap-3">
           <button
-            onClick={toggleEdit}
+            onClick={() => setIsEditMode(!isEditMode)}
             className={`px-4 py-2 rounded text-white font-semibold ${
               isEditMode ? "bg-green-600" : "bg-gray-700"
             }`}
@@ -263,7 +257,7 @@ export default function ProductDetail() {
             {isEditMode ? "🖊 디자인모드 ON" : "✏ 디자인모드 OFF"}
           </button>
           <button
-            onClick={toggleResize}
+            onClick={() => setIsResizeMode(!isResizeMode)}
             className={`px-4 py-2 rounded text-white font-semibold ${
               isResizeMode ? "bg-blue-600" : "bg-gray-700"
             }`}
@@ -284,35 +278,30 @@ export default function ProductDetail() {
           ← 상품 목록으로 돌아가기
         </Link>
 
-        {/* 상품 상단 */}
+        {/* ✅ 상품 상단 */}
         <div
-          ref={heroRef}
-          onMouseDown={startResize}
+          ref={hero.ref}
+          onMouseDown={hero.startResize}
           style={{
-            width: `${heroSize.width}px`,
-            minHeight: `${heroSize.height}px`,
+            width: hero.size.width,
+            minHeight: hero.size.height,
             cursor: isResizeMode ? "se-resize" : "default",
           }}
           className="bg-white shadow-md rounded-lg overflow-hidden mb-8"
         >
-          <div className="relative bg-gray-100">
-            <EditableImage
-              id={`detail-main-${id}`}
-              defaultSrc={mainImage || noImage}
-              alt={product.name}
-              filePath="src/pages/ProductDetail.jsx"
-              componentName="ProductMainImage"
-              onClick={() => !isEditMode && !isResizeMode && setSelectedIndex(0)}
-              style={{
-                width: "100%",
-                height: "400px",
-                objectFit: "cover",
-                cursor: isEditMode ? "crosshair" : "zoom-in",
-              }}
-            />
-          </div>
+          <EditableImage
+            id={`detail-main-${id}`}
+            defaultSrc={mainImage || noImage}
+            alt={product.name}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              cursor: isEditMode ? "crosshair" : "zoom-in",
+            }}
+            onClick={() => !isEditMode && !isResizeMode && setSelectedIndex(0)}
+          />
 
-          {/* 설명 */}
           <div className="p-6">
             <h2 className="text-2xl font-semibold mb-2">
               <EditableText
@@ -333,14 +322,14 @@ export default function ProductDetail() {
             </p>
             <button
               disabled={isEditMode || isResizeMode}
-              className="px-5 py-2 bg-black text-white rounded hover:bg-gray-800 disabled:bg-gray-400"
+              className="px-5 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition disabled:opacity-60"
             >
               🛒 장바구니에 추가
             </button>
           </div>
         </div>
 
-        {/* 탭 메뉴 */}
+        {/* ✅ 탭 메뉴 */}
         <div className="sticky top-0 bg-white border-b z-40 flex justify-around py-3 shadow-sm">
           {Object.entries({
             detail: "상세정보",
@@ -362,37 +351,50 @@ export default function ProductDetail() {
           ))}
         </div>
 
-        {/* 상세 섹션 */}
+        {/* ✅ 상세 섹션 */}
         <div className="bg-white p-6 mt-2 rounded-lg shadow-sm space-y-16">
           {/* 상세정보 */}
-          <section ref={refs.detail}>
+          <section
+            ref={refs.detail}
+            onMouseDown={detailBox.startResize}
+            style={{
+              width: detailBox.size.width,
+              minHeight: detailBox.size.height,
+              cursor: isResizeMode ? "se-resize" : "default",
+            }}
+            className="p-4 border border-gray-200 rounded-md"
+          >
             <h2 className="text-lg font-semibold mb-2">📋 상품 상세정보</h2>
-            {product.images?.map((img, i) => (
-              <EditableImage
-                key={i}
-                id={`detail-img-${id}-${i}`}
-                defaultSrc={img}
-                style={{
-                  width: "100%",
-                  maxWidth: "600px",
-                  objectFit: "contain",
-                  borderRadius: "0.5rem",
-                }}
-              />
-            ))}
+            <EditableText
+              id={`detail-info-${id}`}
+              defaultText={product.detailText || "여기에 상품 상세정보를 입력하세요."}
+              onSave={(t) => localStorage.setItem(`detail-info-${id}`, t)}
+            />
           </section>
 
           {/* 사이즈 안내 */}
-          <section ref={refs.size}>
+          <section
+            ref={refs.size}
+            onMouseDown={sizeBox.startResize}
+            style={{
+              width: sizeBox.size.width,
+              minHeight: sizeBox.size.height,
+              cursor: isResizeMode ? "se-resize" : "default",
+            }}
+            className="p-4 border border-gray-200 rounded-md"
+          >
             <h2 className="text-lg font-semibold mb-2">📏 사이즈 & 구매안내</h2>
-            <p>
-              - 사이즈는 측정 방법에 따라 ±1~3cm 오차가 있을 수 있습니다.
-              <br />- 모니터 환경에 따라 색상이 다르게 보일 수 있습니다.
-              <br />- 교환 및 반품 정책을 꼭 확인해주세요.
-            </p>
+            <EditableText
+              id={`size-info-${id}`}
+              defaultText={
+                product.sizeText ||
+                "- 사이즈는 측정 방법에 따라 ±1~3cm 오차가 있을 수 있습니다.\n- 모니터 환경에 따라 색상이 다르게 보일 수 있습니다.\n- 교환 및 반품 정책을 꼭 확인해주세요."
+              }
+              onSave={(t) => localStorage.setItem(`size-info-${id}`, t)}
+            />
           </section>
 
-          {/* 리뷰 */}
+          {/* 후기 섹션 */}
           <section ref={refs.review}>
             <h2 className="text-lg font-semibold mb-4">⭐ 상품 후기</h2>
             {reviews.length === 0 ? (
@@ -441,7 +443,7 @@ export default function ProductDetail() {
             </div>
           </section>
 
-          {/* 문의 */}
+          {/* 문의 섹션 */}
           <section ref={refs.inquiry}>
             <h2 className="text-lg font-semibold mb-4">💬 상품 문의</h2>
             {inquiries.length === 0 ? (
@@ -481,6 +483,7 @@ export default function ProductDetail() {
         </div>
       </div>
 
+      {/* ✅ 이미지 모달 */}
       {selectedIndex !== null && (
         <ImageModal
           images={product.images}
