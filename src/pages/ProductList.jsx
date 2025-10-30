@@ -20,7 +20,7 @@ function ProductList() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // ✅ 관리자 모드 토글
+  /** ✅ 관리자 모드 토글 */
   const toggleEditMode = () => {
     if (!user?.isAdmin) return alert("⚠ 관리자만 디자인 모드를 사용할 수 있습니다.");
     setIsEditMode(!isEditMode);
@@ -31,7 +31,7 @@ function ProductList() {
     setIsResizeMode(!isResizeMode);
   };
 
-  // ✅ 데이터 불러오기
+  /** ✅ 데이터 불러오기 */
   useEffect(() => {
     fetchPages();
     fetchProducts();
@@ -52,7 +52,6 @@ function ProductList() {
       const endpoint = baseURL.endsWith("/api")
         ? `${baseURL}/products`
         : `${baseURL}/api/products`;
-
       const res = await api.get(endpoint);
       setProducts(res.data);
       setFilteredProducts(res.data);
@@ -62,6 +61,7 @@ function ProductList() {
     }
   };
 
+  /** ✅ 탭 클릭 */
   const handlePageChange = (pageId) => {
     setActivePage(pageId);
     if (pageId === "all") {
@@ -74,6 +74,7 @@ function ProductList() {
     }
   };
 
+  /** ✅ 장바구니 */
   const addToCart = (product) => {
     const exists = cart.find((item) => item._id === product._id);
     let newCart;
@@ -92,7 +93,7 @@ function ProductList() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start p-8 relative select-none">
-      {/* 🧰 관리자 전용 툴바 */}
+      {/* 🧰 관리자 툴바 */}
       {user?.isAdmin && (
         <div className="fixed top-6 left-6 z-[9999] flex gap-3 items-center">
           <button
@@ -114,13 +115,13 @@ function ProductList() {
         </div>
       )}
 
-      {/* 🔹 상단 헤더 */}
+      {/* 헤더 */}
       <header className="w-full max-w-6xl text-center mb-8">
         <h1 className="text-3xl font-bold text-blue-600">🛍 상품 목록</h1>
         <p className="text-gray-500 mt-2">지금 바로 쇼핑을 시작해보세요!</p>
       </header>
 
-      {/* 🔹 탭 네비게이션 */}
+      {/* 탭 */}
       <div className="flex flex-wrap justify-center gap-3 mb-10">
         <button
           onClick={() => handlePageChange("all")}
@@ -150,98 +151,105 @@ function ProductList() {
         ))}
       </div>
 
-      {/* 🔹 상품 리스트 */}
+      {/* 상품 목록 */}
       <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full max-w-6xl">
         {filteredProducts.length === 0 ? (
           <p className="text-gray-400 col-span-full text-center">
             상품이 없습니다 😢
           </p>
         ) : (
-          filteredProducts.map((p) => (
-            <div
-              key={p._id}
-              className={`p-5 shadow bg-white flex flex-col items-center rounded-xl transition-all duration-300 ${
-                isResizeMode
-                  ? "border-2 border-dashed border-blue-400"
-                  : "border border-gray-200 hover:shadow-lg"
-              } ${
-                isEditMode || isResizeMode ? "pointer-events-none" : "cursor-pointer"
-              }`}
-              onClick={() => {
-                if (!isEditMode && !isResizeMode) navigate(`/products/${p._id}`);
-              }}
-            >
-              {/* ✅ 이미지 */}
-              <EditableImage
-                id={`product-img-${p._id}`}
-                defaultSrc={
-                  p.mainImage?.startsWith("http")
-                    ? p.mainImage
-                    : p.image?.startsWith("http")
-                    ? p.image
-                    : p.images?.[0]?.startsWith("http")
-                    ? p.images[0]
-                    : p.imageUrl?.startsWith("http")
-                    ? p.imageUrl
-                    : "https://placehold.co/250x200?text=No+Image"
-                }
-                alt={p.name}
-                filePath="src/pages/ProductList.jsx"
-                componentName="ProductCard"
+          filteredProducts.map((p) => {
+            const isLocked = isEditMode; // ✅ 디자인모드에서만 클릭 차단
+            return (
+              <div
+                key={p._id}
+                onClick={() => {
+                  if (!isEditMode && !isResizeMode) navigate(`/products/${p._id}`);
+                }}
+                className={`p-5 shadow bg-white flex flex-col items-center rounded-xl transition-all duration-300 ${
+                  isResizeMode
+                    ? "border-2 border-dashed border-blue-400"
+                    : "border border-gray-200 hover:shadow-lg"
+                } ${isResizeMode ? "cursor-se-resize" : "cursor-pointer"}`}
                 style={{
-                  width: "100%",
-                  height: "12rem",
-                  borderRadius: "0.5rem",
-                  objectFit: "cover",
-                  marginBottom: "1rem",
+                  pointerEvents: isLocked ? "auto" : "auto", // ✅ 편집 요소 클릭 가능하게
                 }}
-              />
-
-              {/* ✅ 상품명 / 설명 */}
-              <h2 className="text-lg font-semibold text-gray-800 text-center">
-                <EditableText
-                  id={`product-name-${p._id}`}
-                  defaultText={p.name}
-                  filePath="src/pages/ProductList.jsx"
-                  componentName="ProductCard"
-                />
-              </h2>
-              <p className="text-gray-500 text-sm mt-1 line-clamp-2 text-center">
-                <EditableText
-                  id={`product-desc-${p._id}`}
-                  defaultText={p.description || "상품 설명이 없습니다."}
-                  filePath="src/pages/ProductList.jsx"
-                  componentName="ProductCard"
-                />
-              </p>
-
-              {/* ✅ 가격 */}
-              <p className="mt-3 font-bold text-blue-600">
-                {p.price?.toLocaleString()}원
-              </p>
-
-              {/* ✅ 장바구니 버튼 (편집모드일 땐 비활성화) */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (isEditMode || isResizeMode) return;
-                  addToCart(p);
-                }}
-                disabled={isEditMode || isResizeMode}
-                className={`mt-4 w-full px-4 py-2 rounded-lg text-white transition ${
-                  isEditMode || isResizeMode
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-500 hover:bg-blue-600"
-                }`}
               >
-                장바구니 담기
-              </button>
-            </div>
-          ))
+                {/* ✅ 이미지 */}
+                <EditableImage
+                  id={`product-img-${p._id}`}
+                  defaultSrc={
+                    p.mainImage?.startsWith("http")
+                      ? p.mainImage
+                      : p.image?.startsWith("http")
+                      ? p.image
+                      : p.images?.[0]?.startsWith("http")
+                      ? p.images[0]
+                      : p.imageUrl?.startsWith("http")
+                      ? p.imageUrl
+                      : "https://placehold.co/250x200?text=No+Image"
+                  }
+                  alt={p.name}
+                  filePath="src/pages/ProductList.jsx"
+                  componentName="ProductCard"
+                  style={{
+                    width: "100%",
+                    height: "12rem",
+                    borderRadius: "0.5rem",
+                    objectFit: "cover",
+                    marginBottom: "1rem",
+                    pointerEvents: "auto", // ✅ 이미지 교체 가능
+                  }}
+                />
+
+                {/* ✅ 상품명 */}
+                <h2 className="text-lg font-semibold text-gray-800 text-center">
+                  <EditableText
+                    id={`product-name-${p._id}`}
+                    defaultText={p.name}
+                    filePath="src/pages/ProductList.jsx"
+                    componentName="ProductCard"
+                  />
+                </h2>
+
+                {/* ✅ 설명 */}
+                <p className="text-gray-500 text-sm mt-1 line-clamp-2 text-center">
+                  <EditableText
+                    id={`product-desc-${p._id}`}
+                    defaultText={p.description || "상품 설명이 없습니다."}
+                    filePath="src/pages/ProductList.jsx"
+                    componentName="ProductCard"
+                  />
+                </p>
+
+                {/* ✅ 가격 */}
+                <p className="mt-3 font-bold text-blue-600">
+                  {p.price?.toLocaleString()}원
+                </p>
+
+                {/* ✅ 장바구니 버튼 */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (isEditMode || isResizeMode) return;
+                    addToCart(p);
+                  }}
+                  disabled={isEditMode || isResizeMode}
+                  className={`mt-4 w-full px-4 py-2 rounded-lg text-white transition ${
+                    isEditMode || isResizeMode
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-blue-500 hover:bg-blue-600"
+                  }`}
+                >
+                  장바구니 담기
+                </button>
+              </div>
+            );
+          })
         )}
       </section>
 
-      {/* 🔹 푸터 */}
+      {/* 푸터 */}
       <footer className="mt-16 text-gray-400 text-sm border-t pt-4 w-full text-center">
         © 2025 onyou
       </footer>
