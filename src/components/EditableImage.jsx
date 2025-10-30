@@ -3,17 +3,9 @@ import React, { useState, useRef, useEffect } from "react";
 import { useEditMode } from "../context/EditModeContext";
 
 /**
- * ✅ 사용법:
- * <EditableImage 
- *    id="hero-image" 
- *    defaultSrc="/images/hero.jpg" 
- *    alt="히어로 이미지"
- *    filePath="src/components/HeroSection.jsx"
- *    componentName="HeroSection"
- * />
- *
- * - 디자인 모드 ✏ : 텍스트만 편집 가능 (이미지 점선 ❌)
- * - 크기조절 모드 📐 : 카드 전체 점선 표시 + 우클릭 드래그로 크기 변경
+ * ✅ 동작 개요
+ * - 디자인 모드 ✏ : 텍스트만 점선 표시 (이미지, 카드에는 점선 표시 안함)
+ * - 크기조절 모드 📐 : 카드 전체 파란 점선 표시 + 우클릭 드래그로 크기 변경
  */
 export default function EditableImage({
   id,
@@ -68,7 +60,6 @@ export default function EditableImage({
           updatedAt: saveData.updatedAt,
         });
       }
-      console.log(`✅ 이미지 저장됨: ${id}`);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
@@ -81,13 +72,13 @@ export default function EditableImage({
     localStorage.setItem(`editable-image-size-${id}`, JSON.stringify(newSize));
   };
 
-  /** ✅ 이미지 클릭 → 파일 업로드 */
+  /** ✅ 클릭 → 파일 업로드 */
   const handleClick = () => {
     if (!isEditMode) return;
     fileInputRef.current?.click();
   };
 
-  /** ✅ 이미지 파일 업로드 */
+  /** ✅ 파일 업로드 */
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -102,7 +93,7 @@ export default function EditableImage({
     }
   };
 
-  /** ✅ URL 직접 입력 */
+  /** ✅ 우클릭 → URL 직접 입력 */
   const handleContextMenu = (e) => {
     if (!isEditMode) return;
     e.preventDefault();
@@ -113,10 +104,10 @@ export default function EditableImage({
     }
   };
 
-  /** ✅ 크기 조절 (오른쪽 클릭으로만 가능) */
+  /** ✅ 우클릭으로 크기조절 시작 */
   const handleMouseDown = (e) => {
     if (!isResizeMode) return;
-    if (e.button !== 2) return; // 오른쪽 클릭만
+    if (e.button !== 2) return;
     e.preventDefault();
     e.stopPropagation();
 
@@ -166,7 +157,7 @@ export default function EditableImage({
     };
   }, [resizing, size]);
 
-  /** ✅ 우클릭 메뉴 차단 (편집모드 또는 크기조절모드일 때만) */
+  /** ✅ 우클릭 메뉴 차단 */
   useEffect(() => {
     const handleCtx = (e) => {
       if (isEditMode || isResizeMode) e.preventDefault();
@@ -191,7 +182,7 @@ export default function EditableImage({
             : typeof size.height === "number"
             ? `${size.height}px`
             : size.height,
-        // ✅ 크기조절 모드일 때만 카드 점선 표시
+        // ✅ 크기조절 모드에서만 카드 테두리 표시
         border:
           isResizeMode ? "2px dashed rgba(59,130,246,0.9)" : "none",
         borderRadius: isResizeMode ? "12px" : "0",
@@ -244,7 +235,7 @@ export default function EditableImage({
         </span>
       )}
 
-      {/* ✅ 크기조절 안내 */}
+      {/* ✅ 크기조절 모드일 때 안내 */}
       {isResizeMode && isHovering && (
         <div
           style={{
@@ -267,7 +258,7 @@ export default function EditableImage({
         </div>
       )}
 
-      {/* ✅ 디자인모드 전용 오버레이 (이미지 교체) */}
+      {/* ✅ 디자인모드일 때는 오버레이만 (점선 ❌) */}
       {isEditMode && isHovering && !isResizeMode && (
         <div
           style={{
@@ -291,7 +282,7 @@ export default function EditableImage({
         </div>
       )}
 
-      {/* ✅ 파일 input */}
+      {/* ✅ 파일 업로드 input */}
       <input
         type="file"
         accept="image/*"
