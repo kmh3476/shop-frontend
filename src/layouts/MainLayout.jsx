@@ -286,13 +286,16 @@ function MainLayout() {
       <Swiper
         modules={[Navigation, Pagination]}
         spaceBetween={10}
-        slidesPerView={4}
+        slidesPerView={3.5}  // ✅ 수정: loop 조건 충족
         navigation
         pagination={{ clickable: true }}
         allowTouchMove={!isResizeMode}
+        simulateTouch={!isResizeMode}
+        draggable={!isResizeMode}
+        loop={true}  // ✅ 수정: 무한 루프 가능
         className="pb-12 swiper-backface-hidden"
       >
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+        {[1,2,3,4,5,6,7,8,9,10].map((i) => (  // ✅ 슬라이드 개수 확장
           <SwiperSlide key={i}>
             <ProductCard i={i} />
           </SwiperSlide>
@@ -306,7 +309,6 @@ function MainLayout() {
       {/* ✅ 관리자 전용 디자인/크기조절 모드 버튼 */}
       {user?.isAdmin && (
         <div className="fixed top-6 left-6 z-[9999] flex gap-3 items-center">
-          {/* 디자인 모드 */}
           <button
             onClick={toggleEditMode}
             className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ease-out ${
@@ -321,7 +323,6 @@ function MainLayout() {
             {isEditMode ? "🖊 디자인 모드 ON" : "✏ 디자인 모드 OFF"}
           </button>
 
-          {/* 크기 조절 */}
           <button
             onClick={toggleResizeMode}
             className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ease-out ${
@@ -368,17 +369,17 @@ function MainLayout() {
           <Swiper
             modules={[Autoplay, Navigation, Pagination]}
             spaceBetween={10}
-            slidesPerView={2.8} // ✅ loop 조건 맞춤
+            slidesPerView={2.8}
             navigation
             pagination={{ clickable: true }}
             autoplay={{ delay: 4500, disableOnInteraction: false }}
             allowTouchMove={!isResizeMode}
+            simulateTouch={!isResizeMode}  // ✅ Swiper 드래그 완전 차단
+            draggable={!isResizeMode}
             loop={true}
-            onTouchStart={(e) => isResizeMode && e.preventDefault()} // ✅ Swiper 이벤트 차단
-            onSlideChangeTransitionStart={(e) => isResizeMode && e.stopPropagation()} // ✅ 추가
-            className="pb-12 swiper-horizontal swiper-backface-hidden"
+            className="pb-12 swiper-horizontal swiper-backface-hidden select-none"
           >
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            {[1,2,3,4,5,6,7,8].map((i) => (
               <SwiperSlide key={i}>
                 <FeaturedCard i={i} />
               </SwiperSlide>
