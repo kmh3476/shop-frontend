@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => {
         protocol: "ws",
         host: "localhost",
       },
-
+      //
       // ✅ CORS 설정
       cors: {
         origin: "*",
