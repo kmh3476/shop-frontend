@@ -1,3 +1,4 @@
+// 📁 vite.config.js
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
@@ -34,8 +35,18 @@ export default defineConfig(({ mode }) => {
         allowedHeaders: ["Content-Type", "Authorization"],
       },
 
-      // ✅ Strapi CMS API 프록시
+      // ✅ 백엔드 프록시 (Render API 서버 연결)
       proxy: {
+        "/api": {
+          target:
+            env.VITE_API_BASE_URL ||
+            "https://shop-backend-1-dfsl.onrender.com",
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/api/, "/api"),
+        },
+
+        // ✅ Strapi CMS API 프록시 (필요 시 유지)
         "/cms": {
           target: "http://localhost:1337",
           changeOrigin: true,
@@ -45,17 +56,28 @@ export default defineConfig(({ mode }) => {
       },
     },
 
+    // ✅ Vite 빌드 경로 및 별칭 설정
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
       },
     },
 
+    // ✅ 빌드 옵션 (Vercel과 호환성 강화)
+    build: {
+      outDir: "dist",
+      assetsDir: "assets",
+      chunkSizeWarningLimit: 1500,
+    },
+
     define: {
-      // ✅ 기존 Strapi 환경변수
+      // ✅ API 기본 경로 (Render 백엔드)
       "import.meta.env.VITE_API_BASE_URL": JSON.stringify(
-        env.VITE_API_BASE_URL || "http://localhost:1337/api"
+        env.VITE_API_BASE_URL ||
+          "https://shop-backend-1-dfsl.onrender.com/api"
       ),
+
+      // ✅ Strapi CMS 관련 환경변수
       "import.meta.env.VITE_STRAPI_URL": JSON.stringify(
         env.VITE_STRAPI_URL || "http://localhost:1337"
       ),
@@ -63,7 +85,7 @@ export default defineConfig(({ mode }) => {
         env.VITE_STRAPI_TOKEN || ""
       ),
 
-      // ✅ Builder.io 관련 환경변수 추가
+      // ✅ Builder.io 관련 환경변수
       "import.meta.env.VITE_BUILDER_PUBLIC_API_KEY": JSON.stringify(
         env.VITE_BUILDER_PUBLIC_API_KEY || ""
       ),
@@ -75,6 +97,11 @@ export default defineConfig(({ mode }) => {
       ),
       "import.meta.env.VITE_BUILDER_PREVIEW": JSON.stringify(
         env.VITE_BUILDER_PREVIEW || "true"
+      ),
+
+      // ✅ Vercel / 로컬 환경 자동 감지
+      "import.meta.env.VITE_ENV": JSON.stringify(
+        env.VITE_ENV || mode || "development"
       ),
     },
   };
