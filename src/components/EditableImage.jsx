@@ -181,55 +181,66 @@ export default function EditableImage({
     window.addEventListener("contextmenu", handleContextMenu);
     return () => window.removeEventListener("contextmenu", handleContextMenu);
   }, [isEditMode]);
-  
-  return (
-  <div
-    style={{
-      position: "relative",
-      display: "inline-block",
-      cursor: isEditMode ? "pointer" : "default",
-      border:
-        isEditMode
-          ? "2px dashed rgba(59,130,246,0.8)" // ✅ 점선 표시
-          : "none",
-      borderRadius: "8px",
-      boxSizing: "border-box", // ✅ border 공간 확보
-      zIndex: isEditMode ? 9999 : "auto", // ✅ 항상 위에 표시
-      overflow: "visible", // ✅ border 잘림 방지
-      width: typeof size.width === "number" ? `${size.width}px` : size.width,
-      height:
-        size.height === "auto"
-          ? "auto"
-          : typeof size.height === "number"
-          ? `${size.height}px`
-          : size.height,
-      ...style,
-    }}
-    data-file={filePath || import.meta.url || "unknown"}
-    data-component={componentName || "EditableImage"}
-    onMouseEnter={() => setIsHovering(true)}
-    onMouseLeave={() => setIsHovering(false)}
-    onClick={handleClick}
-    onContextMenu={handleContextMenu}
-    onMouseDown={handleMouseDown}
-  >
-    <img
-      src={imageSrc}
-      alt={alt || ""}
-      style={{
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-        opacity: isEditMode && isHovering ? 0.85 : 1,
-        transition: "opacity 0.2s ease",
-        userSelect: "none",
-        pointerEvents: "none",
-        display: "block",
-      }}
-      draggable={false}
-      onError={(e) => (e.target.src = defaultSrc)}
-    />
 
+  return (
+    <div
+      style={{
+        position: "relative",
+        display: "inline-block",
+        cursor: isEditMode ? "pointer" : "default",
+        boxSizing: "border-box",
+        zIndex: isEditMode ? 9999 : "auto",
+        overflow: "visible",
+        width: typeof size.width === "number" ? `${size.width}px` : size.width,
+        height:
+          size.height === "auto"
+            ? "auto"
+            : typeof size.height === "number"
+            ? `${size.height}px`
+            : size.height,
+        ...style,
+      }}
+      data-file={filePath || import.meta.url || "unknown"}
+      data-component={componentName || "EditableImage"}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      onClick={handleClick}
+      onContextMenu={handleContextMenu}
+      onMouseDown={handleMouseDown}
+    >
+      {/* ✅ 실제 이미지 */}
+      <img
+        src={imageSrc}
+        alt={alt || ""}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          opacity: isEditMode && isHovering ? 0.85 : 1,
+          transition: "opacity 0.2s ease",
+          userSelect: "none",
+          pointerEvents: "none",
+          display: "block",
+        }}
+        draggable={false}
+        onError={(e) => (e.target.src = defaultSrc)}
+      />
+
+      {/* ✅ 점선 border를 이미지 위에 올림 */}
+      {isEditMode && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            border: "2px dashed rgba(59,130,246,0.9)",
+            borderRadius: "8px",
+            pointerEvents: "none",
+            zIndex: 5, // ✅ 이미지보다 위
+          }}
+        />
+      )}
+
+      {/* ✅ 파일 선택 input */}
       <input
         type="file"
         accept="image/*"
@@ -238,6 +249,7 @@ export default function EditableImage({
         onChange={handleFileChange}
       />
 
+      {/* ✅ 저장됨 표시 */}
       {saved && (
         <span
           style={{
@@ -249,12 +261,14 @@ export default function EditableImage({
             fontSize: "0.8em",
             padding: "2px 6px",
             borderRadius: "4px",
+            zIndex: 10,
           }}
         >
           ✔ 저장됨
         </span>
       )}
 
+      {/* ✅ 편집 모드 안내 오버레이 */}
       {isEditMode && isHovering && (
         <div
           style={{
@@ -269,6 +283,7 @@ export default function EditableImage({
             textAlign: "center",
             fontWeight: "bold",
             pointerEvents: "none",
+            zIndex: 6,
           }}
         >
           클릭: 이미지 교체 <br />
