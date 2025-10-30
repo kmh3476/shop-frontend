@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import { useEditMode } from "../context/EditModeContext";
@@ -19,6 +19,76 @@ function ProductList() {
   const { isEditMode, setIsEditMode, isResizeMode, setIsResizeMode } = useEditMode();
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // ✅ 크기조절 훅 추가
+  const useResizableCard = (id, defaultWidth = 260, defaultHeight = 360) => {
+    const [size, setSize] = useState(() => {
+      const saved = localStorage.getItem(`card-size-${id}`);
+      return saved ? JSON.parse(saved) : { width: defaultWidth, height: defaultHeight };
+    });
+
+    const sizeRef = useRef(size);
+    const cardRef = useRef(null);
+    const resizingRef = useRef(false);
+    const startRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
+
+    useEffect(() => {
+      sizeRef.current = size;
+    }, [size]);
+
+    useEffect(() => {
+      const handleMove = (e) => {
+        if (!isResizeMode || !resizingRef.current) return;
+        const dx = e.clientX - startRef.current.x;
+        const dy = e.clientY - startRef.current.y;
+        setSize({
+          width: Math.max(120, startRef.current.width + dx),
+          height: Math.max(150, startRef.current.height + dy),
+        });
+      };
+
+      const handleUp = () => {
+        if (!resizingRef.current) return;
+        resizingRef.current = false;
+        document.body.style.cursor = "auto";
+        localStorage.setItem(`card-size-${id}`, JSON.stringify(sizeRef.current));
+      };
+
+      if (isResizeMode) {
+        window.addEventListener("mousemove", handleMove);
+        window.addEventListener("mouseup", handleUp);
+      }
+
+      return () => {
+        window.removeEventListener("mousemove", handleMove);
+        window.removeEventListener("mouseup", handleUp);
+      };
+    }, [isResizeMode]);
+
+    const startResize = (e) => {
+      if (!isResizeMode) return;
+      if (e.button !== 2) return; // 우클릭만
+      e.preventDefault();
+      resizingRef.current = true;
+      startRef.current = {
+        x: e.clientX,
+        y: e.clientY,
+        width: cardRef.current.offsetWidth,
+        height: cardRef.current.offsetHeight,
+      };
+      document.body.style.cursor = "se-resize";
+    };
+
+    useEffect(() => {
+      const el = cardRef.current;
+      if (!el) return;
+      const preventMenu = (e) => isResizeMode && e.preventDefault();
+      el.addEventListener("contextmenu", preventMenu);
+      return () => el.removeEventListener("contextmenu", preventMenu);
+    }, [isResizeMode]);
+
+    return { size, cardRef, startResize };
+  };
 
   /** ✅ 관리자 모드 토글 */
   const toggleEditMode = () => {
@@ -61,7 +131,6 @@ function ProductList() {
     }
   };
 
-  /** ✅ 탭 클릭 */
   const handlePageChange = (pageId) => {
     setActivePage(pageId);
     if (pageId === "all") {
@@ -74,15 +143,13 @@ function ProductList() {
     }
   };
 
-  /** ✅ 장바구니 */
   const addToCart = (product) => {
+    if (isEditMode || isResizeMode) return;
     const exists = cart.find((item) => item._id === product._id);
     let newCart;
     if (exists) {
       newCart = cart.map((item) =>
-        item._id === product._id
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
+        item._id === product._id ? { ...item, quantity: item.quantity + 1 } : item
       );
     } else {
       newCart = [...cart, { ...product, quantity: 1 }];
@@ -115,13 +182,27 @@ function ProductList() {
         </div>
       )}
 
-      {/* 헤더 */}
+      {/* 🔹 상단 헤더 (이제 편집 가능) */}
       <header className="w-full max-w-6xl text-center mb-8">
-        <h1 className="text-3xl font-bold text-blue-600">🛍 상품 목록</h1>
-        <p className="text-gray-500 mt-2">지금 바로 쇼핑을 시작해보세요!</p>
+        <h1 className="text-3xl font-bold text-blue-600">
+          <EditableText
+            id="productlist-title"
+            defaultText="🛍 상품 목록"
+            filePath="src/pages/ProductList.jsx"
+            componentName="HeaderTitle"
+          />
+        </h1>
+        <p className="text-gray-500 mt-2">
+          <EditableText
+            id="productlist-subtitle"
+            defaultText="지금 바로 쇼핑을 시작해보세요!"
+            filePath="src/pages/ProductList.jsx"
+            componentName="HeaderSubtitle"
+          />
+        </p>
       </header>
 
-      {/* 탭 */}
+      {/* 🔹 탭 네비게이션 */}
       <div className="flex flex-wrap justify-center gap-3 mb-10">
         <button
           onClick={() => handlePageChange("all")}
@@ -151,18 +232,20 @@ function ProductList() {
         ))}
       </div>
 
-      {/* 상품 목록 */}
+      {/* 🔹 상품 리스트 */}
       <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full max-w-6xl">
         {filteredProducts.length === 0 ? (
-          <p className="text-gray-400 col-span-full text-center">
-            상품이 없습니다 😢
-          </p>
+          <p className="text-gray-400 col-span-full text-center">상품이 없습니다 😢</p>
         ) : (
           filteredProducts.map((p) => {
-            const isLocked = isEditMode; // ✅ 디자인모드에서만 클릭 차단
+            const { size, cardRef, startResize } = useResizableCard(`product-${p._id}`, 260, 360);
+            const isLocked = isEditMode;
+
             return (
               <div
                 key={p._id}
+                ref={cardRef}
+                onMouseDown={startResize}
                 onClick={() => {
                   if (!isEditMode && !isResizeMode) navigate(`/products/${p._id}`);
                 }}
@@ -170,24 +253,18 @@ function ProductList() {
                   isResizeMode
                     ? "border-2 border-dashed border-blue-400"
                     : "border border-gray-200 hover:shadow-lg"
-                } ${isResizeMode ? "cursor-se-resize" : "cursor-pointer"}`}
+                }`}
                 style={{
-                  pointerEvents: isLocked ? "auto" : "auto", // ✅ 편집 요소 클릭 가능하게
+                  width: `${size.width}px`,
+                  height: `${size.height}px`,
+                  cursor: isResizeMode ? "se-resize" : "pointer",
+                  userSelect: "none",
                 }}
               >
-                {/* ✅ 이미지 */}
                 <EditableImage
                   id={`product-img-${p._id}`}
                   defaultSrc={
-                    p.mainImage?.startsWith("http")
-                      ? p.mainImage
-                      : p.image?.startsWith("http")
-                      ? p.image
-                      : p.images?.[0]?.startsWith("http")
-                      ? p.images[0]
-                      : p.imageUrl?.startsWith("http")
-                      ? p.imageUrl
-                      : "https://placehold.co/250x200?text=No+Image"
+                    p.mainImage || p.image || p.images?.[0] || "https://placehold.co/250x200?text=No+Image"
                   }
                   alt={p.name}
                   filePath="src/pages/ProductList.jsx"
@@ -198,11 +275,8 @@ function ProductList() {
                     borderRadius: "0.5rem",
                     objectFit: "cover",
                     marginBottom: "1rem",
-                    pointerEvents: "auto", // ✅ 이미지 교체 가능
                   }}
                 />
-
-                {/* ✅ 상품명 */}
                 <h2 className="text-lg font-semibold text-gray-800 text-center">
                   <EditableText
                     id={`product-name-${p._id}`}
@@ -211,8 +285,6 @@ function ProductList() {
                     componentName="ProductCard"
                   />
                 </h2>
-
-                {/* ✅ 설명 */}
                 <p className="text-gray-500 text-sm mt-1 line-clamp-2 text-center">
                   <EditableText
                     id={`product-desc-${p._id}`}
@@ -221,13 +293,9 @@ function ProductList() {
                     componentName="ProductCard"
                   />
                 </p>
-
-                {/* ✅ 가격 */}
                 <p className="mt-3 font-bold text-blue-600">
                   {p.price?.toLocaleString()}원
                 </p>
-
-                {/* ✅ 장바구니 버튼 */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
