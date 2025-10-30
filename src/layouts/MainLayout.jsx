@@ -31,7 +31,7 @@ function MainLayout() {
     setIsResizeMode(!isResizeMode);
   };
 
-  /** ✅ 카드 크기 조절 Hook (끊김/드래그 충돌 완전 해결) */
+  /** ✅ 카드 크기 조절 Hook */
   const useResizableCard = (id, defaultWidth = 360, defaultHeight = 520) => {
     const [size, setSize] = useState(() => {
       const saved = localStorage.getItem(`card-size-${id}`);
@@ -39,7 +39,7 @@ function MainLayout() {
       return { width: defaultWidth, height: defaultHeight };
     });
 
-    const sizeRef = useRef(size);          // ✅ 최신 크기 유지(클로저 문제 해결)
+    const sizeRef = useRef(size);
     const cardRef = useRef(null);
     const resizingRef = useRef(false);
     const startRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
@@ -57,7 +57,6 @@ function MainLayout() {
         const dx = e.clientX - startRef.current.x;
         const dy = e.clientY - startRef.current.y;
 
-        // ✅ 상/하한 완화 (원하면 여기서 최대치도 추가 가능)
         const newWidth = Math.max(100, startRef.current.width + dx);
         const newHeight = Math.max(100, startRef.current.height + dy);
 
@@ -76,7 +75,6 @@ function MainLayout() {
         document.body.style.userSelect = "auto";
         document.body.style.cursor = "auto";
 
-        // ✅ 최신 값으로 저장 (의존성에 size 안 넣어도 안전)
         localStorage.setItem(`card-size-${id}`, JSON.stringify(sizeRef.current));
       };
 
@@ -93,14 +91,13 @@ function MainLayout() {
         document.body.style.userSelect = "auto";
         document.body.style.cursor = "auto";
       };
-      // ✅ 의존성에서 size 제거 → 리스너 재등록/끊김 방지
     }, [isResizeMode, id]);
 
     const startResize = (e) => {
       if (!isResizeMode) return;
-      if (e.button !== 0) return; // ✅ 좌클릭만
+      if (e.button !== 0) return;
       e.stopPropagation();
-      e.preventDefault();         // ✅ 기본 드래그 방지
+      e.preventDefault();
 
       resizingRef.current = true;
       startRef.current = {
@@ -125,7 +122,7 @@ function MainLayout() {
     return (
       <motion.div
         ref={cardRef}
-        onDragStart={(e) => e.preventDefault()} // ✅ 이미지/텍스트 기본 드래그 차단
+        onDragStart={(e) => e.preventDefault()}
         className="border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl bg-white relative overflow-hidden transition-transform duration-300"
         style={{
           width: `${size.width}px`,
@@ -133,7 +130,7 @@ function MainLayout() {
           fontSize: `${scale * 1}rem`,
           transformOrigin: "top left",
           cursor: isResizeMode ? "se-resize" : "default",
-          userSelect: "none", // ✅ 파란 선택박스 방지
+          userSelect: "none",
         }}
       >
         <div className="w-full h-[60%] overflow-hidden relative select-none">
@@ -153,7 +150,7 @@ function MainLayout() {
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              pointerEvents: "none", // ✅ 드래그 중 이미지가 이벤트 가로채지 않도록
+              pointerEvents: "none",
             }}
           />
         </div>
@@ -292,7 +289,7 @@ function MainLayout() {
         slidesPerView={4}
         navigation
         pagination={{ clickable: true }}
-        allowTouchMove={!isResizeMode} // ✅ 리사이즈 모드일 때 스와이프 차단
+        allowTouchMove={!isResizeMode}
         className="pb-12 swiper-backface-hidden"
       >
         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
@@ -312,10 +309,9 @@ function MainLayout() {
           {/* 디자인 모드 */}
           <button
             onClick={toggleEditMode}
-            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md 
-              transition-colors duration-200 ease-out 
-              focus:outline-none focus:ring-0
-              ${isEditMode ? "bg-green-600 hover:bg-green-700" : "bg-gray-800 hover:bg-gray-900"}`}
+            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ease-out ${
+              isEditMode ? "bg-green-600 hover:bg-green-700" : "bg-gray-800 hover:bg-gray-900"
+            }`}
             style={{
               boxShadow: isEditMode
                 ? "0 0 0 2px rgba(34,197,94,0.4)"
@@ -328,10 +324,9 @@ function MainLayout() {
           {/* 크기 조절 */}
           <button
             onClick={toggleResizeMode}
-            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md 
-              transition-colors duration-200 ease-out 
-              focus:outline-none focus:ring-0
-              ${isResizeMode ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-700 hover:bg-gray-800"}`}
+            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ease-out ${
+              isResizeMode ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-700 hover:bg-gray-800"
+            }`}
             style={{
               boxShadow: isResizeMode
                 ? "0 0 0 2px rgba(37,99,235,0.4)"
@@ -373,15 +368,17 @@ function MainLayout() {
           <Swiper
             modules={[Autoplay, Navigation, Pagination]}
             spaceBetween={10}
-            slidesPerView={3.2}
+            slidesPerView={2.8} // ✅ loop 조건 맞춤
             navigation
             pagination={{ clickable: true }}
             autoplay={{ delay: 4500, disableOnInteraction: false }}
             allowTouchMove={!isResizeMode}
-            loop
-            className="pb-12 swiper-initialized swiper-horizontal swiper-backface-hidden"
+            loop={true}
+            onTouchStart={(e) => isResizeMode && e.preventDefault()} // ✅ Swiper 이벤트 차단
+            onSlideChangeTransitionStart={(e) => isResizeMode && e.stopPropagation()} // ✅ 추가
+            className="pb-12 swiper-horizontal swiper-backface-hidden"
           >
-            {[1, 2, 3, 4, 5, 6].map((i) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <SwiperSlide key={i}>
                 <FeaturedCard i={i} />
               </SwiperSlide>
