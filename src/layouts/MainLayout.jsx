@@ -31,7 +31,7 @@ function MainLayout() {
     setIsResizeMode(!isResizeMode);
   };
 
-  /** ✅ 카드 크기 조절 Hook */
+  /** ✅ 카드 크기 조절 Hook (끊김/드래그 충돌 완전 해결) */
   const useResizableCard = (id, defaultWidth = 360, defaultHeight = 520) => {
     const [size, setSize] = useState(() => {
       const saved = localStorage.getItem(`card-size-${id}`);
@@ -39,9 +39,14 @@ function MainLayout() {
       return { width: defaultWidth, height: defaultHeight };
     });
 
+    const sizeRef = useRef(size);          // ✅ 최신 크기 유지(클로저 문제 해결)
     const cardRef = useRef(null);
     const resizingRef = useRef(false);
     const startRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
+
+    useEffect(() => {
+      sizeRef.current = size;
+    }, [size]);
 
     useEffect(() => {
       let frameId = null;
@@ -52,6 +57,7 @@ function MainLayout() {
         const dx = e.clientX - startRef.current.x;
         const dy = e.clientY - startRef.current.y;
 
+        // ✅ 상/하한 완화 (원하면 여기서 최대치도 추가 가능)
         const newWidth = Math.max(100, startRef.current.width + dx);
         const newHeight = Math.max(100, startRef.current.height + dy);
 
@@ -64,45 +70,48 @@ function MainLayout() {
       };
 
       const handleMouseUp = () => {
-        if (resizingRef.current) {
-          resizingRef.current = false;
-          document.body.style.userSelect = "auto";
-          document.body.style.pointerEvents = "auto"; // ✅ 복원
-          document.body.style.cursor = "auto";
-          localStorage.setItem(`card-size-${id}`, JSON.stringify(size));
-        }
+        if (!resizingRef.current) return;
+        resizingRef.current = false;
+
+        document.body.style.userSelect = "auto";
+        document.body.style.cursor = "auto";
+
+        // ✅ 최신 값으로 저장 (의존성에 size 안 넣어도 안전)
+        localStorage.setItem(`card-size-${id}`, JSON.stringify(sizeRef.current));
       };
 
       if (isResizeMode) {
-        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mousemove", handleMouseMove, { passive: true });
         window.addEventListener("mouseup", handleMouseUp);
       }
 
       return () => {
-        cancelAnimationFrame(frameId);
+        if (frameId) cancelAnimationFrame(frameId);
         window.removeEventListener("mousemove", handleMouseMove);
         window.removeEventListener("mouseup", handleMouseUp);
         resizingRef.current = false;
         document.body.style.userSelect = "auto";
-        document.body.style.pointerEvents = "auto";
         document.body.style.cursor = "auto";
       };
-    }, [size, id, isResizeMode]);
+      // ✅ 의존성에서 size 제거 → 리스너 재등록/끊김 방지
+    }, [isResizeMode, id]);
 
     const startResize = (e) => {
-      e.stopPropagation();
-      e.preventDefault(); // ✅ 기본 드래그 방지
       if (!isResizeMode) return;
+      if (e.button !== 0) return; // ✅ 좌클릭만
+      e.stopPropagation();
+      e.preventDefault();         // ✅ 기본 드래그 방지
+
       resizingRef.current = true;
       startRef.current = {
         x: e.clientX,
         y: e.clientY,
-        width: cardRef.current.offsetWidth,
-        height: cardRef.current.offsetHeight,
+        width: cardRef.current?.offsetWidth || 0,
+        height: cardRef.current?.offsetHeight || 0,
       };
+
       document.body.style.userSelect = "none";
-      document.body.style.pointerEvents = "none"; // ✅ 다른 요소 클릭 방지
-      document.body.style.cursor = "se-resize"; // ✅ 시각적 피드백
+      document.body.style.cursor = "se-resize";
     };
 
     return { size, cardRef, startResize };
@@ -116,15 +125,15 @@ function MainLayout() {
     return (
       <motion.div
         ref={cardRef}
-        onDragStart={(e) => e.preventDefault()} // ✅ 이미지 드래그 방지
-        className="border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl bg-white relative overflow-hidden transition-transform duration-300 select-none"
+        onDragStart={(e) => e.preventDefault()} // ✅ 이미지/텍스트 기본 드래그 차단
+        className="border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl bg-white relative overflow-hidden transition-transform duration-300"
         style={{
           width: `${size.width}px`,
           height: `${size.height}px`,
           fontSize: `${scale * 1}rem`,
           transformOrigin: "top left",
           cursor: isResizeMode ? "se-resize" : "default",
-          userSelect: "none",
+          userSelect: "none", // ✅ 파란 선택박스 방지
         }}
       >
         <div className="w-full h-[60%] overflow-hidden relative select-none">
@@ -140,7 +149,12 @@ function MainLayout() {
             alt={`sample-${i}`}
             filePath="src/layouts/MainLayout.jsx"
             componentName="FeaturedCard"
-            style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              pointerEvents: "none", // ✅ 드래그 중 이미지가 이벤트 가로채지 않도록
+            }}
           />
         </div>
 
@@ -177,7 +191,7 @@ function MainLayout() {
         {isResizeMode && user?.isAdmin && (
           <div
             onMouseDown={startResize}
-            onDragStart={(e) => e.preventDefault()} // ✅ 드래그 방지
+            onDragStart={(e) => e.preventDefault()}
             className="absolute bottom-1 right-1 w-5 h-5 bg-black/70 cursor-se-resize rounded-sm z-50 transition-transform duration-200 hover:scale-125 select-none"
             style={{ userSelect: "none", pointerEvents: "auto" }}
             title="드래그로 카드 크기 조절"
@@ -196,7 +210,7 @@ function MainLayout() {
       <motion.div
         ref={cardRef}
         onDragStart={(e) => e.preventDefault()}
-        className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-md bg-white relative overflow-hidden transition-transform duration-300 select-none"
+        className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-md bg-white relative overflow-hidden transition-transform duration-300"
         style={{
           width: `${size.width}px`,
           height: `${size.height}px`,
@@ -218,7 +232,12 @@ function MainLayout() {
             alt={`sample-${i}`}
             filePath="src/layouts/MainLayout.jsx"
             componentName="ProductCard"
-            style={{ width: "100%", height: "100%", objectFit: "cover", pointerEvents: "none" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              pointerEvents: "none",
+            }}
           />
         </div>
         <div
@@ -254,7 +273,7 @@ function MainLayout() {
     );
   };
 
-  /** ✅ 섹션 */
+  /** ✅ 섹션 (상의/하의/코디 추천) */
   const SlideSection = ({ title, id }) => (
     <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black font-['Pretendard']">
       <motion.h2
@@ -273,7 +292,7 @@ function MainLayout() {
         slidesPerView={4}
         navigation
         pagination={{ clickable: true }}
-        allowTouchMove={!isResizeMode}
+        allowTouchMove={!isResizeMode} // ✅ 리사이즈 모드일 때 스와이프 차단
         className="pb-12 swiper-backface-hidden"
       >
         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
@@ -286,9 +305,11 @@ function MainLayout() {
   );
 
   return (
-    <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden font-['Pretendard'] select-none">
+    <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden font-['Pretendard']">
+      {/* ✅ 관리자 전용 디자인/크기조절 모드 버튼 */}
       {user?.isAdmin && (
         <div className="fixed top-6 left-6 z-[9999] flex gap-3 items-center">
+          {/* 디자인 모드 */}
           <button
             onClick={toggleEditMode}
             className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md 
@@ -304,6 +325,7 @@ function MainLayout() {
             {isEditMode ? "🖊 디자인 모드 ON" : "✏ 디자인 모드 OFF"}
           </button>
 
+          {/* 크기 조절 */}
           <button
             onClick={toggleResizeMode}
             className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md 
@@ -321,6 +343,7 @@ function MainLayout() {
         </div>
       )}
 
+      {/* 🔸 메인 배경 */}
       <section
         className="relative flex flex-col items-center justify-center w-full min-h-[110vh]"
         style={{
@@ -330,6 +353,7 @@ function MainLayout() {
         }}
       ></section>
 
+      {/* 🔸 추천 상품 섹션 */}
       <section className="flex flex-col items-center justify-center py-[10vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
         <motion.h2
           className="text-5xl md:text-6xl font-extrabold mb-12 drop-shadow-sm tracking-tight text-gray-600"
@@ -366,10 +390,12 @@ function MainLayout() {
         </div>
       </section>
 
+      {/* 🔸 상품 섹션 */}
       <SlideSection id="top-section" title="상의" />
       <SlideSection id="bottom-section" title="하의" />
       <SlideSection id="coordi-section" title="코디 추천" />
 
+      {/* 🔸 브랜드 스토리 */}
       <section
         className="flex flex-col items-center justify-center py-[15vh] px-6 text-center bg-gray-100 font-['Pretendard']"
         style={{
@@ -405,6 +431,7 @@ function MainLayout() {
         </motion.p>
       </section>
 
+      {/* 🔸 푸터 */}
       <footer className="py-6 text-black text-sm border-t border-gray-300 w-full text-center bg-white font-light tracking-tight">
         © 2025 ONYOU — All rights reserved.
       </footer>
