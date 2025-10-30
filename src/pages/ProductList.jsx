@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import { useEditMode } from "../context/EditModeContext";
@@ -22,22 +22,16 @@ function ProductList() {
 
   // ✅ 관리자 모드 토글
   const toggleEditMode = () => {
-    if (!user?.isAdmin) {
-      alert("⚠ 관리자만 디자인 모드를 사용할 수 있습니다.");
-      return;
-    }
+    if (!user?.isAdmin) return alert("⚠ 관리자만 디자인 모드를 사용할 수 있습니다.");
     setIsEditMode(!isEditMode);
   };
 
   const toggleResizeMode = () => {
-    if (!user?.isAdmin) {
-      alert("⚠ 관리자만 크기 조절 모드를 사용할 수 있습니다.");
-      return;
-    }
+    if (!user?.isAdmin) return alert("⚠ 관리자만 크기 조절 모드를 사용할 수 있습니다.");
     setIsResizeMode(!isResizeMode);
   };
 
-  // ✅ 페이지(탭) + 상품 둘 다 불러오기
+  // ✅ 데이터 불러오기
   useEffect(() => {
     fetchPages();
     fetchProducts();
@@ -97,8 +91,8 @@ function ProductList() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start p-8 relative">
-      {/* ✅ 관리자 전용 툴바 */}
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start p-8 relative select-none">
+      {/* 🧰 관리자 전용 툴바 */}
       {user?.isAdmin && (
         <div className="fixed top-6 left-6 z-[9999] flex gap-3 items-center">
           <button
@@ -135,6 +129,7 @@ function ProductList() {
               ? "bg-blue-500 text-white border-blue-500"
               : "bg-white text-gray-600 border-gray-300 hover:bg-blue-50"
           }`}
+          disabled={isEditMode || isResizeMode}
         >
           전체 보기
         </button>
@@ -148,6 +143,7 @@ function ProductList() {
                 ? "bg-blue-500 text-white border-blue-500"
                 : "bg-white text-gray-600 border-gray-300 hover:bg-blue-50"
             }`}
+            disabled={isEditMode || isResizeMode}
           >
             {p.label}
           </button>
@@ -164,14 +160,18 @@ function ProductList() {
           filteredProducts.map((p) => (
             <div
               key={p._id}
-              onClick={() => navigate(`/products/${p._id}`)}
-              className={`p-5 shadow hover:shadow-lg transition bg-white flex flex-col items-center cursor-pointer rounded-xl ${
+              className={`p-5 shadow bg-white flex flex-col items-center rounded-xl transition-all duration-300 ${
                 isResizeMode
-                  ? "border-2 border-dashed border-blue-400" // 📐 크기조절 모드일 때만 점선 표시
-                  : "border border-gray-200"
+                  ? "border-2 border-dashed border-blue-400"
+                  : "border border-gray-200 hover:shadow-lg"
+              } ${
+                isEditMode || isResizeMode ? "pointer-events-none" : "cursor-pointer"
               }`}
+              onClick={() => {
+                if (!isEditMode && !isResizeMode) navigate(`/products/${p._id}`);
+              }}
             >
-              {/* ✅ 이미지 (EditableImage로 교체 가능) */}
+              {/* ✅ 이미지 */}
               <EditableImage
                 id={`product-img-${p._id}`}
                 defaultSrc={
@@ -197,7 +197,7 @@ function ProductList() {
                 }}
               />
 
-              {/* ✅ 상품명 / 설명 (디자인모드에서만 점선 표시) */}
+              {/* ✅ 상품명 / 설명 */}
               <h2 className="text-lg font-semibold text-gray-800 text-center">
                 <EditableText
                   id={`product-name-${p._id}`}
@@ -220,13 +220,19 @@ function ProductList() {
                 {p.price?.toLocaleString()}원
               </p>
 
-              {/* ✅ 장바구니 버튼 */}
+              {/* ✅ 장바구니 버튼 (편집모드일 땐 비활성화) */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
+                  if (isEditMode || isResizeMode) return;
                   addToCart(p);
                 }}
-                className="mt-4 w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                disabled={isEditMode || isResizeMode}
+                className={`mt-4 w-full px-4 py-2 rounded-lg text-white transition ${
+                  isEditMode || isResizeMode
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-500 hover:bg-blue-600"
+                }`}
               >
                 장바구니 담기
               </button>
