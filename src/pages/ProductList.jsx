@@ -322,23 +322,20 @@ function ProductList() {
       </div>
 
       {/* 상품 목록 */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-10 gap-y-12 w-full max-w-6xl">
+      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 
+                    gap-x-12 gap-y-14 w-full max-w-[1300px] mx-auto px-4">
+  {filteredProducts.map((p) => (
+    <ProductCard
+      key={p._id}
+      product={p}
+      isEditMode={isEditMode}
+      isResizeMode={isResizeMode}
+      addToCart={addToCart}
+      navigate={navigate}
+    />
+  ))}
+</section>
 
-        {filteredProducts.length === 0 ? (
-          <p className="text-gray-400 col-span-full text-center">상품이 없습니다 😢</p>
-        ) : (
-          filteredProducts.map((p) => (
-            <ProductCard
-              key={p._id}
-              product={p}
-              isEditMode={isEditMode}
-              isResizeMode={isResizeMode}
-              addToCart={addToCart}
-              navigate={navigate}
-            />
-          ))
-        )}
-      </section>
 
       {/* 푸터 */}
       <footer className="mt-16 text-gray-400 text-sm border-t pt-4 w-full text-center">
