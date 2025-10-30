@@ -13,7 +13,7 @@ import { useEditMode } from "../context/EditModeContext";
  * />
  *
  * - 디자인 모드 ✏ : 텍스트만 편집 가능 (이미지 점선 ❌)
- * - 크기조절 모드 📐 : 이미지 점선 표시 + 우클릭 드래그로 크기 변경
+ * - 크기조절 모드 📐 : 카드 전체 점선 표시 + 우클릭 드래그로 크기 변경
  */
 export default function EditableImage({
   id,
@@ -166,7 +166,7 @@ export default function EditableImage({
     };
   }, [resizing, size]);
 
-  /** ✅ 우클릭 메뉴 차단 (편집모드 때만) */
+  /** ✅ 우클릭 메뉴 차단 (편집모드 또는 크기조절모드일 때만) */
   useEffect(() => {
     const handleCtx = (e) => {
       if (isEditMode || isResizeMode) e.preventDefault();
@@ -191,6 +191,11 @@ export default function EditableImage({
             : typeof size.height === "number"
             ? `${size.height}px`
             : size.height,
+        // ✅ 크기조절 모드일 때만 카드 점선 표시
+        border:
+          isResizeMode ? "2px dashed rgba(59,130,246,0.9)" : "none",
+        borderRadius: isResizeMode ? "12px" : "0",
+        transition: "border 0.2s ease",
         ...style,
       }}
       data-file={filePath || import.meta.url || "unknown"}
@@ -214,24 +219,11 @@ export default function EditableImage({
           userSelect: "none",
           pointerEvents: "none",
           display: "block",
+          borderRadius: "inherit",
         }}
         draggable={false}
         onError={(e) => (e.target.src = defaultSrc)}
       />
-
-      {/* ✅ 크기조절 모드일 때만 점선 표시 */}
-      {isResizeMode && (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            border: "2px dashed rgba(59,130,246,0.9)",
-            borderRadius: "8px",
-            pointerEvents: "none",
-            zIndex: 5,
-          }}
-        />
-      )}
 
       {/* ✅ 저장됨 표시 */}
       {saved && (
@@ -268,6 +260,7 @@ export default function EditableImage({
             fontWeight: "bold",
             pointerEvents: "none",
             zIndex: 6,
+            borderRadius: "inherit",
           }}
         >
           우클릭 + 드래그 : 크기 조절
@@ -290,6 +283,7 @@ export default function EditableImage({
             fontWeight: "bold",
             pointerEvents: "none",
             zIndex: 6,
+            borderRadius: "inherit",
           }}
         >
           클릭: 이미지 교체 <br />
