@@ -10,28 +10,17 @@
       }
     }
   ],
-  "routes": [
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "/"
-    }
-  ],
-  "redirects": [
-    {
       "source": "/api/(.*)",
-      "destination": "https://shop-backend-1-dfsl.onrender.com/api/$1",
-      "permanent": false
+      "destination": "https://shop-backend-1-dfsl.onrender.com/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
+  "redirects": [],
   "env": {
     "VITE_API_BASE_URL": "https://shop-backend-1-dfsl.onrender.com"
   }
