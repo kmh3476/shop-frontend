@@ -134,10 +134,12 @@ function MainLayout() {
     return (
       <motion.div
         ref={cardRef}
-        onMouseDown={startResize} // ✅ 우클릭으로 리사이즈
-        className={`border ${
-          isEditMode ? "border-dashed border-blue-400" : "border-gray-200"
-        } rounded-3xl shadow-lg hover:shadow-2xl bg-white relative overflow-hidden transition-transform duration-300`}
+        onMouseDown={startResize}
+        className={`rounded-3xl shadow-lg hover:shadow-2xl bg-white relative overflow-hidden transition-transform duration-300 ${
+          isResizeMode
+            ? "border-2 border-dashed border-blue-400"
+            : "border border-gray-200"
+        }`} // ✅ 크기조절모드일 때만 파란 점선 표시
         style={{
           width: `${size.width}px`,
           height: `${size.height}px`,
@@ -202,7 +204,7 @@ function MainLayout() {
     );
   };
 
-  /** ✅ 일반 상품 카드 (점선 표시 동일하게 적용) */
+  /** ✅ 일반 상품 카드 */
   const ProductCard = ({ i }) => {
     const { size, cardRef, startResize } = useResizableCard(`product-${i}`, 300, 460);
     const scale = size.width / 300;
@@ -211,9 +213,11 @@ function MainLayout() {
       <motion.div
         ref={cardRef}
         onMouseDown={startResize}
-        className={`border ${
-          isEditMode ? "border-dashed border-blue-400" : "border-gray-200"
-        } rounded-2xl shadow-sm hover:shadow-md bg-white relative overflow-hidden transition-transform duration-300`}
+        className={`rounded-2xl shadow-sm hover:shadow-md bg-white relative overflow-hidden transition-transform duration-300 ${
+          isResizeMode
+            ? "border-2 border-dashed border-blue-400"
+            : "border border-gray-200"
+        }`} // ✅ 크기조절모드일 때만 점선 표시
         style={{
           width: `${size.width}px`,
           height: `${size.height}px`,
@@ -277,7 +281,7 @@ function MainLayout() {
       autoplay={
         isResizeMode
           ? false
-          : { delay: 4500, disableOnInteraction: false } // ✅ 크기조절 ON 시 자동재생 중단
+          : { delay: 4500, disableOnInteraction: false }
       }
       allowTouchMove={!isResizeMode}
       simulateTouch={!isResizeMode}
@@ -293,7 +297,7 @@ function MainLayout() {
     </Swiper>
   );
 
-  /** ✅ 상품 섹션 (상의/하의/코디 추천) */
+  /** ✅ 상품 섹션 */
   const SlideSection = ({ title, id }) => (
     <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black font-['Pretendard']">
       <motion.h2
