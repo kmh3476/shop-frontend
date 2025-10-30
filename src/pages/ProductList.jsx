@@ -273,10 +273,10 @@ function ProductList() {
 
       {/* 헤더 (편집 가능) */}
       <header className="w-full max-w-6xl text-center mb-8">
-        <h1 className="text-3xl font-bold text-blue-600">
+        <h1 className="text-3xl font-bold text-gray-700">
           <EditableText
             id="productlist-title"
-            defaultText="🛍 상품 목록"
+            defaultText="상품 목록"
             filePath="src/pages/ProductList.jsx"
             componentName="HeaderTitle"
           />
