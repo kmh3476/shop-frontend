@@ -137,10 +137,10 @@ function MainLayout() {
         ref={cardRef}
         onMouseDown={startResize}
         className={`rounded-3xl shadow-lg bg-white relative overflow-hidden transition-transform duration-300 ${
-          isResizeMode
-            ? "border-2 border-dashed border-blue-400"
-            : "border border-gray-200 hover:shadow-2xl"
-        } ${isLocked ? "pointer-events-none" : ""}`}
+  isResizeMode
+    ? "border-2 border-dashed border-blue-400"
+    : "border border-gray-200 hover:shadow-2xl"
+} ${isLocked ? "pointer-events-none" : ""}`}
         style={{
           width: `${size.width}px`,
           height: `${size.height}px`,
