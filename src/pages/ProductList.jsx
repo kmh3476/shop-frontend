@@ -1,18 +1,41 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../lib/api";
+import { useEditMode } from "../context/EditModeContext";
+import { useAuth } from "../context/AuthContext";
+import EditableText from "../components/EditableText";
+import EditableImage from "../components/EditableImage";
 
 function ProductList() {
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]); // ✅ 현재 탭에 해당하는 상품 목록
-  const [pages, setPages] = useState([]); // ✅ 탭 목록
-  const [activePage, setActivePage] = useState("all"); // ✅ 현재 선택된 탭
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [pages, setPages] = useState([]);
+  const [activePage, setActivePage] = useState("all");
   const [cart, setCart] = useState(() => {
     const saved = localStorage.getItem("cart");
     return saved ? JSON.parse(saved) : [];
   });
 
+  const { isEditMode, setIsEditMode, isResizeMode, setIsResizeMode } = useEditMode();
+  const { user } = useAuth();
   const navigate = useNavigate();
+
+  // ✅ 관리자 모드 토글
+  const toggleEditMode = () => {
+    if (!user?.isAdmin) {
+      alert("⚠ 관리자만 디자인 모드를 사용할 수 있습니다.");
+      return;
+    }
+    setIsEditMode(!isEditMode);
+  };
+
+  const toggleResizeMode = () => {
+    if (!user?.isAdmin) {
+      alert("⚠ 관리자만 크기 조절 모드를 사용할 수 있습니다.");
+      return;
+    }
+    setIsResizeMode(!isResizeMode);
+  };
 
   // ✅ 페이지(탭) + 상품 둘 다 불러오기
   useEffect(() => {
@@ -20,17 +43,15 @@ function ProductList() {
     fetchProducts();
   }, []);
 
-  // ✅ 탭 목록 불러오기
   const fetchPages = async () => {
     try {
-      const res = await api.get("/api/pages"); // ✅ 관리자에서 만든 탭 목록 불러오기
+      const res = await api.get("/api/pages");
       setPages(res.data);
     } catch (err) {
       console.error("❌ 탭 불러오기 실패:", err.message);
     }
   };
 
-  // ✅ 상품 불러오기
   const fetchProducts = async () => {
     try {
       const baseURL = import.meta.env.VITE_API_BASE_URL;
@@ -38,17 +59,15 @@ function ProductList() {
         ? `${baseURL}/products`
         : `${baseURL}/api/products`;
 
-      console.log("📡 Fetching from:", endpoint);
       const res = await api.get(endpoint);
       setProducts(res.data);
-      setFilteredProducts(res.data); // 초기엔 전체 상품
+      setFilteredProducts(res.data);
     } catch (err) {
       console.error("❌ 상품 불러오기 실패:", err.message, err);
       alert("서버 연결 실패: 백엔드가 켜져 있는지 확인하세요!");
     }
   };
 
-  // ✅ 탭 클릭 시 상품 필터링
   const handlePageChange = (pageId) => {
     setActivePage(pageId);
     if (pageId === "all") {
@@ -73,13 +92,34 @@ function ProductList() {
     } else {
       newCart = [...cart, { ...product, quantity: 1 }];
     }
-
     setCart(newCart);
     localStorage.setItem("cart", JSON.stringify(newCart));
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start p-8">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start p-8 relative">
+      {/* ✅ 관리자 전용 툴바 */}
+      {user?.isAdmin && (
+        <div className="fixed top-6 left-6 z-[9999] flex gap-3 items-center">
+          <button
+            onClick={toggleEditMode}
+            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
+              isEditMode ? "bg-green-600" : "bg-gray-800"
+            }`}
+          >
+            {isEditMode ? "🖊 디자인 모드 ON" : "✏ 디자인 모드 OFF"}
+          </button>
+          <button
+            onClick={toggleResizeMode}
+            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
+              isResizeMode ? "bg-blue-600" : "bg-gray-700"
+            }`}
+          >
+            {isResizeMode ? "📐 크기 조절 ON" : "📏 크기 조절 OFF"}
+          </button>
+        </div>
+      )}
+
       {/* 🔹 상단 헤더 */}
       <header className="w-full max-w-6xl text-center mb-8">
         <h1 className="text-3xl font-bold text-blue-600">🛍 상품 목록</h1>
@@ -125,11 +165,16 @@ function ProductList() {
             <div
               key={p._id}
               onClick={() => navigate(`/products/${p._id}`)}
-              className="border rounded-xl p-5 shadow hover:shadow-lg transition bg-white flex flex-col items-center cursor-pointer"
+              className={`p-5 shadow hover:shadow-lg transition bg-white flex flex-col items-center cursor-pointer rounded-xl ${
+                isResizeMode
+                  ? "border-2 border-dashed border-blue-400" // 📐 크기조절 모드일 때만 점선 표시
+                  : "border border-gray-200"
+              }`}
             >
-              {/* ✅ 이미지 표시 */}
-              <img
-                src={
+              {/* ✅ 이미지 (EditableImage로 교체 가능) */}
+              <EditableImage
+                id={`product-img-${p._id}`}
+                defaultSrc={
                   p.mainImage?.startsWith("http")
                     ? p.mainImage
                     : p.image?.startsWith("http")
@@ -141,20 +186,41 @@ function ProductList() {
                     : "https://placehold.co/250x200?text=No+Image"
                 }
                 alt={p.name}
-                className="w-full h-48 object-cover rounded-lg mb-4"
-                onError={(e) =>
-                  (e.target.src = "https://placehold.co/250x200?text=No+Image")
-                }
+                filePath="src/pages/ProductList.jsx"
+                componentName="ProductCard"
+                style={{
+                  width: "100%",
+                  height: "12rem",
+                  borderRadius: "0.5rem",
+                  objectFit: "cover",
+                  marginBottom: "1rem",
+                }}
               />
 
-              <h2 className="text-lg font-semibold text-gray-800">{p.name}</h2>
-              <p className="text-gray-500 text-sm mt-1 line-clamp-2">
-                {p.description}
+              {/* ✅ 상품명 / 설명 (디자인모드에서만 점선 표시) */}
+              <h2 className="text-lg font-semibold text-gray-800 text-center">
+                <EditableText
+                  id={`product-name-${p._id}`}
+                  defaultText={p.name}
+                  filePath="src/pages/ProductList.jsx"
+                  componentName="ProductCard"
+                />
+              </h2>
+              <p className="text-gray-500 text-sm mt-1 line-clamp-2 text-center">
+                <EditableText
+                  id={`product-desc-${p._id}`}
+                  defaultText={p.description || "상품 설명이 없습니다."}
+                  filePath="src/pages/ProductList.jsx"
+                  componentName="ProductCard"
+                />
               </p>
+
+              {/* ✅ 가격 */}
               <p className="mt-3 font-bold text-blue-600">
                 {p.price?.toLocaleString()}원
               </p>
 
+              {/* ✅ 장바구니 버튼 */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
