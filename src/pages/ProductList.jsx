@@ -7,7 +7,7 @@ import EditableText from "../components/EditableText";
 import EditableImage from "../components/EditableImage";
 
 /** ✅ 공통 크기조절 훅 */
-const useResizableCard = (id, isResizeMode, defaultWidth = 260, defaultHeight = 360) => {
+const useResizableCard = (id, isResizeMode, defaultWidth = 230, defaultHeight = 360) => {
   const [size, setSize] = useState(() => {
     const saved = localStorage.getItem(`card-size-${id}`);
     return saved ? JSON.parse(saved) : { width: defaultWidth, height: defaultHeight };
