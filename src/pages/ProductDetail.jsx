@@ -103,7 +103,7 @@ function ProductDetail() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await api.get(`/products/${id}`);
+        const res = await api.get(`/api/products/${id}`);
         const data = res.data;
         const imageList =
           Array.isArray(data.images) && data.images.length > 0
@@ -122,17 +122,23 @@ function ProductDetail() {
     const fetchExtras = async () => {
       try {
         const [reviewRes, inquiryRes] = await Promise.allSettled([
-          api.get(`/reviews/${id}`),
-          api.get(`/inquiries/${id}`),
+          api.get(`/api/reviews/${id}`),
+          api.get(`/api/inquiries/${id}`),
         ]);
 
-        if (reviewRes.status === "fulfilled") setReviews(reviewRes.value.data || []);
-        else if (reviewRes.reason?.response?.status === 404) setReviews([]);
-        else console.warn("⚠ 리뷰 불러오기 실패:", reviewRes.reason);
+        if (reviewRes.status === "fulfilled") {
+          setReviews(reviewRes.value.data || []);
+        } else {
+          console.warn("⚠ 리뷰 불러오기 실패:", reviewRes.reason);
+          setReviews([]);
+        }
 
-        if (inquiryRes.status === "fulfilled") setInquiries(inquiryRes.value.data || []);
-        else if (inquiryRes.reason?.response?.status === 404) setInquiries([]);
-        else console.warn("⚠ 문의 불러오기 실패:", inquiryRes.reason);
+        if (inquiryRes.status === "fulfilled") {
+          setInquiries(inquiryRes.value.data || []);
+        } else {
+          console.warn("⚠ 문의 불러오기 실패:", inquiryRes.reason);
+          setInquiries([]);
+        }
       } catch (err) {
         console.error("❌ 리뷰/문의 데이터 요청 중 오류:", err);
       }
@@ -152,7 +158,7 @@ function ProductDetail() {
         rating: Number(reviewInput.rating),
         comment: reviewInput.comment,
       };
-      const res = await api.post(`/reviews`, payload);
+      const res = await api.post(`/api/reviews`, payload);
       setReviews((prev) => [res.data, ...prev]);
       setReviewInput({ name: "", rating: 5, comment: "" });
     } catch (err) {
@@ -166,7 +172,7 @@ function ProductDetail() {
     if (!inquiryInput.name || !inquiryInput.question)
       return alert("이름과 문의 내용을 입력해주세요.");
     try {
-      const res = await api.post(`/inquiries`, { productId: id, ...inquiryInput });
+      const res = await api.post(`/api/inquiries`, { productId: id, ...inquiryInput });
       setInquiries((prev) => [res.data, ...prev]);
       setInquiryInput({ name: "", question: "" });
     } catch (err) {
