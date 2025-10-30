@@ -130,17 +130,17 @@ function MainLayout() {
   const FeaturedCard = ({ i }) => {
     const { size, cardRef, startResize } = useResizableCard(`featured-${i}`, 360, 520);
     const scale = size.width / 360;
-    const isLocked = isEditMode || isResizeMode; // ✅ 상호작용 잠금 상태
+    const isLocked = isEditMode; // ✅ 디자인 모드일 때만 상호작용 차단 (크기조절 모드에는 영향 X)
 
     return (
       <motion.div
         ref={cardRef}
         onMouseDown={startResize}
         className={`rounded-3xl shadow-lg bg-white relative overflow-hidden transition-transform duration-300 ${
-  isResizeMode
-    ? "border-2 border-dashed border-blue-400"
-    : "border border-gray-200 hover:shadow-2xl"
-} ${isLocked ? "pointer-events-none" : ""}`}
+          isResizeMode
+            ? "border-2 border-dashed border-blue-400"
+            : "border border-gray-200 hover:shadow-2xl"
+        } ${isLocked ? "pointer-events-none" : ""}`} 
         style={{
           width: `${size.width}px`,
           height: `${size.height}px`,
@@ -224,7 +224,7 @@ function MainLayout() {
   const ProductCard = ({ i }) => {
     const { size, cardRef, startResize } = useResizableCard(`product-${i}`, 300, 460);
     const scale = size.width / 300;
-    const isLocked = isEditMode || isResizeMode;
+    const isLocked = isEditMode; // ✅ 크기조절 모드에서는 작동해야 하므로 디자인모드만 차단
 
     return (
       <motion.div
