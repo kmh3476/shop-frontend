@@ -322,7 +322,8 @@ function ProductList() {
       </div>
 
       {/* 상품 목록 */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 w-full max-w-6xl">
+      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-10 gap-y-12 w-full max-w-6xl">
+
         {filteredProducts.length === 0 ? (
           <p className="text-gray-400 col-span-full text-center">상품이 없습니다 😢</p>
         ) : (
