@@ -93,11 +93,12 @@ function MainLayout() {
       };
     }, [isResizeMode, id]);
 
+    /** ✅ 오른쪽 클릭으로 크기조절 시작 */
     const startResize = (e) => {
       if (!isResizeMode) return;
-      if (e.button !== 0) return;
-      e.stopPropagation();
+      if (e.button !== 2) return; // ✅ 오른쪽 클릭만 허용
       e.preventDefault();
+      e.stopPropagation();
 
       resizingRef.current = true;
       startRef.current = {
@@ -111,6 +112,17 @@ function MainLayout() {
       document.body.style.cursor = "se-resize";
     };
 
+    /** ✅ 우클릭 메뉴 차단 */
+    useEffect(() => {
+      const el = cardRef.current;
+      if (!el) return;
+      const preventContextMenu = (e) => {
+        if (isResizeMode) e.preventDefault();
+      };
+      el.addEventListener("contextmenu", preventContextMenu);
+      return () => el.removeEventListener("contextmenu", preventContextMenu);
+    }, [isResizeMode]);
+
     return { size, cardRef, startResize };
   };
 
@@ -122,8 +134,10 @@ function MainLayout() {
     return (
       <motion.div
         ref={cardRef}
-        onDragStart={(e) => e.preventDefault()}
-        className="border border-gray-200 rounded-3xl shadow-lg hover:shadow-2xl bg-white relative overflow-hidden transition-transform duration-300"
+        onMouseDown={startResize} // ✅ 우클릭으로 리사이즈
+        className={`border ${
+          isEditMode ? "border-dashed border-blue-400" : "border-gray-200"
+        } rounded-3xl shadow-lg hover:shadow-2xl bg-white relative overflow-hidden transition-transform duration-300`}
         style={{
           width: `${size.width}px`,
           height: `${size.height}px`,
@@ -184,21 +198,11 @@ function MainLayout() {
             </button>
           </div>
         </div>
-
-        {isResizeMode && user?.isAdmin && (
-          <div
-            onMouseDown={startResize}
-            onDragStart={(e) => e.preventDefault()}
-            className="absolute bottom-1 right-1 w-5 h-5 bg-black/70 cursor-se-resize rounded-sm z-50 transition-transform duration-200 hover:scale-125 select-none"
-            style={{ userSelect: "none", pointerEvents: "auto" }}
-            title="드래그로 카드 크기 조절"
-          />
-        )}
       </motion.div>
     );
   };
 
-  /** ✅ 일반 상품 카드 */
+  /** ✅ 일반 상품 카드 (점선 표시 동일하게 적용) */
   const ProductCard = ({ i }) => {
     const { size, cardRef, startResize } = useResizableCard(`product-${i}`, 300, 460);
     const scale = size.width / 300;
@@ -206,8 +210,10 @@ function MainLayout() {
     return (
       <motion.div
         ref={cardRef}
-        onDragStart={(e) => e.preventDefault()}
-        className="border border-gray-200 rounded-2xl shadow-sm hover:shadow-md bg-white relative overflow-hidden transition-transform duration-300"
+        onMouseDown={startResize}
+        className={`border ${
+          isEditMode ? "border-dashed border-blue-400" : "border-gray-200"
+        } rounded-2xl shadow-sm hover:shadow-md bg-white relative overflow-hidden transition-transform duration-300`}
         style={{
           width: `${size.width}px`,
           height: `${size.height}px`,
@@ -256,21 +262,38 @@ function MainLayout() {
             />
           </p>
         </div>
-
-        {isResizeMode && user?.isAdmin && (
-          <div
-            onMouseDown={startResize}
-            onDragStart={(e) => e.preventDefault()}
-            className="absolute bottom-1 right-1 w-4 h-4 bg-gray-700/70 cursor-se-resize rounded-sm z-50 transition-transform duration-200 hover:scale-125 select-none"
-            style={{ userSelect: "none", pointerEvents: "auto" }}
-            title="드래그로 카드 크기 조절"
-          />
-        )}
       </motion.div>
     );
   };
 
-  /** ✅ 섹션 (상의/하의/코디 추천) */
+  /** ✅ 추천상품 Swiper */
+  const FeaturedSwiper = () => (
+    <Swiper
+      modules={[Autoplay, Navigation, Pagination]}
+      spaceBetween={10}
+      slidesPerView={2.8}
+      navigation
+      pagination={{ clickable: true }}
+      autoplay={
+        isResizeMode
+          ? false
+          : { delay: 4500, disableOnInteraction: false } // ✅ 크기조절 ON 시 자동재생 중단
+      }
+      allowTouchMove={!isResizeMode}
+      simulateTouch={!isResizeMode}
+      draggable={!isResizeMode}
+      loop
+      className="pb-12 swiper-horizontal swiper-backface-hidden"
+    >
+      {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+        <SwiperSlide key={i}>
+          <FeaturedCard i={i} />
+        </SwiperSlide>
+      ))}
+    </Swiper>
+  );
+
+  /** ✅ 상품 섹션 (상의/하의/코디 추천) */
   const SlideSection = ({ title, id }) => (
     <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black font-['Pretendard']">
       <motion.h2
@@ -286,16 +309,16 @@ function MainLayout() {
       <Swiper
         modules={[Navigation, Pagination]}
         spaceBetween={10}
-        slidesPerView={3.5}  // ✅ 수정: loop 조건 충족
+        slidesPerView={3.5}
         navigation
         pagination={{ clickable: true }}
         allowTouchMove={!isResizeMode}
         simulateTouch={!isResizeMode}
         draggable={!isResizeMode}
-        loop={true}  // ✅ 수정: 무한 루프 가능
+        loop
         className="pb-12 swiper-backface-hidden"
       >
-        {[1,2,3,4,5,6,7,8,9,10].map((i) => (  // ✅ 슬라이드 개수 확장
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
           <SwiperSlide key={i}>
             <ProductCard i={i} />
           </SwiperSlide>
@@ -306,40 +329,29 @@ function MainLayout() {
 
   return (
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden font-['Pretendard']">
-      {/* ✅ 관리자 전용 디자인/크기조절 모드 버튼 */}
+      {/* 관리자 모드 버튼 */}
       {user?.isAdmin && (
         <div className="fixed top-6 left-6 z-[9999] flex gap-3 items-center">
           <button
             onClick={toggleEditMode}
-            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ease-out ${
-              isEditMode ? "bg-green-600 hover:bg-green-700" : "bg-gray-800 hover:bg-gray-900"
+            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
+              isEditMode ? "bg-green-600" : "bg-gray-800"
             }`}
-            style={{
-              boxShadow: isEditMode
-                ? "0 0 0 2px rgba(34,197,94,0.4)"
-                : "0 0 0 1px rgba(0,0,0,0.2)",
-            }}
           >
             {isEditMode ? "🖊 디자인 모드 ON" : "✏ 디자인 모드 OFF"}
           </button>
-
           <button
             onClick={toggleResizeMode}
-            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ease-out ${
-              isResizeMode ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-700 hover:bg-gray-800"
+            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
+              isResizeMode ? "bg-blue-600" : "bg-gray-700"
             }`}
-            style={{
-              boxShadow: isResizeMode
-                ? "0 0 0 2px rgba(37,99,235,0.4)"
-                : "0 0 0 1px rgba(0,0,0,0.2)",
-            }}
           >
             {isResizeMode ? "📐 크기 조절 ON" : "📏 크기 조절 OFF"}
           </button>
         </div>
       )}
 
-      {/* 🔸 메인 배경 */}
+      {/* 메인 배경 */}
       <section
         className="relative flex flex-col items-center justify-center w-full min-h-[110vh]"
         style={{
@@ -349,7 +361,7 @@ function MainLayout() {
         }}
       ></section>
 
-      {/* 🔸 추천 상품 섹션 */}
+      {/* 추천상품 */}
       <section className="flex flex-col items-center justify-center py-[10vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
         <motion.h2
           className="text-5xl md:text-6xl font-extrabold mb-12 drop-shadow-sm tracking-tight text-gray-600"
@@ -364,36 +376,17 @@ function MainLayout() {
             apiUrl="http://localhost:1337/api/texts"
           />
         </motion.h2>
-
         <div className="w-full max-w-[1200px]">
-          <Swiper
-            modules={[Autoplay, Navigation, Pagination]}
-            spaceBetween={10}
-            slidesPerView={2.8}
-            navigation
-            pagination={{ clickable: true }}
-            autoplay={{ delay: 4500, disableOnInteraction: false }}
-            allowTouchMove={!isResizeMode}
-            simulateTouch={!isResizeMode}  // ✅ Swiper 드래그 완전 차단
-            draggable={!isResizeMode}
-            loop={true}
-            className="pb-12 swiper-horizontal swiper-backface-hidden select-none"
-          >
-            {[1,2,3,4,5,6,7,8].map((i) => (
-              <SwiperSlide key={i}>
-                <FeaturedCard i={i} />
-              </SwiperSlide>
-            ))}
-          </Swiper>
+          <FeaturedSwiper />
         </div>
       </section>
 
-      {/* 🔸 상품 섹션 */}
+      {/* 상품 섹션 */}
       <SlideSection id="top-section" title="상의" />
       <SlideSection id="bottom-section" title="하의" />
       <SlideSection id="coordi-section" title="코디 추천" />
 
-      {/* 🔸 브랜드 스토리 */}
+      {/* 브랜드 스토리 */}
       <section
         className="flex flex-col items-center justify-center py-[15vh] px-6 text-center bg-gray-100 font-['Pretendard']"
         style={{
@@ -429,7 +422,7 @@ function MainLayout() {
         </motion.p>
       </section>
 
-      {/* 🔸 푸터 */}
+      {/* 푸터 */}
       <footer className="py-6 text-black text-sm border-t border-gray-300 w-full text-center bg-white font-light tracking-tight">
         © 2025 ONYOU — All rights reserved.
       </footer>
