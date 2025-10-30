@@ -181,54 +181,54 @@ export default function EditableImage({
     window.addEventListener("contextmenu", handleContextMenu);
     return () => window.removeEventListener("contextmenu", handleContextMenu);
   }, [isEditMode]);
-
+  
   return (
-    <div
+  <div
+    style={{
+      position: "relative",
+      display: "inline-block",
+      cursor: isEditMode ? "pointer" : "default",
+      border:
+        isEditMode
+          ? "2px dashed rgba(59,130,246,0.8)" // ✅ 점선 표시
+          : "none",
+      borderRadius: "8px",
+      boxSizing: "border-box", // ✅ border 공간 확보
+      zIndex: isEditMode ? 9999 : "auto", // ✅ 항상 위에 표시
+      overflow: "visible", // ✅ border 잘림 방지
+      width: typeof size.width === "number" ? `${size.width}px` : size.width,
+      height:
+        size.height === "auto"
+          ? "auto"
+          : typeof size.height === "number"
+          ? `${size.height}px`
+          : size.height,
+      ...style,
+    }}
+    data-file={filePath || import.meta.url || "unknown"}
+    data-component={componentName || "EditableImage"}
+    onMouseEnter={() => setIsHovering(true)}
+    onMouseLeave={() => setIsHovering(false)}
+    onClick={handleClick}
+    onContextMenu={handleContextMenu}
+    onMouseDown={handleMouseDown}
+  >
+    <img
+      src={imageSrc}
+      alt={alt || ""}
       style={{
-        position: "relative",
-        display: "inline-block",
-        cursor: isEditMode ? "pointer" : "default",
-        border:
-          isEditMode
-            ? "2px dashed rgba(59,130,246,0.6)" // ✅ 항상 점선 표시
-            : "none",
-        borderRadius: "8px",
-        overflow: "hidden",
-        transition: "all 0.2s ease",
-        width: typeof size.width === "number" ? `${size.width}px` : size.width,
-        height:
-          size.height === "auto"
-            ? "auto"
-            : typeof size.height === "number"
-            ? `${size.height}px`
-            : size.height,
-        ...style,
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        opacity: isEditMode && isHovering ? 0.85 : 1,
+        transition: "opacity 0.2s ease",
+        userSelect: "none",
+        pointerEvents: "none",
+        display: "block",
       }}
-      data-file={filePath || import.meta.url || "unknown"}
-      data-component={componentName || "EditableImage"}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
-      onClick={handleClick}
-      onContextMenu={handleContextMenu}
-      onMouseDown={handleMouseDown} // ✅ 우클릭 리사이즈 연결
-    >
-      <img
-        src={imageSrc}
-        alt={alt || ""}
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          opacity: isEditMode && isHovering ? 0.8 : 1,
-          transition: "opacity 0.2s ease",
-          userSelect: "none",
-          pointerEvents: "none",
-        }}
-        draggable={false}
-        onError={(e) => {
-          e.target.src = defaultSrc;
-        }}
-      />
+      draggable={false}
+      onError={(e) => (e.target.src = defaultSrc)}
+    />
 
       <input
         type="file"
