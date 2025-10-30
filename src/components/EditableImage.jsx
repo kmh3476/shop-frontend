@@ -116,10 +116,13 @@ export default function EditableImage({
     }
   };
 
-  /** ✅ 드래그로 크기 조절 */
+  /** ✅ 우클릭으로 크기 조절 시작 */
   const handleMouseDown = (e) => {
     if (!isEditMode) return;
+    if (e.button !== 2) return; // ✅ 오른쪽 클릭만 허용
+    e.preventDefault();
     e.stopPropagation();
+
     setResizing(true);
     startPos.current = {
       x: e.clientX,
@@ -127,8 +130,11 @@ export default function EditableImage({
       width: size.width,
       height: e.target.clientHeight,
     };
+    document.body.style.cursor = "se-resize";
+    document.body.style.userSelect = "none";
   };
 
+  /** ✅ 크기 조절 중 */
   const handleMouseMove = (e) => {
     if (!resizing) return;
     const dx = e.clientX - startPos.current.x;
@@ -143,9 +149,12 @@ export default function EditableImage({
     setSize(updated);
   };
 
+  /** ✅ 크기 조절 종료 */
   const handleMouseUp = () => {
     if (resizing) {
       setResizing(false);
+      document.body.style.cursor = "auto";
+      document.body.style.userSelect = "auto";
       saveSizeData(size);
     }
   };
@@ -164,13 +173,25 @@ export default function EditableImage({
     };
   }, [resizing, size]);
 
+  /** ✅ 편집모드일 때 우클릭 메뉴 막기 */
+  useEffect(() => {
+    const handleContextMenu = (e) => {
+      if (isEditMode) e.preventDefault();
+    };
+    window.addEventListener("contextmenu", handleContextMenu);
+    return () => window.removeEventListener("contextmenu", handleContextMenu);
+  }, [isEditMode]);
+
   return (
     <div
       style={{
         position: "relative",
         display: "inline-block",
         cursor: isEditMode ? "pointer" : "default",
-        border: isEditMode && isHovering ? "2px dashed #666" : "none",
+        border:
+          isEditMode
+            ? "2px dashed rgba(59,130,246,0.6)" // ✅ 항상 점선 표시
+            : "none",
         borderRadius: "8px",
         overflow: "hidden",
         transition: "all 0.2s ease",
@@ -189,6 +210,7 @@ export default function EditableImage({
       onMouseLeave={() => setIsHovering(false)}
       onClick={handleClick}
       onContextMenu={handleContextMenu}
+      onMouseDown={handleMouseDown} // ✅ 우클릭 리사이즈 연결
     >
       <img
         src={imageSrc}
@@ -251,24 +273,8 @@ export default function EditableImage({
         >
           클릭: 이미지 교체 <br />
           우클릭: URL 입력 <br />
-          ↔ 드래그로 크기 조절
+          우클릭 + 드래그: 크기 조절
         </div>
-      )}
-
-      {isEditMode && (
-        <div
-          onMouseDown={handleMouseDown}
-          style={{
-            position: "absolute",
-            bottom: 0,
-            right: 0,
-            width: "16px",
-            height: "16px",
-            background: "rgba(0,0,0,0.6)",
-            cursor: "nwse-resize",
-            borderRadius: "4px 0 0 0",
-          }}
-        />
       )}
     </div>
   );
