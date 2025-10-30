@@ -96,7 +96,7 @@ function MainLayout() {
     /** ✅ 오른쪽 클릭으로 크기조절 시작 */
     const startResize = (e) => {
       if (!isResizeMode) return;
-      if (e.button !== 2) return; // ✅ 오른쪽 클릭만 허용
+      if (e.button !== 2) return;
       e.preventDefault();
       e.stopPropagation();
 
@@ -130,16 +130,17 @@ function MainLayout() {
   const FeaturedCard = ({ i }) => {
     const { size, cardRef, startResize } = useResizableCard(`featured-${i}`, 360, 520);
     const scale = size.width / 360;
+    const isLocked = isEditMode || isResizeMode; // ✅ 상호작용 잠금 상태
 
     return (
       <motion.div
         ref={cardRef}
         onMouseDown={startResize}
-        className={`rounded-3xl shadow-lg hover:shadow-2xl bg-white relative overflow-hidden transition-transform duration-300 ${
+        className={`rounded-3xl shadow-lg bg-white relative overflow-hidden transition-transform duration-300 ${
           isResizeMode
             ? "border-2 border-dashed border-blue-400"
-            : "border border-gray-200"
-        }`} // ✅ 크기조절모드일 때만 파란 점선 표시
+            : "border border-gray-200 hover:shadow-2xl"
+        } ${isLocked ? "pointer-events-none" : ""}`}
         style={{
           width: `${size.width}px`,
           height: `${size.height}px`,
@@ -191,11 +192,26 @@ function MainLayout() {
               />
             </p>
           </div>
+
           <div className="flex space-x-3">
-            <button className="flex-1 py-3 bg-black text-white text-base font-semibold rounded-lg hover:bg-gray-800 transition">
+            <button
+              disabled={isLocked}
+              className={`flex-1 py-3 rounded-lg text-base font-semibold transition ${
+                isLocked
+                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  : "bg-black text-white hover:bg-gray-800"
+              }`}
+            >
               바로가기
             </button>
-            <button className="flex-1 py-3 bg-gray-800 text-white text-base font-semibold rounded-lg hover:bg-gray-700 transition">
+            <button
+              disabled={isLocked}
+              className={`flex-1 py-3 rounded-lg text-base font-semibold transition ${
+                isLocked
+                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  : "bg-gray-800 text-white hover:bg-gray-700"
+              }`}
+            >
               장바구니
             </button>
           </div>
@@ -208,16 +224,17 @@ function MainLayout() {
   const ProductCard = ({ i }) => {
     const { size, cardRef, startResize } = useResizableCard(`product-${i}`, 300, 460);
     const scale = size.width / 300;
+    const isLocked = isEditMode || isResizeMode;
 
     return (
       <motion.div
         ref={cardRef}
         onMouseDown={startResize}
-        className={`rounded-2xl shadow-sm hover:shadow-md bg-white relative overflow-hidden transition-transform duration-300 ${
+        className={`rounded-2xl shadow-sm bg-white relative overflow-hidden transition-transform duration-300 ${
           isResizeMode
             ? "border-2 border-dashed border-blue-400"
-            : "border border-gray-200"
-        }`} // ✅ 크기조절모드일 때만 점선 표시
+            : "border border-gray-200 hover:shadow-md"
+        } ${isLocked ? "pointer-events-none" : ""}`}
         style={{
           width: `${size.width}px`,
           height: `${size.height}px`,
@@ -276,16 +293,16 @@ function MainLayout() {
       modules={[Autoplay, Navigation, Pagination]}
       spaceBetween={10}
       slidesPerView={2.8}
-      navigation
-      pagination={{ clickable: true }}
+      navigation={!isEditMode && !isResizeMode}
+      pagination={!isEditMode && !isResizeMode ? { clickable: true } : false}
       autoplay={
-        isResizeMode
+        isResizeMode || isEditMode
           ? false
           : { delay: 4500, disableOnInteraction: false }
       }
-      allowTouchMove={!isResizeMode}
-      simulateTouch={!isResizeMode}
-      draggable={!isResizeMode}
+      allowTouchMove={!isEditMode && !isResizeMode}
+      simulateTouch={!isEditMode && !isResizeMode}
+      draggable={!isEditMode && !isResizeMode}
       loop
       className="pb-12 swiper-horizontal swiper-backface-hidden"
     >
@@ -314,11 +331,11 @@ function MainLayout() {
         modules={[Navigation, Pagination]}
         spaceBetween={10}
         slidesPerView={3.5}
-        navigation
-        pagination={{ clickable: true }}
-        allowTouchMove={!isResizeMode}
-        simulateTouch={!isResizeMode}
-        draggable={!isResizeMode}
+        navigation={!isEditMode && !isResizeMode}
+        pagination={!isEditMode && !isResizeMode ? { clickable: true } : false}
+        allowTouchMove={!isEditMode && !isResizeMode}
+        simulateTouch={!isEditMode && !isResizeMode}
+        draggable={!isEditMode && !isResizeMode}
         loop
         className="pb-12 swiper-backface-hidden"
       >
