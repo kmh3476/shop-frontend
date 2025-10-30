@@ -122,14 +122,20 @@ function ProductDetail() {
 
     const fetchExtras = async () => {
       try {
-        const [reviewRes, inquiryRes] = await Promise.all([
+        const [reviewRes, inquiryRes] = await Promise.allSettled([
           api.get(`/reviews/${id}`),
           api.get(`/inquiries/${id}`),
         ]);
-        setReviews(reviewRes.data || []);
-        setInquiries(inquiryRes.data || []);
+
+        if (reviewRes.status === "fulfilled") setReviews(reviewRes.value.data || []);
+        else if (reviewRes.reason?.response?.status === 404) setReviews([]);
+        else console.warn("⚠ 리뷰 불러오기 실패:", reviewRes.reason);
+
+        if (inquiryRes.status === "fulfilled") setInquiries(inquiryRes.value.data || []);
+        else if (inquiryRes.reason?.response?.status === 404) setInquiries([]);
+        else console.warn("⚠ 문의 불러오기 실패:", inquiryRes.reason);
       } catch (err) {
-        console.error("❌ 리뷰/문의 불러오기 실패:", err);
+        console.error("❌ 리뷰/문의 데이터 요청 중 오류:", err);
       }
     };
 
