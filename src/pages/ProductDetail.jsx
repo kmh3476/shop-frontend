@@ -153,9 +153,9 @@ export default function ProductDetail() {
   };
 
   // ✅ 각 섹션별 리사이즈 훅
-  const hero = useResizableBox(`hero-${id}`, { width: 1000, height: 420 }, isResizeMode);
-  const detailBox = useResizableBox(`detail-box-${id}`, { width: 900, height: 600 }, isResizeMode);
-  const sizeBox = useResizableBox(`size-box-${id}`, { width: 900, height: 300 }, isResizeMode);
+  const hero = useResizableBox(`hero-${id}`, { width: 766, height: 811 }, isResizeMode);
+  const detailBox = useResizableBox(`detail-box-${id}`, { width: 766, height: 626 }, isResizeMode);
+  const sizeBox = useResizableBox(`size-box-${id}`, { width: 766, height: 351 }, isResizeMode);
 
   // ✅ 관리자 모드 토글
   const toggleEdit = () => {
