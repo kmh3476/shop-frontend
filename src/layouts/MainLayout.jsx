@@ -9,21 +9,28 @@ import EditableText from "../components/EditableText";
 import EditableImage from "../components/EditableImage";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios"; // ✅ 상품 데이터 연동용 추가
+import { ShoppingCartOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext"; // ✅ 로컬 CartContext 연동
+import axios from "axios";
 
 function MainLayout() {
-  const { isEditMode, setIsEditMode, isResizeMode, setIsResizeMode } = useEditMode();
+  const { isEditMode, setIsEditMode, isResizeMode, setIsResizeMode } =
+    useEditMode();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { addToCart } = useCart?.() || {}; // ✅ CartContext 존재 시 사용
 
   /** ✅ 상품 데이터 상태 */
-  const [allProducts, setAllProducts] = useState([]); // 전체 상품 목록
+  const [allProducts, setAllProducts] = useState([]);
 
   /** ✅ 상품 데이터 불러오기 */
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const apiUrl =
-          import.meta.env.VITE_API_URL || "https://shop-backend-1-dfsl.onrender.com";
+          import.meta.env.VITE_API_URL ||
+          "https://shop-backend-1-dfsl.onrender.com";
         const response = await axios.get(`${apiUrl}/api/products`);
         if (Array.isArray(response.data)) {
           setAllProducts(response.data);
@@ -73,13 +80,11 @@ function MainLayout() {
 
     useEffect(() => {
       let frameId = null;
-
       const handleMouseMove = (e) => {
         if (!resizingRef.current || !cardRef.current || !isResizeMode) return;
 
         const dx = e.clientX - startRef.current.x;
         const dy = e.clientY - startRef.current.y;
-
         const newWidth = Math.max(100, startRef.current.width + dx);
         const newHeight = Math.max(100, startRef.current.height + dy);
 
@@ -90,14 +95,11 @@ function MainLayout() {
           });
         }
       };
-
       const handleMouseUp = () => {
         if (!resizingRef.current) return;
         resizingRef.current = false;
-
         document.body.style.userSelect = "auto";
         document.body.style.cursor = "auto";
-
         localStorage.setItem(`card-size-${id}`, JSON.stringify(sizeRef.current));
       };
 
@@ -148,6 +150,29 @@ function MainLayout() {
 
     return { size, cardRef, startResize };
   };
+
+  /** ✅ 장바구니 추가 함수 (공용) */
+  const handleAddToCartGlobal = async (product, e) => {
+    e.stopPropagation();
+    try {
+      if (addToCart) {
+        addToCart(product);
+        alert(`'${product.name}'이(가) 장바구니에 추가되었습니다.`);
+      } else {
+        const apiUrl =
+          import.meta.env.VITE_API_URL || "https://shop-backend-1-dfsl.onrender.com";
+        await axios.post(`${apiUrl}/api/cart`, {
+          productId: product._id,
+          quantity: 1,
+        });
+        alert(`'${product.name}'이(가) 장바구니에 추가되었습니다.`);
+      }
+    } catch (err) {
+      console.error("❌ 장바구니 추가 실패:", err);
+      alert("장바구니 추가 중 오류가 발생했습니다.");
+    }
+  };
+
   /** ✅ 추천 상품 카드 */
   const FeaturedCard = ({ product }) => {
     const { size, cardRef, startResize } = useResizableCard(
@@ -158,10 +183,18 @@ function MainLayout() {
     const scale = size.width / 360;
     const isLocked = isEditMode;
 
+    /** ✅ 카드 클릭 → 상세 페이지 이동 */
+    const handleCardClick = () => {
+      if (!isResizeMode && !isEditMode) {
+        navigate(`/product/${product._id}`);
+      }
+    };
+
     return (
       <motion.div
         ref={cardRef}
         onMouseDown={startResize}
+        onClick={handleCardClick}
         className={`rounded-3xl shadow-lg bg-white relative overflow-hidden transition-transform duration-300 ${
           isResizeMode
             ? "border-2 border-dashed border-blue-400"
@@ -172,7 +205,7 @@ function MainLayout() {
           height: `${size.height}px`,
           fontSize: `${scale * 1}rem`,
           transformOrigin: "top left",
-          cursor: isResizeMode ? "se-resize" : "default",
+          cursor: isResizeMode ? "se-resize" : "pointer",
           userSelect: "none",
         }}
       >
@@ -205,33 +238,24 @@ function MainLayout() {
             </p>
           </div>
 
-          <div className="flex space-x-3">
+          {/* ✅ 장바구니 아이콘 버튼 */}
+          <div className="flex justify-end">
             <button
+              onClick={(e) => handleAddToCartGlobal(product, e)}
               disabled={isLocked}
-              className={`flex-1 py-3 rounded-lg text-base font-semibold transition ${
-                isLocked
-                  ? "bg-gray-400 text-white cursor-not-allowed"
-                  : "bg-black text-white hover:bg-gray-800"
-              }`}
-            >
-              바로가기
-            </button>
-            <button
-              disabled={isLocked}
-              className={`flex-1 py-3 rounded-lg text-base font-semibold transition ${
+              className={`p-3 rounded-full transition ${
                 isLocked
                   ? "bg-gray-400 text-white cursor-not-allowed"
                   : "bg-gray-800 text-white hover:bg-gray-700"
               }`}
             >
-              장바구니
+              <ShoppingCartOutlined style={{ fontSize: "1.2rem" }} />
             </button>
           </div>
         </div>
       </motion.div>
     );
   };
-
   /** ✅ 일반 상품 카드 */
   const ProductCard = ({ product }) => {
     const { size, cardRef, startResize } = useResizableCard(
@@ -242,10 +266,18 @@ function MainLayout() {
     const scale = size.width / 300;
     const isLocked = isEditMode;
 
+    /** ✅ 카드 클릭 → 상세 페이지 이동 */
+    const handleCardClick = () => {
+      if (!isResizeMode && !isEditMode) {
+        navigate(`/product/${product._id}`);
+      }
+    };
+
     return (
       <motion.div
         ref={cardRef}
         onMouseDown={startResize}
+        onClick={handleCardClick}
         className={`rounded-2xl shadow-sm bg-white relative overflow-hidden transition-transform duration-300 ${
           isResizeMode
             ? "border-2 border-dashed border-blue-400"
@@ -255,7 +287,7 @@ function MainLayout() {
           width: `${size.width}px`,
           height: `${size.height}px`,
           fontSize: `${scale * 1}rem`,
-          cursor: isResizeMode ? "se-resize" : "default",
+          cursor: isResizeMode ? "se-resize" : "pointer",
           userSelect: "none",
         }}
       >
@@ -276,19 +308,37 @@ function MainLayout() {
         </div>
 
         <div
-          className="p-5 text-center font-['Pretendard'] select-none"
+          className="p-5 font-['Pretendard'] flex flex-col justify-between h-[30%]"
           style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}
         >
-          <h3 className="font-semibold text-gray-800 text-lg mb-1">
-            {product.name}
-          </h3>
-          <p className="text-sm text-gray-500">
-            {product.price ? `${product.price.toLocaleString()}원` : "#데일리룩"}
-          </p>
+          <div>
+            <h3 className="font-semibold text-gray-800 text-lg mb-1">
+              {product.name}
+            </h3>
+            <p className="text-sm text-gray-500">
+              {product.price ? `${product.price.toLocaleString()}원` : "#데일리룩"}
+            </p>
+          </div>
+
+          {/* ✅ 장바구니 아이콘 */}
+          <div className="flex justify-end mt-2">
+            <button
+              onClick={(e) => handleAddToCartGlobal(product, e)}
+              disabled={isLocked}
+              className={`p-2 rounded-full transition ${
+                isLocked
+                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  : "bg-gray-800 text-white hover:bg-gray-700"
+              }`}
+            >
+              <ShoppingCartOutlined style={{ fontSize: "1rem" }} />
+            </button>
+          </div>
         </div>
       </motion.div>
     );
   };
+
   /** ✅ 공용 상품 슬라이드 섹션 */
   const SlideSection = ({ title, id, filter }) => {
     const filteredProducts = allProducts.filter((p) =>
@@ -377,7 +427,6 @@ function MainLayout() {
       </Swiper>
     );
   };
-
   /** ✅ 메인 구조 */
   return (
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden font-['Pretendard']">
@@ -403,7 +452,7 @@ function MainLayout() {
         </div>
       )}
 
-      {/* ✅ 메인 배경 */}
+      {/* ✅ 메인 비주얼 영역 */}
       <section
         className="relative flex flex-col items-center justify-center w-full min-h-[110vh]"
         style={{
@@ -449,6 +498,7 @@ function MainLayout() {
         title="코디 추천"
         filter={(p) => p.categoryPage?.label === "코디 추천"}
       />
+
       {/* ✅ 브랜드 스토리 */}
       <section
         className="flex flex-col items-center justify-center py-[15vh] px-6 text-center bg-gray-100 font-['Pretendard']"
