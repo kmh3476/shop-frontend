@@ -135,7 +135,7 @@ const AdminProductForm = ({ existingProduct, onSave, selectedPage }) => {
           ))}
         </Select>
 
-        {/* 이미지 업로드 */}
+        {/* ✅ 이미지 업로드 */}
         <Upload
           showUploadList={false}
           customRequest={handleImageUpload}

@@ -116,6 +116,7 @@ function MainLayout() {
         document.body.style.cursor = "auto";
       };
     }, [isResizeMode, id]);
+
     /** ✅ 오른쪽 클릭으로 크기조절 시작 */
     const startResize = (e) => {
       if (!isResizeMode) return;
@@ -148,7 +149,6 @@ function MainLayout() {
 
     return { size, cardRef, startResize };
   };
-
   /** ✅ 추천 상품 카드 */
   const FeaturedCard = ({ product }) => {
     const { size, cardRef, startResize } = useResizableCard(
@@ -232,6 +232,7 @@ function MainLayout() {
       </motion.div>
     );
   };
+
   /** ✅ 일반 상품 카드 */
   const ProductCard = ({ product }) => {
     const { size, cardRef, startResize } = useResizableCard(
@@ -322,7 +323,6 @@ function MainLayout() {
       )}
     </Swiper>
   );
-
   /** ✅ 상품 섹션 */
   const SlideSection = ({ title, id, filter }) => {
     const filteredProducts = allProducts.filter((p) =>
@@ -425,7 +425,8 @@ function MainLayout() {
           <FeaturedSwiper />
         </div>
       </section>
-      {/* ✅ 상품 섹션 */}
+
+      {/* ✅ 상품 섹션 - 상의 / 하의 / 코디추천 */}
       <SlideSection
         id="top-section"
         title="상의"
@@ -441,7 +442,6 @@ function MainLayout() {
         title="코디 추천"
         filter={(p) => p.categoryPage?.label === "코디 추천"}
       />
-
       {/* ✅ 브랜드 스토리 */}
       <section
         className="flex flex-col items-center justify-center py-[15vh] px-6 text-center bg-gray-100 font-['Pretendard']"
@@ -463,6 +463,7 @@ function MainLayout() {
             apiUrl="http://localhost:1337/api/texts"
           />
         </motion.h2>
+
         <motion.p
           className="max-w-[700px] text-gray-700 leading-relaxed text-lg md:text-xl font-light"
           initial={{ opacity: 0 }}
