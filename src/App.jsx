@@ -398,8 +398,8 @@ function InnerApp() {
           >
             <Route path="/products" element={<ProductList />} />
 
-            {/* ✅ 수정됨 — /products/:id → /product/:id */}
-            <Route path="/product/:id" element={<ProductDetail />} />
+            {/* ✅ 수정됨 — /product/:id → /product/:id */}
+            <Route path="/products/:id" element={<ProductDetail />} />
 
             <Route path="/cart" element={<Cart />} />
             <Route path="/support" element={<Support />} />

@@ -29,7 +29,7 @@ function MainLayout() {
         const apiUrl =
           import.meta.env.VITE_API_URL ||
           "https://shop-backend-1-dfsl.onrender.com";
-        const response = await axios.get(`${apiUrl}/api/product`);
+        const response = await axios.get(`${apiUrl}/api/products`);
         if (Array.isArray(response.data)) {
           setAllProducts(response.data);
         } else {
@@ -182,7 +182,7 @@ function MainLayout() {
     /** ✅ 카드 클릭 → 상세 페이지 이동 */
     const handleCardClick = () => {
       if (!isResizeMode && !isEditMode) {
-        navigate(`/product/${product._id}`);
+        navigate(`/products/${product._id}`);
       }
     };
 
@@ -266,7 +266,7 @@ function MainLayout() {
     /** ✅ 카드 클릭 → 상세 페이지 이동 */
     const handleCardClick = () => {
       if (!isResizeMode && !isEditMode) {
-        navigate(`/product/${product._id}`);
+        navigate(`/products/${product._id}`);
       }
     };
 
