@@ -16,13 +16,66 @@ const AdminPageSetting = () => {
   /** ✅ 환경설정 URL */
   const apiUrl =
     import.meta.env.VITE_API_URL || "https://shop-backend-1-dfsl.onrender.com";
-  const token =
+
+  /** ✅ axios 인스턴스 생성 */
+  const api = axios.create({
+    baseURL: apiUrl,
+  });
+
+  /** ✅ 토큰 저장 및 불러오기 */
+  const getToken = () =>
     localStorage.getItem("token") || sessionStorage.getItem("token");
+  const getRefreshToken = () =>
+    localStorage.getItem("refreshToken") || sessionStorage.getItem("refreshToken");
+
+  /** ✅ axios 인터셉터: 요청마다 access token 자동 첨부 */
+  useEffect(() => {
+    api.interceptors.request.use((config) => {
+      const token = getToken();
+      if (token) config.headers.Authorization = `Bearer ${token}`;
+      return config;
+    });
+
+    /** ✅ 응답 인터셉터: 토큰 만료 감지 시 자동 갱신 */
+    api.interceptors.response.use(
+      (res) => res,
+      async (err) => {
+        const original = err.config;
+        if (
+          err.response?.status === 401 &&
+          !original._retry &&
+          getRefreshToken()
+        ) {
+          original._retry = true;
+          try {
+            const res = await axios.post(`${apiUrl}/api/auth/refresh`, {
+              token: getRefreshToken(),
+            });
+            const newAccess = res.data?.token;
+            if (newAccess) {
+              localStorage.setItem("token", newAccess);
+              original.headers.Authorization = `Bearer ${newAccess}`;
+              return api(original); // ✅ 원래 요청 재시도
+            }
+          } catch (refreshErr) {
+            console.error("❌ 토큰 갱신 실패:", refreshErr);
+            message.error("세션이 만료되었습니다. 다시 로그인해주세요.");
+            localStorage.removeItem("token");
+            localStorage.removeItem("refreshToken");
+            setTimeout(() => {
+              window.location.href = "/admin-login";
+            }, 1000);
+          }
+        }
+        return Promise.reject(err);
+      }
+    );
+  }, []);
 
   /** ✅ 페이지 목록 불러오기 */
   const fetchPages = async () => {
     try {
-      const res = await axios.get(`${apiUrl}/api/pages`);
+      const res = await api.get("/api/pages");
       const sorted = res.data.sort((a, b) => a.order - b.order);
       setPages(sorted);
     } catch (err) {
@@ -66,17 +119,13 @@ const AdminPageSetting = () => {
 
     try {
       setLoading(true);
-      await axios.post(`${apiUrl}/api/pages`, newPage, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.post("/api/pages", newPage);
       message.success("새 페이지가 추가되었습니다.");
       setNewPage({ name: "", label: "", order: 0, image: "" });
       fetchPages();
     } catch (err) {
       console.error("❌ 새 페이지 추가 실패:", err);
-      if (err.response?.status === 401)
-        message.error("로그인이 필요하거나 관리자 권한이 없습니다.");
-      else message.error(err.response?.data?.message || "페이지 추가 실패");
+      message.error(err.response?.data?.message || "페이지 추가 실패");
     } finally {
       setLoading(false);
     }
@@ -86,9 +135,7 @@ const AdminPageSetting = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("정말 이 탭을 삭제하시겠습니까?")) return;
     try {
-      await axios.delete(`${apiUrl}/api/pages/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/api/pages/${id}`);
       message.success("페이지가 삭제되었습니다.");
       fetchPages();
     } catch (err) {
@@ -119,13 +166,7 @@ const AdminPageSetting = () => {
     setPages(updated);
     try {
       await Promise.all(
-        updated.map((p) =>
-          axios.put(
-            `${apiUrl}/api/pages/${p._id}`,
-            { order: p.order },
-            { headers: { Authorization: `Bearer ${token}` } }
-          )
-        )
+        updated.map((p) => api.put(`/api/pages/${p._id}`, { order: p.order }))
       );
       message.success("순서가 업데이트되었습니다.");
       fetchPages();
@@ -187,12 +228,10 @@ const AdminPageSetting = () => {
     },
   ];
 
-  /** ✅ 렌더링 */
   return (
     <div className="p-6 max-w-5xl mx-auto bg-white rounded-xl shadow">
       <h2 className="text-2xl font-bold mb-4">🗂 페이지(탭) 설정</h2>
 
-      {/* 탭 추가 폼 */}
       <Space direction="horizontal" wrap>
         <Input
           placeholder="이름(name)"
@@ -215,8 +254,6 @@ const AdminPageSetting = () => {
           }
           style={{ width: 120 }}
         />
-
-        {/* 이미지 업로드 */}
         <Upload
           showUploadList={false}
           customRequest={handleImageUpload}
@@ -224,13 +261,11 @@ const AdminPageSetting = () => {
         >
           <Button icon={<UploadOutlined />}>이미지 업로드</Button>
         </Upload>
-
         <Button onClick={handleAdd} type="primary" loading={loading}>
           ➕ 추가
         </Button>
       </Space>
 
-      {/* 이미지 미리보기 */}
       {newPage.image && (
         <img
           src={newPage.image}
@@ -246,7 +281,6 @@ const AdminPageSetting = () => {
         />
       )}
 
-      {/* 테이블 표시 */}
       <Table
         dataSource={pages}
         columns={columns}
