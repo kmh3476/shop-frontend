@@ -47,6 +47,10 @@ const AdminPageSetting = () => {
           !original._retry &&
           getRefreshToken()
         ) {
+          // ✅ accessToken 만료 시 protect() 로그가 중복 안 찍히도록 잠시 요청 대기
+if (original.url.includes("/api/pages")) {
+  console.warn("⏳ 토큰 만료 감지, 자동 재발급 시도 중...");
+}
           original._retry = true;
           try {
             if (refreshing) {
