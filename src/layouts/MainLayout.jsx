@@ -9,10 +9,34 @@ import EditableText from "../components/EditableText";
 import EditableImage from "../components/EditableImage";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
+import axios from "axios"; // ✅ 상품 데이터 연동용 추가
 
 function MainLayout() {
   const { isEditMode, setIsEditMode, isResizeMode, setIsResizeMode } = useEditMode();
   const { user } = useAuth();
+
+  /** ✅ 상품 데이터 상태 */
+  const [featuredProducts, setFeaturedProducts] = useState([]); // 추천 상품
+  const [allProducts, setAllProducts] = useState([]); // 전체 상품
+
+  /** ✅ 상품 데이터 불러오기 */
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:1337";
+        const response = await axios.get(`${apiUrl}/api/products`);
+        if (Array.isArray(response.data)) {
+          setAllProducts(response.data);
+          setFeaturedProducts(response.data.slice(0, 8)); // 앞 8개는 추천상품
+        } else {
+          console.warn("⚠ 상품 데이터 형식이 배열이 아닙니다:", response.data);
+        }
+      } catch (error) {
+        console.error("❌ 상품 데이터를 불러오지 못했습니다:", error);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   /** ✅ 관리자 전용 토글 */
   const toggleEditMode = () => {
@@ -92,7 +116,6 @@ function MainLayout() {
         document.body.style.cursor = "auto";
       };
     }, [isResizeMode, id]);
-
     /** ✅ 오른쪽 클릭으로 크기조절 시작 */
     const startResize = (e) => {
       if (!isResizeMode) return;
@@ -127,10 +150,14 @@ function MainLayout() {
   };
 
   /** ✅ 추천 상품 카드 */
-  const FeaturedCard = ({ i }) => {
-    const { size, cardRef, startResize } = useResizableCard(`featured-${i}`, 360, 520);
+  const FeaturedCard = ({ product }) => {
+    const { size, cardRef, startResize } = useResizableCard(
+      `featured-${product._id || product.name}`,
+      360,
+      520
+    );
     const scale = size.width / 360;
-    const isLocked = isEditMode; // ✅ 디자인 모드일 때만 상호작용 차단 (크기조절 모드에는 영향 X)
+    const isLocked = isEditMode;
 
     return (
       <motion.div
@@ -140,7 +167,7 @@ function MainLayout() {
           isResizeMode
             ? "border-2 border-dashed border-blue-400"
             : "border border-gray-200 hover:shadow-2xl"
-        } ${isLocked ? "pointer-events-none" : ""}`} 
+        } ${isLocked ? "pointer-events-none" : ""}`}
         style={{
           width: `${size.width}px`,
           height: `${size.height}px`,
@@ -152,15 +179,9 @@ function MainLayout() {
       >
         <div className="w-full h-[60%] overflow-hidden relative select-none">
           <EditableImage
-            id={`featured-img-${i}`}
-            defaultSrc={
-              i % 3 === 1
-                ? "/clothes-sample2.png"
-                : i % 3 === 2
-                ? "/clothes-sample3.jpg"
-                : "/gorani.jpg"
-            }
-            alt={`sample-${i}`}
+            id={`featured-img-${product._id || product.name}`}
+            defaultSrc={product.mainImage || "/gorani.jpg"}
+            alt={product.name}
             filePath="src/layouts/MainLayout.jsx"
             componentName="FeaturedCard"
             style={{
@@ -178,18 +199,10 @@ function MainLayout() {
         >
           <div>
             <h3 className="font-bold text-3xl mb-3 text-gray-900 tracking-tight">
-              <EditableText
-                id={`featured-title-${i}`}
-                defaultText={`추천 상품 ${i}`}
-                apiUrl="http://localhost:1337/api/texts"
-              />
+              {product.name}
             </h3>
             <p className="text-base text-gray-500 mb-4 leading-relaxed">
-              <EditableText
-                id={`featured-desc-${i}`}
-                defaultText="감각적인 디자인으로 완성된 이번 시즌 베스트."
-                apiUrl="http://localhost:1337/api/texts"
-              />
+              {product.description || "감각적인 디자인으로 완성된 이번 시즌 베스트."}
             </p>
           </div>
 
@@ -221,10 +234,14 @@ function MainLayout() {
   };
 
   /** ✅ 일반 상품 카드 */
-  const ProductCard = ({ i }) => {
-    const { size, cardRef, startResize } = useResizableCard(`product-${i}`, 300, 460);
+  const ProductCard = ({ product }) => {
+    const { size, cardRef, startResize } = useResizableCard(
+      `product-${product._id || product.name}`,
+      300,
+      460
+    );
     const scale = size.width / 300;
-    const isLocked = isEditMode; // ✅ 크기조절 모드에서는 작동해야 하므로 디자인모드만 차단
+    const isLocked = isEditMode;
 
     return (
       <motion.div
@@ -245,15 +262,9 @@ function MainLayout() {
       >
         <div className="overflow-hidden w-full h-[70%] mx-auto relative select-none">
           <EditableImage
-            id={`product-img-${i}`}
-            defaultSrc={
-              i % 3 === 1
-                ? "/clothes-sample2.png"
-                : i % 3 === 2
-                ? "/clothes-sample3.jpg"
-                : "/gorani.jpg"
-            }
-            alt={`sample-${i}`}
+            id={`product-img-${product._id || product.name}`}
+            defaultSrc={product.mainImage || "/gorani.jpg"}
+            alt={product.name}
             filePath="src/layouts/MainLayout.jsx"
             componentName="ProductCard"
             style={{
@@ -264,23 +275,16 @@ function MainLayout() {
             }}
           />
         </div>
+
         <div
           className="p-5 text-center font-['Pretendard'] select-none"
           style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}
         >
           <h3 className="font-semibold text-gray-800 text-lg mb-1">
-            <EditableText
-              id={`product-name-${i}`}
-              defaultText={`상품명 ${i}`}
-              apiUrl="http://localhost:1337/api/texts"
-            />
+            {product.name}
           </h3>
           <p className="text-sm text-gray-500">
-            <EditableText
-              id={`product-tag-${i}`}
-              defaultText="#데일리룩 #심플핏"
-              apiUrl="http://localhost:1337/api/texts"
-            />
+            {product.price ? `${product.price.toLocaleString()}원` : "#데일리룩"}
           </p>
         </div>
       </motion.div>
@@ -306,47 +310,64 @@ function MainLayout() {
       loop
       className="pb-12 swiper-horizontal swiper-backface-hidden"
     >
-      {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-        <SwiperSlide key={i}>
-          <FeaturedCard i={i} />
-        </SwiperSlide>
-      ))}
+      {featuredProducts.length > 0 ? (
+        featuredProducts.map((product) => (
+          <SwiperSlide key={product._id || product.name}>
+            <FeaturedCard product={product} />
+          </SwiperSlide>
+        ))
+      ) : (
+        <p className="text-gray-500 text-center w-full py-10">
+          상품이 없습니다.
+        </p>
+      )}
     </Swiper>
   );
-
   /** ✅ 상품 섹션 */
-  const SlideSection = ({ title, id }) => (
-    <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black font-['Pretendard']">
-      <motion.h2
-        className="text-4xl md:text-5xl font-extrabold mb-10 drop-shadow-sm tracking-tight text-gray-900"
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        viewport={{ once: true }}
-      >
-        <EditableText id={id} defaultText={title} apiUrl="http://localhost:1337/api/texts" />
-      </motion.h2>
+  const SlideSection = ({ title, id, filter }) => {
+    const filteredProducts = allProducts.filter((p) =>
+      filter ? filter(p) : true
+    );
 
-      <Swiper
-        modules={[Navigation, Pagination]}
-        spaceBetween={10}
-        slidesPerView={3.5}
-        navigation={!isEditMode && !isResizeMode}
-        pagination={!isEditMode && !isResizeMode ? { clickable: true } : false}
-        allowTouchMove={!isEditMode && !isResizeMode}
-        simulateTouch={!isEditMode && !isResizeMode}
-        draggable={!isEditMode && !isResizeMode}
-        loop
-        className="pb-12 swiper-backface-hidden"
-      >
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
-          <SwiperSlide key={i}>
-            <ProductCard i={i} />
-          </SwiperSlide>
-        ))}
-      </Swiper>
-    </section>
-  );
+    return (
+      <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black font-['Pretendard']">
+        <motion.h2
+          className="text-4xl md:text-5xl font-extrabold mb-10 drop-shadow-sm tracking-tight text-gray-900"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          viewport={{ once: true }}
+        >
+          <EditableText id={id} defaultText={title} apiUrl="http://localhost:1337/api/texts" />
+        </motion.h2>
+
+        <Swiper
+          modules={[Navigation, Pagination]}
+          spaceBetween={10}
+          slidesPerView={3.5}
+          navigation={!isEditMode && !isResizeMode}
+          pagination={!isEditMode && !isResizeMode ? { clickable: true } : false}
+          allowTouchMove={!isEditMode && !isResizeMode}
+          simulateTouch={!isEditMode && !isResizeMode}
+          draggable={!isEditMode && !isResizeMode}
+          loop
+          className="pb-12 swiper-backface-hidden"
+        >
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((product) => (
+              <SwiperSlide key={product._id || product.name}>
+                <ProductCard product={product} />
+              </SwiperSlide>
+            ))
+          ) : (
+            <p className="text-gray-500 text-center w-full py-10">
+              상품이 없습니다.
+            </p>
+          )}
+        </Swiper>
+      </section>
+    );
+  };
 
   return (
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden font-['Pretendard']">
@@ -403,9 +424,21 @@ function MainLayout() {
       </section>
 
       {/* 상품 섹션 */}
-      <SlideSection id="top-section" title="상의" />
-      <SlideSection id="bottom-section" title="하의" />
-      <SlideSection id="coordi-section" title="코디 추천" />
+      <SlideSection
+        id="top-section"
+        title="상의"
+        filter={(p) => p.categoryPage?.label === "상의"}
+      />
+      <SlideSection
+        id="bottom-section"
+        title="하의"
+        filter={(p) => p.categoryPage?.label === "하의"}
+      />
+      <SlideSection
+        id="coordi-section"
+        title="코디 추천"
+        filter={(p) => p.categoryPage?.label === "코디 추천"}
+      />
 
       {/* 브랜드 스토리 */}
       <section
