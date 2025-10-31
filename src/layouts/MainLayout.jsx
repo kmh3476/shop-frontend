@@ -11,7 +11,6 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useCart } from "../context/CartContext"; // ✅ 로컬 CartContext 연동
 import axios from "axios";
 
 function MainLayout() {
@@ -19,7 +18,6 @@ function MainLayout() {
     useEditMode();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { addToCart } = useCart?.() || {}; // ✅ CartContext 존재 시 사용
 
   /** ✅ 상품 데이터 상태 */
   const [allProducts, setAllProducts] = useState([]);
@@ -151,28 +149,26 @@ function MainLayout() {
     return { size, cardRef, startResize };
   };
 
-  /** ✅ 장바구니 추가 함수 (공용) */
-  const handleAddToCartGlobal = async (product, e) => {
+  /** ✅ 장바구니 추가 (localStorage 기반) */
+  const handleAddToCartGlobal = (product, e) => {
     e.stopPropagation();
     try {
-      if (addToCart) {
-        addToCart(product);
-        alert(`'${product.name}'이(가) 장바구니에 추가되었습니다.`);
+      const saved = JSON.parse(localStorage.getItem("cart")) || [];
+      const exists = saved.find((item) => item._id === product._id);
+
+      if (exists) {
+        exists.quantity = (exists.quantity || 1) + 1;
       } else {
-        const apiUrl =
-          import.meta.env.VITE_API_URL || "https://shop-backend-1-dfsl.onrender.com";
-        await axios.post(`${apiUrl}/api/cart`, {
-          productId: product._id,
-          quantity: 1,
-        });
-        alert(`'${product.name}'이(가) 장바구니에 추가되었습니다.`);
+        saved.push({ ...product, quantity: 1 });
       }
+
+      localStorage.setItem("cart", JSON.stringify(saved));
+      alert(`'${product.name}'이(가) 장바구니에 추가되었습니다.`);
     } catch (err) {
       console.error("❌ 장바구니 추가 실패:", err);
       alert("장바구니 추가 중 오류가 발생했습니다.");
     }
   };
-
   /** ✅ 추천 상품 카드 */
   const FeaturedCard = ({ product }) => {
     const { size, cardRef, startResize } = useResizableCard(
@@ -256,6 +252,7 @@ function MainLayout() {
       </motion.div>
     );
   };
+
   /** ✅ 일반 상품 카드 */
   const ProductCard = ({ product }) => {
     const { size, cardRef, startResize } = useResizableCard(
@@ -388,7 +385,6 @@ function MainLayout() {
       </section>
     );
   };
-
   /** ✅ 추천상품 전용 Swiper */
   const FeaturedSwiper = () => {
     const featured = allProducts.filter(
@@ -427,6 +423,7 @@ function MainLayout() {
       </Swiper>
     );
   };
+
   /** ✅ 메인 구조 */
   return (
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden font-['Pretendard']">
