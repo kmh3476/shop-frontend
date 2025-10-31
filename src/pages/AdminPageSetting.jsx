@@ -12,6 +12,7 @@ const AdminPageSetting = () => {
     image: "",
   });
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false); // ✅ 추가: 중복 refresh 방지
 
   /** ✅ 환경설정 URL */
   const apiUrl =
@@ -30,14 +31,14 @@ const AdminPageSetting = () => {
 
   /** ✅ axios 인터셉터: 요청마다 access token 자동 첨부 */
   useEffect(() => {
-    api.interceptors.request.use((config) => {
+    const reqInterceptor = api.interceptors.request.use((config) => {
       const token = getToken();
       if (token) config.headers.Authorization = `Bearer ${token}`;
       return config;
     });
 
     /** ✅ 응답 인터셉터: 토큰 만료 감지 시 자동 갱신 */
-    api.interceptors.response.use(
+    const resInterceptor = api.interceptors.response.use(
       (res) => res,
       async (err) => {
         const original = err.config;
@@ -48,14 +49,29 @@ const AdminPageSetting = () => {
         ) {
           original._retry = true;
           try {
+            if (refreshing) {
+              // ✅ 이미 갱신 중이면 약간 대기 후 재시도
+              await new Promise((resolve) => setTimeout(resolve, 1000));
+              const token = getToken();
+              if (token) {
+                original.headers.Authorization = `Bearer ${token}`;
+                return api(original);
+              }
+            }
+
+            setRefreshing(true);
             const res = await axios.post(`${apiUrl}/api/auth/refresh`, {
               token: getRefreshToken(),
             });
+
             const newAccess = res.data?.token;
             if (newAccess) {
               localStorage.setItem("token", newAccess);
               original.headers.Authorization = `Bearer ${newAccess}`;
+              console.log("🔁 Access token 재발급 완료 → 요청 재시도");
               return api(original); // ✅ 원래 요청 재시도
+            } else {
+              throw new Error("갱신된 access token이 없습니다.");
             }
           } catch (refreshErr) {
             console.error("❌ 토큰 갱신 실패:", refreshErr);
@@ -65,11 +81,18 @@ const AdminPageSetting = () => {
             setTimeout(() => {
               window.location.href = "/admin-login";
             }, 1000);
+          } finally {
+            setRefreshing(false);
           }
         }
         return Promise.reject(err);
       }
     );
+
+    return () => {
+      api.interceptors.request.eject(reqInterceptor);
+      api.interceptors.response.eject(resInterceptor);
+    };
   }, []);
 
   /** ✅ 페이지 목록 불러오기 */
@@ -125,7 +148,11 @@ const AdminPageSetting = () => {
       fetchPages();
     } catch (err) {
       console.error("❌ 새 페이지 추가 실패:", err);
-      message.error(err.response?.data?.message || "페이지 추가 실패");
+      if (err.response?.status === 401) {
+        message.warning("세션이 만료되었습니다. 다시 로그인해주세요.");
+      } else {
+        message.error(err.response?.data?.message || "페이지 추가 실패");
+      }
     } finally {
       setLoading(false);
     }
