@@ -9,58 +9,57 @@ import EditableText from "../components/EditableText";
 import EditableImage from "../components/EditableImage";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios"; // ✅ 상품 데이터 연동용 추가
+import axios from "axios";
 
 function MainLayout() {
   const { isEditMode, setIsEditMode, isResizeMode, setIsResizeMode } = useEditMode();
   const { user } = useAuth();
 
-  /** ✅ 상품 데이터 상태 */
+  /** ✅ 상태 정의 */
   const [featuredProducts, setFeaturedProducts] = useState([]); // 추천 상품
   const [allProducts, setAllProducts] = useState([]); // 전체 상품
+  const [pages, setPages] = useState([]); // 관리자 생성 탭 목록
 
-  /** ✅ 상품 데이터 불러오기 */
+  /** ✅ 데이터 불러오기 */
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || "https://shop-backend-1-dfsl.onrender.com";
-        const response = await axios.get(`${apiUrl}/api/products`);
-        if (Array.isArray(response.data)) {
-          setAllProducts(response.data);
-          setFeaturedProducts(response.data.slice(0, 8)); // 앞 8개는 추천상품
-        } else {
-          console.warn("⚠ 상품 데이터 형식이 배열이 아닙니다:", response.data);
-        }
-      } catch (error) {
-        console.error("❌ 상품 데이터를 불러오지 못했습니다:", error);
+        const apiUrl =
+          import.meta.env.VITE_API_URL || "https://shop-backend-1-dfsl.onrender.com";
+
+        // ✅ 추천상품 탭 상품
+        const recommendRes = await axios.get(`${apiUrl}/api/products?categoryName=recommend`);
+        // ✅ 전체 상품
+        const allRes = await axios.get(`${apiUrl}/api/products`);
+        // ✅ 페이지 탭 목록
+        const pageRes = await axios.get(`${apiUrl}/api/pages`);
+
+        if (Array.isArray(allRes.data)) setAllProducts(allRes.data);
+        if (Array.isArray(recommendRes.data)) setFeaturedProducts(recommendRes.data);
+        if (Array.isArray(pageRes.data)) setPages(pageRes.data.sort((a, b) => a.order - b.order));
+      } catch (err) {
+        console.error("❌ 데이터 로드 실패:", err);
       }
     };
-    fetchProducts();
+    fetchData();
   }, []);
 
   /** ✅ 관리자 전용 토글 */
   const toggleEditMode = () => {
-    if (!user?.isAdmin) {
-      alert("⚠ 관리자만 디자인 모드를 사용할 수 있습니다.");
-      return;
-    }
+    if (!user?.isAdmin) return alert("⚠ 관리자만 디자인 모드를 사용할 수 있습니다.");
     setIsEditMode(!isEditMode);
   };
 
   const toggleResizeMode = () => {
-    if (!user?.isAdmin) {
-      alert("⚠ 관리자만 크기 조절 모드를 사용할 수 있습니다.");
-      return;
-    }
+    if (!user?.isAdmin) return alert("⚠ 관리자만 크기 조절 모드를 사용할 수 있습니다.");
     setIsResizeMode(!isResizeMode);
   };
 
-  /** ✅ 카드 크기 조절 Hook */
+  /** ✅ 카드 크기 조절 훅 */
   const useResizableCard = (id, defaultWidth = 360, defaultHeight = 520) => {
     const [size, setSize] = useState(() => {
       const saved = localStorage.getItem(`card-size-${id}`);
-      if (saved) return JSON.parse(saved);
-      return { width: defaultWidth, height: defaultHeight };
+      return saved ? JSON.parse(saved) : { width: defaultWidth, height: defaultHeight };
     });
 
     const sizeRef = useRef(size);
@@ -74,16 +73,12 @@ function MainLayout() {
 
     useEffect(() => {
       let frameId = null;
-
-      const handleMouseMove = (e) => {
+      const handleMove = (e) => {
         if (!resizingRef.current || !cardRef.current || !isResizeMode) return;
-
         const dx = e.clientX - startRef.current.x;
         const dy = e.clientY - startRef.current.y;
-
         const newWidth = Math.max(100, startRef.current.width + dx);
         const newHeight = Math.max(100, startRef.current.height + dy);
-
         if (!frameId) {
           frameId = requestAnimationFrame(() => {
             setSize({ width: newWidth, height: newHeight });
@@ -92,38 +87,30 @@ function MainLayout() {
         }
       };
 
-      const handleMouseUp = () => {
+      const handleUp = () => {
         if (!resizingRef.current) return;
         resizingRef.current = false;
-
         document.body.style.userSelect = "auto";
         document.body.style.cursor = "auto";
-
         localStorage.setItem(`card-size-${id}`, JSON.stringify(sizeRef.current));
       };
 
       if (isResizeMode) {
-        window.addEventListener("mousemove", handleMouseMove, { passive: true });
-        window.addEventListener("mouseup", handleMouseUp);
+        window.addEventListener("mousemove", handleMove, { passive: true });
+        window.addEventListener("mouseup", handleUp);
       }
 
       return () => {
         if (frameId) cancelAnimationFrame(frameId);
-        window.removeEventListener("mousemove", handleMouseMove);
-        window.removeEventListener("mouseup", handleMouseUp);
-        resizingRef.current = false;
-        document.body.style.userSelect = "auto";
-        document.body.style.cursor = "auto";
+        window.removeEventListener("mousemove", handleMove);
+        window.removeEventListener("mouseup", handleUp);
       };
     }, [isResizeMode, id]);
 
-    /** ✅ 오른쪽 클릭으로 크기조절 시작 */
     const startResize = (e) => {
-      if (!isResizeMode) return;
-      if (e.button !== 2) return;
+      if (!isResizeMode || e.button !== 2) return;
       e.preventDefault();
       e.stopPropagation();
-
       resizingRef.current = true;
       startRef.current = {
         x: e.clientX,
@@ -131,20 +118,18 @@ function MainLayout() {
         width: cardRef.current?.offsetWidth || 0,
         height: cardRef.current?.offsetHeight || 0,
       };
-
       document.body.style.userSelect = "none";
       document.body.style.cursor = "se-resize";
     };
 
-    /** ✅ 우클릭 메뉴 차단 */
     useEffect(() => {
       const el = cardRef.current;
       if (!el) return;
-      const preventContextMenu = (e) => {
+      const preventMenu = (e) => {
         if (isResizeMode) e.preventDefault();
       };
-      el.addEventListener("contextmenu", preventContextMenu);
-      return () => el.removeEventListener("contextmenu", preventContextMenu);
+      el.addEventListener("contextmenu", preventMenu);
+      return () => el.removeEventListener("contextmenu", preventMenu);
     }, [isResizeMode]);
 
     return { size, cardRef, startResize };
@@ -318,12 +303,12 @@ function MainLayout() {
         ))
       ) : (
         <p className="text-gray-500 text-center w-full py-10">
-          상품이 없습니다.
+          추천 상품이 없습니다.
         </p>
       )}
     </Swiper>
   );
-  /** ✅ 상품 섹션 */
+  /** ✅ 자동 생성되는 상품 섹션 */
   const SlideSection = ({ title, id, filter }) => {
     const filteredProducts = allProducts.filter((p) =>
       filter ? filter(p) : true
@@ -372,9 +357,33 @@ function MainLayout() {
     );
   };
 
+  /** ✅ 페이지별 자동 생성 섹션 */
+  const DynamicSections = () => {
+    if (!pages || pages.length === 0)
+      return (
+        <p className="text-gray-400 text-center my-20">
+          등록된 탭이 없습니다. 관리자 페이지에서 탭을 추가하세요.
+        </p>
+      );
+
+    return (
+      <>
+        {pages.map((page) => (
+          <SlideSection
+            key={page._id}
+            id={`section-${page.name}`}
+            title={page.label}
+            filter={(p) => p.categoryPage?.label === page.label}
+          />
+        ))}
+      </>
+    );
+  };
+
+  /** ✅ 메인 JSX */
   return (
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden font-['Pretendard']">
-      {/* ✅ 관리자 모드 버튼 */}
+      {/* ✅ 관리자 전용 토글 버튼 */}
       {user?.isAdmin && (
         <div className="fixed top-6 left-6 z-[9999] flex gap-3 items-center">
           <button
@@ -396,7 +405,7 @@ function MainLayout() {
         </div>
       )}
 
-      {/* ✅ 메인 배경 */}
+      {/* ✅ 메인 배경 영역 */}
       <section
         className="relative flex flex-col items-center justify-center w-full min-h-[110vh]"
         style={{
@@ -426,22 +435,8 @@ function MainLayout() {
         </div>
       </section>
 
-      {/* ✅ 상품 섹션 - 상의 / 하의 / 코디추천 */}
-      <SlideSection
-        id="top-section"
-        title="상의"
-        filter={(p) => p.categoryPage?.label === "상의"}
-      />
-      <SlideSection
-        id="bottom-section"
-        title="하의"
-        filter={(p) => p.categoryPage?.label === "하의"}
-      />
-      <SlideSection
-        id="coordi-section"
-        title="코디 추천"
-        filter={(p) => p.categoryPage?.label === "코디 추천"}
-      />
+      {/* ✅ 자동 탭 기반 섹션 */}
+      <DynamicSections />
       {/* ✅ 브랜드 스토리 */}
       <section
         className="flex flex-col items-center justify-center py-[15vh] px-6 text-center bg-gray-100 font-['Pretendard']"
