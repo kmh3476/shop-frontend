@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
+import AdminProductForm from "./AdminProductForm"; // ✅ 상품 등록 컴포넌트 연결 추가
 
 // ✅ 로그인 토큰 자동 포함 헬퍼
 const getAuthHeader = () => {
@@ -87,6 +88,8 @@ function Admin() {
   const [modalImages, setModalImages] = useState([]);
   const [modalIndex, setModalIndex] = useState(0);
   const [activeTab, setActiveTab] = useState("all"); // ✅ 현재 선택된 탭
+  const [showProductForm, setShowProductForm] = useState(false); // ✅ 폼 표시 여부
+  const [selectedPage, setSelectedPage] = useState(null); // ✅ 탭 클릭 시 선택된 페이지 저장
 
   useEffect(() => {
     fetchProducts();
@@ -124,14 +127,15 @@ function Admin() {
     }
   };
 
-  // ✅ 탭 선택 시 필터링
+  // ✅ 탭 클릭 시 필터링 + 선택 페이지 설정
   const handleTabClick = (tabId) => {
     setActiveTab(tabId);
+    setShowProductForm(false); // 폼 숨기기 초기화
     if (tabId === "all") {
       setFilteredProducts(products);
+      setSelectedPage(null);
     } else {
       const filtered = products.filter((p) => {
-        // 🔧 categoryPage가 ObjectId이거나 문자열인 경우 모두 대비
         const categoryId =
           typeof p.categoryPage === "object"
             ? p.categoryPage?._id
@@ -139,9 +143,9 @@ function Admin() {
         return categoryId === tabId;
       });
       setFilteredProducts(filtered);
+      setSelectedPage(tabId); // ✅ 선택된 페이지 ObjectId 저장
     }
   };
-
   // ✅ 새 탭 추가
   const addPage = async () => {
     if (!newPage.name || !newPage.label) {
@@ -182,9 +186,15 @@ function Admin() {
 
     const newPages = [...pages];
     if (direction === "up" && index > 0) {
-      [newPages[index - 1], newPages[index]] = [newPages[index], newPages[index - 1]];
+      [newPages[index - 1], newPages[index]] = [
+        newPages[index],
+        newPages[index - 1],
+      ];
     } else if (direction === "down" && index < newPages.length - 1) {
-      [newPages[index + 1], newPages[index]] = [newPages[index], newPages[index + 1]];
+      [newPages[index + 1], newPages[index]] = [
+        newPages[index],
+        newPages[index + 1],
+      ];
     } else return;
 
     const updated = newPages.map((p, i) => ({ ...p, order: i + 1 }));
@@ -268,16 +278,16 @@ function Admin() {
         : cleanImages[0] || "https://placehold.co/250x200?text=No+Image";
 
     const productData = {
-  name: form.name.trim(),
-  price: Number(form.price),
-  description: form.description.trim(),
-  images: cleanImages,
-  mainImage: mainImg,
-  categoryPage:
-    form.categoryPage && form.categoryPage !== "null" && form.categoryPage !== ""
-      ? form.categoryPage
-      : null, // ✅ 문자열이면 그대로 유지 (ObjectId로 변환됨)
-};
+      name: form.name.trim(),
+      price: Number(form.price),
+      description: form.description.trim(),
+      images: cleanImages,
+      mainImage: mainImg,
+      categoryPage:
+        form.categoryPage && form.categoryPage !== "null" && form.categoryPage !== ""
+          ? form.categoryPage
+          : selectedPage || null, // ✅ 탭 선택 시 자동 categoryPage 연결
+    };
 
     try {
       setUploading("🕓 상품 저장 중...");
@@ -288,7 +298,7 @@ function Admin() {
       } else {
         await api.post("/products", productData, { headers: getAuthHeader() });
       }
-      await fetchProducts(); // 🔧 저장 후 다시 불러오기
+      await fetchProducts();
       setEditingId(null);
       setForm({
         name: "",
@@ -304,7 +314,6 @@ function Admin() {
       setUploading(false);
     }
   };
-
   const startEdit = (p) => {
     setEditingId(p._id);
     setForm({
@@ -318,6 +327,7 @@ function Admin() {
           ? p.categoryPage?._id || ""
           : p.categoryPage || "",
     });
+    setShowProductForm(true);
   };
 
   const cancelEdit = () => {
@@ -330,6 +340,7 @@ function Admin() {
       mainImage: "",
       categoryPage: "",
     });
+    setShowProductForm(false);
   };
 
   const removeImage = (index) => {
@@ -419,90 +430,110 @@ function Admin() {
         ))}
       </div>
 
-      {/* ✅ 상품 등록 폼 */}
-      <h2 style={{ marginTop: "30px" }}>{editingId ? "상품 수정" : "상품 추가"}</h2>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "8px",
-          maxWidth: "350px",
-          marginBottom: "30px",
-        }}
-      >
-        <input
-          type="text"
-          placeholder="상품명"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-        />
-        <input
-          type="number"
-          placeholder="가격"
-          value={form.price}
-          onChange={(e) => setForm({ ...form, price: e.target.value })}
-        />
-        <textarea
-          placeholder="설명"
-          rows={3}
-          value={form.description}
-          onChange={(e) => setForm({ ...form, description: e.target.value })}
-        />
-        <select
-          value={form.categoryPage}
-          onChange={(e) => setForm({ ...form, categoryPage: e.target.value })}
-        >
-          <option value="">탭 선택 없음</option>
-          {pages.map((p) => (
-            <option key={p._id} value={p._id}>
-              {p.label}
-            </option>
-          ))}
-        </select>
-        <input type="file" accept="image/*" multiple onChange={handleFileChange} />
-        {uploading && <p style={{ color: "blue" }}>{uploading}</p>}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-          {form.images.map((img, idx) => (
-            <div key={idx} style={{ position: "relative" }}>
-              <img
-                src={img}
-                alt="preview"
-                style={{
-                  width: "80px",
-                  height: "80px",
-                  objectFit: "cover",
-                  border:
-                    img === form.mainImage ? "3px solid blue" : "1px solid #ccc",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                }}
-                onClick={() => setAsMainImage(img)}
-              />
-              <button
-                onClick={() => removeImage(idx)}
-                style={{
-                  position: "absolute",
-                  top: "-6px",
-                  right: "-6px",
-                  background: "rgba(0,0,0,0.6)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "50%",
-                  width: "20px",
-                  height: "20px",
-                  cursor: "pointer",
-                }}
-              >
-                ✖
-              </button>
-            </div>
-          ))}
+      {/* ✅ 선택된 탭에 따라 상품 등록 폼 표시 */}
+      {selectedPage && (
+        <div style={{ marginTop: "30px" }}>
+          <h2>🛍 {pages.find((p) => p._id === selectedPage)?.label || "상품"} 추가</h2>
+          <AdminProductForm
+            selectedPage={selectedPage}
+            onSave={() => {
+              fetchProducts();
+              setShowProductForm(false);
+            }}
+          />
         </div>
-        <button onClick={saveProduct}>
-          {editingId ? "💾 수정 완료" : "➕ 상품 추가"}
-        </button>
-        {editingId && <button onClick={cancelEdit}>취소</button>}
-      </div>
+      )}
+      {/* ✅ 기존 직접 입력 상품 등록 폼 (수정 시 표시됨) */}
+      {editingId && !selectedPage && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
+            maxWidth: "350px",
+            marginBottom: "30px",
+            marginTop: "30px",
+          }}
+        >
+          <h2>✏️ 상품 수정 중...</h2>
+          <input
+            type="text"
+            placeholder="상품명"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
+          <input
+            type="number"
+            placeholder="가격"
+            value={form.price}
+            onChange={(e) => setForm({ ...form, price: e.target.value })}
+          />
+          <textarea
+            placeholder="설명"
+            rows={3}
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+          />
+          <select
+            value={form.categoryPage}
+            onChange={(e) => setForm({ ...form, categoryPage: e.target.value })}
+          >
+            <option value="">탭 선택 없음</option>
+            {pages.map((p) => (
+              <option key={p._id} value={p._id}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+
+          <input type="file" accept="image/*" multiple onChange={handleFileChange} />
+
+          {uploading && <p style={{ color: "blue" }}>{uploading}</p>}
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+            {form.images.map((img, idx) => (
+              <div key={idx} style={{ position: "relative" }}>
+                <img
+                  src={img}
+                  alt="preview"
+                  style={{
+                    width: "80px",
+                    height: "80px",
+                    objectFit: "cover",
+                    border:
+                      img === form.mainImage ? "3px solid blue" : "1px solid #ccc",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setAsMainImage(img)}
+                />
+                <button
+                  onClick={() => removeImage(idx)}
+                  style={{
+                    position: "absolute",
+                    top: "-6px",
+                    right: "-6px",
+                    background: "rgba(0,0,0,0.6)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: "20px",
+                    height: "20px",
+                    cursor: "pointer",
+                  }}
+                >
+                  ✖
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <button onClick={saveProduct}>
+            {editingId ? "💾 수정 완료" : "➕ 상품 추가"}
+          </button>
+          {editingId && <button onClick={cancelEdit}>취소</button>}
+        </div>
+      )}
 
       {/* ✅ 상품 목록 */}
       <h2>📋 상품 목록</h2>
@@ -553,7 +584,7 @@ function Admin() {
           ))}
         </ul>
       )}
-
+      {/* ✅ 상품 상세 이미지 모달 */}
       {modalImages.length > 0 && (
         <ImageModal
           images={modalImages}
@@ -561,8 +592,105 @@ function Admin() {
           onClose={() => setModalImages([])}
         />
       )}
+
+      {/* ✅ 탭별 상품 요약 */}
+      <div style={{ marginTop: "40px" }}>
+        <h2>📑 탭별 상품 현황</h2>
+        {pages.map((page) => {
+          const count = products.filter((p) => {
+            const categoryId =
+              typeof p.categoryPage === "object"
+                ? p.categoryPage?._id
+                : p.categoryPage;
+            return categoryId === page._id;
+          }).length;
+          return (
+            <div
+              key={page._id}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "10px 15px",
+                border: "1px solid #ddd",
+                borderRadius: "6px",
+                marginBottom: "8px",
+              }}
+            >
+              <span>
+                📂 <strong>{page.label}</strong> ({count}개)
+              </span>
+              <div>
+                <button
+                  onClick={() => handleTabClick(page._id)}
+                  style={{
+                    marginRight: "6px",
+                    padding: "4px 10px",
+                    borderRadius: "6px",
+                    background: activeTab === page._id ? "#007bff" : "#eee",
+                    color: activeTab === page._id ? "white" : "black",
+                  }}
+                >
+                  보기
+                </button>
+                <button
+                  onClick={() => movePage(page._id, "up")}
+                  style={{
+                    marginRight: "4px",
+                    background: "#ddd",
+                    border: "none",
+                    padding: "4px 8px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  ▲
+                </button>
+                <button
+                  onClick={() => movePage(page._id, "down")}
+                  style={{
+                    background: "#ddd",
+                    border: "none",
+                    padding: "4px 8px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  ▼
+                </button>
+                <button
+                  onClick={() => deletePage(page._id)}
+                  style={{
+                    marginLeft: "10px",
+                    background: "#f55",
+                    border: "none",
+                    color: "white",
+                    padding: "4px 10px",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                  }}
+                >
+                  삭제
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ✅ 페이지 하단 */}
+      <footer
+        style={{
+          marginTop: "60px",
+          textAlign: "center",
+          padding: "20px 0",
+          borderTop: "1px solid #ddd",
+          color: "#666",
+          fontSize: "14px",
+        }}
+      >
+        © 2025 ONYOU 관리자 — 상품 및 페이지 관리 시스템
+      </footer>
     </div>
   );
-}
+};
 
 export default Admin;

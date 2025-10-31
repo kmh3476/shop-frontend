@@ -232,7 +232,6 @@ function MainLayout() {
       </motion.div>
     );
   };
-
   /** ✅ 일반 상품 카드 */
   const ProductCard = ({ product }) => {
     const { size, cardRef, startResize } = useResizableCard(
@@ -323,6 +322,7 @@ function MainLayout() {
       )}
     </Swiper>
   );
+
   /** ✅ 상품 섹션 */
   const SlideSection = ({ title, id, filter }) => {
     const filteredProducts = allProducts.filter((p) =>
@@ -338,9 +338,12 @@ function MainLayout() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           viewport={{ once: true }}
         >
-          <EditableText id={id} defaultText={title} apiUrl="http://localhost:1337/api/texts" />
+          <EditableText
+            id={id}
+            defaultText={title}
+            apiUrl="http://localhost:1337/api/texts"
+          />
         </motion.h2>
-
         <Swiper
           modules={[Navigation, Pagination]}
           spaceBetween={10}
@@ -371,7 +374,7 @@ function MainLayout() {
 
   return (
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden font-['Pretendard']">
-      {/* 관리자 모드 버튼 */}
+      {/* ✅ 관리자 모드 버튼 */}
       {user?.isAdmin && (
         <div className="fixed top-6 left-6 z-[9999] flex gap-3 items-center">
           <button
@@ -393,7 +396,7 @@ function MainLayout() {
         </div>
       )}
 
-      {/* 메인 배경 */}
+      {/* ✅ 메인 배경 */}
       <section
         className="relative flex flex-col items-center justify-center w-full min-h-[110vh]"
         style={{
@@ -403,7 +406,7 @@ function MainLayout() {
         }}
       ></section>
 
-      {/* 추천상품 */}
+      {/* ✅ 추천상품 섹션 */}
       <section className="flex flex-col items-center justify-center py-[10vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
         <motion.h2
           className="text-5xl md:text-6xl font-extrabold mb-12 drop-shadow-sm tracking-tight text-gray-600"
@@ -422,8 +425,7 @@ function MainLayout() {
           <FeaturedSwiper />
         </div>
       </section>
-
-      {/* 상품 섹션 */}
+      {/* ✅ 상품 섹션 */}
       <SlideSection
         id="top-section"
         title="상의"
@@ -440,7 +442,7 @@ function MainLayout() {
         filter={(p) => p.categoryPage?.label === "코디 추천"}
       />
 
-      {/* 브랜드 스토리 */}
+      {/* ✅ 브랜드 스토리 */}
       <section
         className="flex flex-col items-center justify-center py-[15vh] px-6 text-center bg-gray-100 font-['Pretendard']"
         style={{
@@ -476,7 +478,7 @@ function MainLayout() {
         </motion.p>
       </section>
 
-      {/* 푸터 */}
+      {/* ✅ 푸터 */}
       <footer className="py-6 text-black text-sm border-t border-gray-300 w-full text-center bg-white font-light tracking-tight">
         © 2025 ONYOU — All rights reserved.
       </footer>
