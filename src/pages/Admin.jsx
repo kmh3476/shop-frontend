@@ -82,14 +82,19 @@ function Admin() {
     categoryPage: "",
   });
   const [pages, setPages] = useState([]);
-  const [newPage, setNewPage] = useState({ name: "", label: "", order: 0 });
+  const [newPage, setNewPage] = useState({
+    name: "",
+    label: "",
+    order: 0,
+    image: "",
+  }); // ✅ 탭 이미지 필드 추가
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [modalImages, setModalImages] = useState([]);
   const [modalIndex, setModalIndex] = useState(0);
   const [activeTab, setActiveTab] = useState("all"); // ✅ 현재 선택된 탭
-  const [showProductForm, setShowProductForm] = useState(false); // ✅ 폼 표시 여부
-  const [selectedPage, setSelectedPage] = useState(null); // ✅ 탭 클릭 시 선택된 페이지 저장
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [selectedPage, setSelectedPage] = useState(null);
 
   useEffect(() => {
     fetchProducts();
@@ -101,7 +106,6 @@ function Admin() {
       const res = await api.get("/products?populate=categoryPage", {
         headers: getAuthHeader(),
       });
-      // 🔧 categoryPage가 없는 경우도 처리
       const data = res.data.map((p) => ({
         ...p,
         categoryPage:
@@ -130,7 +134,7 @@ function Admin() {
   // ✅ 탭 클릭 시 필터링 + 선택 페이지 설정
   const handleTabClick = (tabId) => {
     setActiveTab(tabId);
-    setShowProductForm(false); // 폼 숨기기 초기화
+    setShowProductForm(false);
     if (tabId === "all") {
       setFilteredProducts(products);
       setSelectedPage(null);
@@ -143,27 +147,51 @@ function Admin() {
         return categoryId === tabId;
       });
       setFilteredProducts(filtered);
-      setSelectedPage(tabId); // ✅ 선택된 페이지 ObjectId 저장
+      setSelectedPage(tabId);
     }
   };
-  // ✅ 새 탭 추가
+  // ✅ 새 탭 추가 (탭 이미지 업로드 포함)
   const addPage = async () => {
     if (!newPage.name || !newPage.label) {
       alert("탭 이름(name)과 표시명(label)을 입력해주세요!");
       return;
     }
+
     try {
       await api.post(
         "/api/pages",
-        { ...newPage, order: newPage.order || pages.length + 1 },
+        {
+          ...newPage,
+          order: newPage.order || pages.length + 1,
+        },
         { headers: { "Content-Type": "application/json", ...getAuthHeader() } }
       );
       alert("✅ 새 탭이 추가되었습니다!");
-      setNewPage({ name: "", label: "", order: 0 });
+      setNewPage({ name: "", label: "", order: 0, image: "" });
       fetchPages();
     } catch (err) {
       console.error("❌ 탭 추가 실패:", err);
       alert(err.response?.data?.message || "탭 생성 실패 (인증 필요)");
+    }
+  };
+
+  // ✅ 탭 이미지 업로드 (Cloudinary)
+  const handlePageImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await api.post("/api/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data", ...getAuthHeader() },
+      });
+      if (res.data?.imageUrl) {
+        setNewPage({ ...newPage, image: res.data.imageUrl });
+        alert("🖼️ 탭 이미지 업로드 완료!");
+      }
+    } catch (err) {
+      console.error("❌ 탭 이미지 업로드 실패:", err);
+      alert("탭 이미지 업로드 실패");
     }
   };
 
@@ -213,7 +241,7 @@ function Admin() {
     }
   };
 
-  // ✅ Cloudinary 업로드
+  // ✅ Cloudinary 업로드 (상품 이미지)
   const uploadSingle = async (file) => {
     try {
       const formData = new FormData();
@@ -235,7 +263,7 @@ function Admin() {
       const file = filesToUpload[i];
       const url = await uploadSingle(file);
       if (url) uploadedUrls.push(url);
-      await new Promise((r) => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 400));
     }
     setUploading(false);
     return uploadedUrls;
@@ -286,7 +314,7 @@ function Admin() {
       categoryPage:
         form.categoryPage && form.categoryPage !== "null" && form.categoryPage !== ""
           ? form.categoryPage
-          : selectedPage || null, // ✅ 탭 선택 시 자동 categoryPage 연결
+          : selectedPage || null,
     };
 
     try {
@@ -366,7 +394,7 @@ function Admin() {
     <div style={{ padding: "20px" }}>
       <h1>📦 관리자 페이지</h1>
 
-      {/* ✅ 탭 추가 섹션 */}
+      {/* ✅ 새 탭 추가 섹션 */}
       <div
         style={{
           border: "1px solid #ccc",
@@ -397,10 +425,46 @@ function Admin() {
             setNewPage({ ...newPage, order: Number(e.target.value) })
           }
         />
-        <button onClick={addPage}>➕ 탭 추가</button>
+
+        {/* ✅ 탭 이미지 업로드 */}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handlePageImageUpload}
+          style={{ marginTop: "8px" }}
+        />
+        {newPage.image && (
+          <img
+            src={newPage.image}
+            alt="탭 미리보기"
+            style={{
+              width: "100px",
+              height: "60px",
+              objectFit: "cover",
+              borderRadius: "6px",
+              marginTop: "6px",
+              border: "1px solid #ddd",
+            }}
+          />
+        )}
+        <button
+          onClick={addPage}
+          style={{
+            display: "block",
+            marginTop: "10px",
+            padding: "6px 12px",
+            background: "#007bff",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+          }}
+        >
+          ➕ 탭 추가
+        </button>
       </div>
 
-      {/* ✅ 탭 목록 및 선택 */}
+      {/* ✅ 탭 목록 */}
       <h2>🗂 탭 목록 / 상품 분류</h2>
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
         <button
@@ -528,10 +592,35 @@ function Admin() {
             ))}
           </div>
 
-          <button onClick={saveProduct}>
+          <button
+            onClick={saveProduct}
+            style={{
+              marginTop: "10px",
+              background: "#28a745",
+              color: "white",
+              border: "none",
+              padding: "8px 12px",
+              borderRadius: "6px",
+              cursor: "pointer",
+            }}
+          >
             {editingId ? "💾 수정 완료" : "➕ 상품 추가"}
           </button>
-          {editingId && <button onClick={cancelEdit}>취소</button>}
+
+          {editingId && (
+            <button
+              onClick={cancelEdit}
+              style={{
+                marginTop: "6px",
+                background: "#ccc",
+                border: "none",
+                padding: "6px 12px",
+                borderRadius: "6px",
+              }}
+            >
+              취소
+            </button>
+          )}
         </div>
       )}
 
@@ -578,8 +667,32 @@ function Admin() {
                   </p>
                 )}
               </div>
-              <button onClick={() => startEdit(p)}>✏️ 수정</button>
-              <button onClick={() => deleteProduct(p._id)}>🗑 삭제</button>
+              <button
+                onClick={() => startEdit(p)}
+                style={{
+                  padding: "6px 10px",
+                  background: "#007bff",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                }}
+              >
+                ✏️ 수정
+              </button>
+              <button
+                onClick={() => deleteProduct(p._id)}
+                style={{
+                  padding: "6px 10px",
+                  background: "#dc3545",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                }}
+              >
+                🗑 삭제
+              </button>
             </li>
           ))}
         </ul>
@@ -617,9 +730,41 @@ function Admin() {
                 marginBottom: "8px",
               }}
             >
-              <span>
-                📂 <strong>{page.label}</strong> ({count}개)
-              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                {page.image ? (
+                  <img
+                    src={page.image}
+                    alt={page.label}
+                    style={{
+                      width: "60px",
+                      height: "40px",
+                      objectFit: "cover",
+                      borderRadius: "6px",
+                      border: "1px solid #ddd",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "60px",
+                      height: "40px",
+                      borderRadius: "6px",
+                      background: "#f0f0f0",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      color: "#888",
+                      fontSize: "12px",
+                    }}
+                  >
+                    No Img
+                  </div>
+                )}
+                <span>
+                  📂 <strong>{page.label}</strong> ({count}개)
+                </span>
+              </div>
+
               <div>
                 <button
                   onClick={() => handleTabClick(page._id)}
@@ -629,6 +774,7 @@ function Admin() {
                     borderRadius: "6px",
                     background: activeTab === page._id ? "#007bff" : "#eee",
                     color: activeTab === page._id ? "white" : "black",
+                    cursor: "pointer",
                   }}
                 >
                   보기
@@ -641,6 +787,7 @@ function Admin() {
                     border: "none",
                     padding: "4px 8px",
                     borderRadius: "4px",
+                    cursor: "pointer",
                   }}
                 >
                   ▲
@@ -652,6 +799,7 @@ function Admin() {
                     border: "none",
                     padding: "4px 8px",
                     borderRadius: "4px",
+                    cursor: "pointer",
                   }}
                 >
                   ▼
@@ -691,6 +839,6 @@ function Admin() {
       </footer>
     </div>
   );
-};
+}
 
 export default Admin;
