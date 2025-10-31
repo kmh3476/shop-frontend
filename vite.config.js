@@ -41,7 +41,7 @@ export default defineConfig(({ mode }) => {
         credentials: true,
       },
 
-      // ✅ 백엔드 프록시 (Render 서버)
+      // ✅ 백엔드 프록시 (Render 서버 연결)
       proxy: {
         "/api": {
           target:
@@ -52,7 +52,7 @@ export default defineConfig(({ mode }) => {
           rewrite: (path) => path.replace(/^\/api/, "/api"),
         },
 
-        // ✅ Strapi CMS API 프록시 (선택적으로 유지)
+        // ✅ Strapi CMS API 프록시 (필요 시 유지)
         "/cms": {
           target: env.VITE_STRAPI_URL || "http://localhost:1337",
           changeOrigin: true,
@@ -62,7 +62,7 @@ export default defineConfig(({ mode }) => {
       },
     },
 
-    // ✅ 별칭 설정 (import 경로 간결화)
+    // ✅ Vite 빌드 경로 및 별칭 설정
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
@@ -88,7 +88,7 @@ export default defineConfig(({ mode }) => {
           "https://shop-backend-1-dfsl.onrender.com/api"
       ),
 
-      // ✅ CMS 관련
+      // ✅ Strapi CMS 관련 환경변수
       "import.meta.env.VITE_STRAPI_URL": JSON.stringify(
         env.VITE_STRAPI_URL || "http://localhost:1337"
       ),
@@ -96,7 +96,7 @@ export default defineConfig(({ mode }) => {
         env.VITE_STRAPI_TOKEN || ""
       ),
 
-      // ✅ Builder.io 관련
+      // ✅ Builder.io 관련 환경변수
       "import.meta.env.VITE_BUILDER_PUBLIC_API_KEY": JSON.stringify(
         env.VITE_BUILDER_PUBLIC_API_KEY || ""
       ),
