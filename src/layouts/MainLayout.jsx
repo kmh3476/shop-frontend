@@ -29,7 +29,7 @@ function MainLayout() {
         const apiUrl =
           import.meta.env.VITE_API_URL ||
           "https://shop-backend-1-dfsl.onrender.com";
-        const response = await axios.get(`${apiUrl}/api/products`);
+        const response = await axios.get(`${apiUrl}/api/product`);
         if (Array.isArray(response.data)) {
           setAllProducts(response.data);
         } else {

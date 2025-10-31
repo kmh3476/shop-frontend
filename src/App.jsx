@@ -131,7 +131,6 @@ function Login() {
     </div>
   );
 }
-
 /* -------------------- ✅ 관리자 보호 라우트 -------------------- */
 function AdminRoute({ children }) {
   const { user } = useAuth();
@@ -302,7 +301,6 @@ function Navigation() {
             </>
           )}
         </div>
-
         {user && isOpen && (
           <Mail
             style={{
@@ -399,7 +397,10 @@ function InnerApp() {
             }
           >
             <Route path="/products" element={<ProductList />} />
-            <Route path="/products/:id" element={<ProductDetail />} />
+
+            {/* ✅ 수정됨 — /products/:id → /product/:id */}
+            <Route path="/product/:id" element={<ProductDetail />} />
+
             <Route path="/cart" element={<Cart />} />
             <Route path="/support" element={<Support />} />
             <Route path="/product-support" element={<ProductSupport />} />
@@ -424,7 +425,6 @@ function InnerApp() {
             <Route path="/find-id" element={<FindId />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
           </Route>
-
           {/* 404 페이지 */}
           <Route
             path="*"
