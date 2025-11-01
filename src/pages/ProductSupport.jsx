@@ -1,23 +1,19 @@
 // 📁 src/pages/ProductSupport.jsx
 import React, { useEffect, useState, useRef } from "react";
-import API from "../api/axiosInstance"; // ✅ axiosInstance 통일
+import API from "../api/axiosInstance";
 import { useAuth } from "../context/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEditMode } from "../context/EditModeContext";
 import EditableText from "../components/EditableText";
 
-/* --------------------------------------------------------
- ✅ 이메일 유효성 검사 (선택 입력용)
--------------------------------------------------------- */
+/* ✅ 이메일 유효성 검사 (선택 입력용) */
 function isValidEmail(email) {
   if (!email) return true;
   const regex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
   return regex.test(email);
 }
 
-/* --------------------------------------------------------
- ✅ 리사이즈 가능 박스 (Support.jsx 동일)
--------------------------------------------------------- */
+/* ✅ 리사이즈 박스 훅 */
 function useResizableBox(id, defaultSize = { width: 900, height: 600 }, active) {
   const [size, setSize] = useState(() => {
     const saved = localStorage.getItem(`resizable-${id}`);
@@ -68,9 +64,7 @@ function useResizableBox(id, defaultSize = { width: 900, height: 600 }, active) 
   return { ref, size, startResize };
 }
 
-/* --------------------------------------------------------
- ✅ ProductSupport 메인 컴포넌트
--------------------------------------------------------- */
+/* ✅ 메인 컴포넌트 시작 */
 export default function ProductSupport() {
   const [posts, setPosts] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -90,14 +84,14 @@ export default function ProductSupport() {
 
   const API_URL = "/api/inquiries";
 
-  /* ✅ 로그인 시 이메일 자동 채움 */
+  /* ✅ 로그인 시 이메일 자동 입력 */
   useEffect(() => {
     if (user?.email) {
       setNewPost((prev) => ({ ...prev, email: user.email }));
     }
   }, [user]);
 
-  /* ✅ 리사이즈 가능한 주요 섹션 */
+  /* ✅ 리사이즈 가능한 섹션 */
   const { ref: formRef, size: formSize, startResize: startFormResize } = useResizableBox(
     "product-form",
     { width: 800, height: 540 },
@@ -114,13 +108,11 @@ export default function ProductSupport() {
     isResizeMode
   );
 
-  /* ✅ 초기 데이터 로드 */
+  /* ✅ 상품 문의 불러오기 */
   useEffect(() => {
-    console.log("✅ ProductSupport 페이지 렌더링됨");
     fetchPosts();
   }, []);
 
-  /* ✅ 상품 문의만 불러오기 */
   async function fetchPosts() {
     try {
       const res = await API.get(`${API_URL}/all`);
@@ -133,7 +125,6 @@ export default function ProductSupport() {
     }
   }
 
-  /* ✅ 이메일 마스킹 */
   function displayEmail(email) {
     if (!email || typeof email !== "string") return "익명";
     if (!email.includes("@")) return email;
@@ -141,7 +132,7 @@ export default function ProductSupport() {
     return id.slice(0, 2) + "****";
   }
 
-  /* ✅ 문의 작성 */
+  /* ✅ 문의 등록 */
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -182,7 +173,7 @@ export default function ProductSupport() {
     }
   }
   /* --------------------------------------------------------
-   ✅ 문의 작성 폼 영역
+   ✅ 문의 작성 폼 (Support.jsx 스타일 동일)
   -------------------------------------------------------- */
   function renderForm() {
     if (!showForm) return null;
@@ -195,10 +186,12 @@ export default function ProductSupport() {
           width: formSize.width,
           height: formSize.height,
         }}
-        className="fixed top-28 left-1/2 -translate-x-1/2 bg-white rounded-2xl shadow-xl p-6 z-50 border"
+        className="fixed top-28 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-lg border p-8 z-50"
       >
-        <h2 className="text-xl font-bold mb-4 text-gray-800">상품 문의 작성</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <h2 className="text-2xl font-bold mb-6 text-gray-900 text-center">
+          상품 문의 작성
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* 이메일 (자동 입력) */}
           <div>
             <label className="block text-sm font-semibold mb-1 text-gray-700">
@@ -208,7 +201,7 @@ export default function ProductSupport() {
               type="email"
               value={newPost.email}
               readOnly
-              className="w-full border rounded-lg px-3 py-2 bg-gray-100 text-gray-600 cursor-not-allowed"
+              className="w-full border rounded-lg px-4 py-3 bg-gray-100 text-gray-600 cursor-not-allowed"
             />
           </div>
 
@@ -222,7 +215,7 @@ export default function ProductSupport() {
               value={newPost.question}
               onChange={(e) => setNewPost({ ...newPost, question: e.target.value })}
               placeholder="문의 제목을 입력하세요"
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-300"
+              className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-300"
             />
           </div>
 
@@ -236,7 +229,7 @@ export default function ProductSupport() {
               onChange={(e) => setNewPost({ ...newPost, answer: e.target.value })}
               placeholder="문의 내용을 입력하세요"
               rows={5}
-              className="w-full border rounded-lg px-3 py-2 resize-none focus:ring-2 focus:ring-indigo-300"
+              className="w-full border rounded-lg px-4 py-3 resize-none focus:ring-2 focus:ring-indigo-300"
             />
           </div>
 
@@ -254,22 +247,22 @@ export default function ProductSupport() {
             </label>
           </div>
 
-          {/* 버튼 영역 */}
-          <div className="flex justify-end gap-3 mt-5">
+          {/* 버튼 */}
+          <div className="flex justify-end gap-4 mt-8">
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700"
+              className="px-5 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium"
             >
               취소
             </button>
             <button
               type="submit"
               disabled={loading}
-              className={`px-4 py-2 rounded-lg font-semibold text-white ${
+              className={`px-5 py-2 rounded-lg font-semibold text-white ${
                 loading
                   ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-indigo-800 hover:bg-indigo-700"
+                  : "bg-indigo-900 hover:bg-indigo-800"
               }`}
             >
               {loading ? "등록 중..." : "등록"}
@@ -281,7 +274,7 @@ export default function ProductSupport() {
   }
 
   /* --------------------------------------------------------
-   ✅ 문의 리스트 렌더링
+   ✅ 문의 리스트 (Support.jsx 디자인으로 통일)
   -------------------------------------------------------- */
   function renderTable() {
     return (
@@ -292,10 +285,13 @@ export default function ProductSupport() {
           width: tableSize.width,
           height: tableSize.height,
         }}
-        className="bg-white rounded-2xl shadow-md overflow-hidden mt-8 border"
+        className="bg-white rounded-xl shadow-lg border overflow-hidden mt-10"
       >
+        {/* 헤더 영역 */}
         <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
-          <h2 className="text-lg font-semibold text-gray-800">상품 문의 목록</h2>
+          <h2 className="text-xl font-bold text-gray-800">
+            상품 문의 목록
+          </h2>
 
           <div className="flex gap-3">
             {user?.isAdmin && (
@@ -306,7 +302,7 @@ export default function ProductSupport() {
                   if (!title || !content) return;
                   handleNoticeSubmit(title, content);
                 }}
-                className="bg-yellow-600 hover:bg-yellow-500 text-white text-sm px-3 py-2 rounded-lg"
+                className="bg-yellow-600 hover:bg-yellow-500 text-white font-semibold text-sm px-4 py-2 rounded-lg"
               >
                 공지 등록
               </button>
@@ -314,15 +310,16 @@ export default function ProductSupport() {
 
             <button
               onClick={() => setShowForm(true)}
-              className="bg-indigo-700 hover:bg-indigo-600 text-white text-sm px-3 py-2 rounded-lg"
+              className="bg-indigo-900 hover:bg-indigo-800 text-white font-semibold text-sm px-4 py-2 rounded-lg"
             >
               문의 작성
             </button>
           </div>
         </div>
 
+        {/* 테이블 영역 */}
         <div className="overflow-y-auto h-[calc(100%-3rem)]">
-          <table className="w-full text-sm text-left">
+          <table className="w-full text-base text-left">
             <thead className="bg-gray-100 sticky top-0">
               <tr>
                 <th className="px-6 py-3 font-semibold text-gray-700 w-1/12">번호</th>
@@ -367,10 +364,7 @@ export default function ProductSupport() {
 
               {posts.length === 0 && (
                 <tr>
-                  <td
-                    colSpan="5"
-                    className="text-center text-gray-500 py-6 bg-gray-50"
-                  >
+                  <td colSpan="5" className="text-center text-gray-500 py-8 bg-gray-50">
                     등록된 상품 문의가 없습니다.
                   </td>
                 </tr>
@@ -381,7 +375,6 @@ export default function ProductSupport() {
       </div>
     );
   }
-
   /* --------------------------------------------------------
    ✅ 관리자 공지 등록 함수
   -------------------------------------------------------- */
@@ -395,8 +388,9 @@ export default function ProductSupport() {
       alert("공지 등록 중 오류가 발생했습니다.");
     }
   }
+
   /* --------------------------------------------------------
-   ✅ 문의 상세보기 + 삭제 기능
+   ✅ 문의 상세보기 (Support.jsx 디자인 동일)
   -------------------------------------------------------- */
   function renderDetail() {
     if (!selectedPost) return null;
@@ -413,25 +407,25 @@ export default function ProductSupport() {
           width: detailSize.width,
           height: detailSize.height,
         }}
-        className="fixed top-28 left-1/2 -translate-x-1/2 bg-white rounded-2xl shadow-xl p-6 z-50 border"
+        className="fixed top-28 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-lg border p-8 z-50"
       >
-        <h2 className="text-xl font-bold mb-4 text-gray-800">
+        <h2 className="text-2xl font-bold mb-6 text-gray-900 text-center">
           {selectedPost.isNotice ? "📢 공지사항" : "상품 문의 상세"}
         </h2>
 
-        <div className="mb-3">
+        <div className="mb-4">
           <p className="text-sm text-gray-500">작성자</p>
           <p className="text-gray-800 font-medium">
             {displayEmail(selectedPost.email)}
           </p>
         </div>
 
-        <div className="mb-3">
+        <div className="mb-4">
           <p className="text-sm text-gray-500">제목</p>
           <p className="text-gray-800 font-semibold">{selectedPost.question}</p>
         </div>
 
-        <div className="mb-3">
+        <div className="mb-4">
           <p className="text-sm text-gray-500">내용</p>
           <div className="border rounded-lg p-3 bg-gray-50 text-gray-700 whitespace-pre-wrap">
             {selectedPost.answer}
@@ -447,18 +441,18 @@ export default function ProductSupport() {
           </div>
         )}
 
-        <div className="flex justify-end gap-3 mt-6">
+        <div className="flex justify-end gap-3 mt-8">
           {canDelete && (
             <button
               onClick={() => handleDelete(selectedPost._id)}
-              className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg"
+              className="bg-red-600 hover:bg-red-500 text-white font-semibold px-4 py-2 rounded-lg"
             >
               삭제
             </button>
           )}
           <button
             onClick={() => setSelectedPost(null)}
-            className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg"
+            className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-4 py-2 rounded-lg"
           >
             닫기
           </button>
@@ -468,7 +462,7 @@ export default function ProductSupport() {
   }
 
   /* --------------------------------------------------------
-   ✅ 문의 삭제 함수
+   ✅ 문의 삭제
   -------------------------------------------------------- */
   async function handleDelete(postId) {
     if (!window.confirm("정말 이 문의를 삭제하시겠습니까?")) return;
@@ -485,47 +479,47 @@ export default function ProductSupport() {
   }
 
   /* --------------------------------------------------------
-   ✅ 전체 렌더링
+   ✅ 전체 페이지 레이아웃 (Support.jsx 스타일로 통일)
   -------------------------------------------------------- */
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50 pt-16 pb-20">
+      <div className="max-w-6xl mx-auto text-center">
         {/* 상단 타이틀 */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">
-            🛍 상품 문의 게시판
-          </h1>
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-10">
+          🛍 상품 문의 게시판
+        </h1>
 
-          {/* 편집/리사이즈 모드 토글 */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => setIsResizeMode((p) => !p)}
-              className={`px-3 py-2 text-sm rounded-lg ${
-                isResizeMode
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-              }`}
-            >
-              {isResizeMode ? "리사이즈 모드 해제" : "리사이즈 모드"}
-            </button>
+        {/* 상단 버튼 (Support.jsx 동일 배치) */}
+        <div className="flex justify-center gap-4 mb-10">
+          <button
+            onClick={() => setIsResizeMode((p) => !p)}
+            className={`px-4 py-2 text-sm rounded-lg shadow-sm ${
+              isResizeMode
+                ? "bg-green-600 text-white"
+                : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+            }`}
+          >
+            {isResizeMode ? "리사이즈 모드 해제" : "리사이즈 모드"}
+          </button>
 
-            <button
-              onClick={() => setIsEditMode((p) => !p)}
-              className={`px-3 py-2 text-sm rounded-lg ${
-                isEditMode
-                  ? "bg-blue-700 text-white"
-                  : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-              }`}
-            >
-              {isEditMode ? "편집 모드 해제" : "편집 모드"}
-            </button>
-          </div>
+          <button
+            onClick={() => setIsEditMode((p) => !p)}
+            className={`px-4 py-2 text-sm rounded-lg shadow-sm ${
+              isEditMode
+                ? "bg-blue-700 text-white"
+                : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+            }`}
+          >
+            {isEditMode ? "편집 모드 해제" : "편집 모드"}
+          </button>
         </div>
 
         {/* 메인 콘텐츠 */}
-        {renderTable()}
-        {renderForm()}
-        {renderDetail()}
+        <div className="px-4 sm:px-6 lg:px-8">
+          {renderTable()}
+          {renderForm()}
+          {renderDetail()}
+        </div>
       </div>
     </div>
   );
