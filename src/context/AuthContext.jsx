@@ -78,7 +78,6 @@ export function AuthProvider({ children }) {
       }
     }
   }, [user]);
-
   /* ✅ 자동 토큰 갱신 */
   useEffect(() => {
     if (!refreshToken) return;
@@ -88,7 +87,6 @@ export function AuthProvider({ children }) {
       setIsRefreshing(true);
 
       try {
-        // ✅ 수정: { refreshToken } 으로 백엔드에 전달
         const res = await axios.post(`${apiUrl}/api/auth/refresh`, {
           refreshToken,
         });
@@ -100,7 +98,8 @@ export function AuthProvider({ children }) {
         }
       } catch (err) {
         console.warn("⚠️ 토큰 갱신 실패:", err.response?.data || err.message);
-        logout();
+        // ✅ 수정: 로그아웃 대신 새로고침
+        window.location.reload();
       } finally {
         setIsRefreshing(false);
       }
@@ -137,7 +136,6 @@ export function AuthProvider({ children }) {
             const storedRefresh = localStorage.getItem("refreshToken");
             if (!storedRefresh) throw new Error("리프레시 토큰 없음");
 
-            // ✅ 수정: refresh 요청 시 필드명 통일
             const res = await axios.post(`${apiUrl}/api/auth/refresh`, {
               refreshToken: storedRefresh,
             });
@@ -152,7 +150,8 @@ export function AuthProvider({ children }) {
             }
           } catch (refreshErr) {
             console.error("❌ 자동 토큰 갱신 실패:", refreshErr.message);
-            logout();
+            // ✅ 수정: 로그아웃 대신 새로고침
+            window.location.reload();
           }
         }
 
