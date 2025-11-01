@@ -231,7 +231,11 @@ function Admin() {
     try {
       await Promise.all(
         updated.map((p) =>
-          api.put(`/api/pages/${p._id}`, { order: p.order }, { headers: getAuthHeader() })
+          api.put(
+            `/api/pages/${p._id}`,
+            { order: p.order },
+            { headers: getAuthHeader() }
+          )
         )
       );
       fetchPages();
@@ -312,7 +316,9 @@ function Admin() {
       images: cleanImages,
       mainImage: mainImg,
       categoryPage:
-        form.categoryPage && form.categoryPage !== "null" && form.categoryPage !== ""
+        form.categoryPage &&
+        form.categoryPage !== "null" &&
+        form.categoryPage !== ""
           ? form.categoryPage
           : selectedPage || null,
     };
