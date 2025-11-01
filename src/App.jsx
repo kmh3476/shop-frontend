@@ -311,21 +311,21 @@ function Navigation() {
         </div>
 
         {/* ✅ 메일함 아이콘 (로그인 시만 표시) */}
-        {user && isOpen && (
-          <Mail
-            style={{
-              position: "absolute",
-              top: "30px",
-              right: "calc(100% + 20px)",
-              width: "60px",
-              height: "60px",
-              color: "#000",
-              zIndex: 260,
-              cursor: "pointer",
-            }}
-            onClick={() => setShowMailModal(true)}
-          />
-        )}
+{!!user?.userId && isOpen && (
+  <Mail
+    style={{
+      position: "absolute",
+      top: "35px",        // 기존 30px → 조금 아래로
+      right: "35px",      // ✅ calc(100% + 20px) → 패널 내부 오른쪽 상단
+      width: "55px",
+      height: "55px",
+      color: "#000",
+      zIndex: 9999,       // ✅ 패널 위로 확실히 올라오게
+      cursor: "pointer",
+    }}
+    onClick={() => setShowMailModal(true)}
+  />
+)}
 
         {/* 메뉴 항목 */}
         <nav style={{ marginTop: "60px", width: "80%" }}>
