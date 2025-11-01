@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext"; // ✅ 추가
 
 export default function Signup() {
   const navigate = useNavigate();
+  const { login } = useAuth(); // ✅ 추가: 회원가입 후 자동 로그인용
 
   const [form, setForm] = useState({
     userId: "",
@@ -132,6 +134,7 @@ export default function Signup() {
 
     try {
       setLoading(true);
+
       const res = await fetch(`${API}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -147,6 +150,15 @@ export default function Signup() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "회원가입 실패");
 
+      // ✅ 회원가입 성공 후 자동 로그인 실행
+      if (data.token && data.refreshToken && data.user) {
+        login(data.user, data.token, data.refreshToken);
+        alert("✅ 회원가입 및 자동 로그인 성공!");
+        navigate("/");
+        return;
+      }
+
+      // ✅ 일반 회원가입 성공 시
       setSuccessMsg("회원가입이 완료되었습니다!");
       setTimeout(() => navigate("/login"), 3000);
     } catch (err) {
@@ -156,7 +168,6 @@ export default function Signup() {
       setLoading(false);
     }
   }
-
   return (
     <div className="min-h-screen bg-gray-50 flex items-start justify-center py-8 px-4 sm:px-6">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg overflow-hidden">

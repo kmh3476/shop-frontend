@@ -1,6 +1,6 @@
 // 📁 src/pages/Support.jsx
 import React, { useEffect, useState, useRef } from "react";
-import axios from "axios";
+import API from "../api/axiosInstance"; // ✅ axiosInstance import
 import { useAuth } from "../context/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEditMode } from "../context/EditModeContext";
@@ -81,8 +81,8 @@ export default function Support() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const API = "https://shop-backend-1-dfsl.onrender.com/api/inquiries";
-  const NOTICE_API = `${API}/notice`;
+  const API_URL = "/api/inquiries";
+  const NOTICE_API = `${API_URL}/notice`;
 
   // ✅ 로그인 상태일 경우 자동으로 이메일 입력란 채움
   useEffect(() => {
@@ -113,10 +113,10 @@ export default function Support() {
     fetchPosts();
   }, []);
 
-  // ✅ 문의 목록 불러오기
+  // ✅ 문의 목록 불러오기 (axiosInstance로 변경)
   async function fetchPosts() {
     try {
-      const res = await axios.get(API);
+      const res = await API.get(API_URL);
       const filtered = res.data.filter((p) => !p.productId);
       const sorted = filtered.sort((a, b) => {
         if (a.isNotice && !b.isNotice) return -1;
@@ -158,7 +158,7 @@ export default function Support() {
 
     try {
       setLoading(true);
-      await axios.post(API, {
+      await API.post(API_URL, {
         email: newPost.email || "",
         question: newPost.question,
         answer: newPost.answer,
@@ -175,7 +175,7 @@ export default function Support() {
       setTimeout(fetchPosts, 500);
     } catch (err) {
       console.error("문의 작성 실패:", err);
-      alert("문의 등록 중 오류가 발생했습니다.");
+      alert(err.response?.data?.message || "문의 등록 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
@@ -187,7 +187,7 @@ export default function Support() {
     if (!title || !content) return alert("제목과 내용을 모두 입력해주세요.");
 
     try {
-      await axios.post(NOTICE_API, {
+      await API.post(NOTICE_API, {
         question: title,
         answer: content,
         isNotice: true,
@@ -196,7 +196,7 @@ export default function Support() {
       fetchPosts();
     } catch (err) {
       console.error("공지글 등록 실패:", err);
-      alert("공지글 등록 중 오류가 발생했습니다.");
+      alert(err.response?.data?.message || "공지글 등록 중 오류가 발생했습니다.");
     }
   }
 

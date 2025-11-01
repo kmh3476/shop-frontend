@@ -1,6 +1,7 @@
 // 📁 src/components/MailModal.jsx
 import { useEffect, useState } from "react";
 import { X, Trash2, MailOpen, CheckSquare, Square } from "lucide-react";
+import API from "../api/axiosInstance"; // ✅ axios 인스턴스 import
 
 export default function MailModal({ onClose }) {
   const [replies, setReplies] = useState([]);
@@ -9,10 +10,11 @@ export default function MailModal({ onClose }) {
   const [selectedMail, setSelectedMail] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]); // ✅ 선택된 메일 ID 저장
 
-  const API_URL = "https://shop-backend-1-dfsl.onrender.com/api/support/replies";
+  const API_URL = "/api/support/replies";
+
+  // ✅ 로그인 확인
   const token = localStorage.getItem("token");
 
-  // ✅ 로그인 확인 및 토큰 검증
   useEffect(() => {
     if (!token) {
       setError("로그인이 필요합니다.");
@@ -20,30 +22,19 @@ export default function MailModal({ onClose }) {
     }
   }, [token]);
 
-  // ✅ 메일 목록 불러오기
+  // ✅ 메일 목록 불러오기 (axiosInstance 사용)
   useEffect(() => {
     async function fetchReplies() {
       try {
         if (!token) return;
 
-        const res = await fetch(API_URL, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await API.get(API_URL); // ✅ axiosInstance 자동 헤더 + 토큰 갱신
+        console.log("📬 메일함 응답:", res.data);
 
-        const data = await res.json();
-        console.log("📬 메일함 응답:", data);
-
-        if (!res.ok) {
-          throw new Error(data.message || "메일을 불러올 수 없습니다.");
-        }
-
-        setReplies(data.replies || []);
+        setReplies(res.data.replies || []);
       } catch (err) {
         console.error("메일 로드 중 오류:", err);
-        setError(err.message || "서버 오류가 발생했습니다.");
+        setError(err.response?.data?.message || "서버 오류가 발생했습니다.");
       } finally {
         setLoading(false);
       }
@@ -57,20 +48,11 @@ export default function MailModal({ onClose }) {
     if (!window.confirm("정말 이 메일을 삭제하시겠습니까?")) return;
 
     try {
-      const res = await fetch(`${API_URL}/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "삭제 실패");
-
+      await API.delete(`${API_URL}/${id}`); // ✅ axiosInstance 사용
       setReplies((prev) => prev.filter((r) => r._id !== id));
       setSelectedIds((prev) => prev.filter((sid) => sid !== id));
     } catch (err) {
-      alert(err.message);
+      alert(err.response?.data?.message || "삭제 실패");
     }
   }
 
@@ -80,7 +62,6 @@ export default function MailModal({ onClose }) {
     if (!window.confirm(`${selectedIds.length}개의 메일을 삭제하시겠습니까?`))
       return;
 
-    // 순차 삭제
     for (const id of selectedIds) {
       await handleDelete(id);
     }
@@ -199,7 +180,6 @@ export default function MailModal({ onClose }) {
             선택 삭제
           </button>
         </div>
-
         {/* ✅ 로딩/에러/데이터 표시 */}
         {loading ? (
           <p style={{ textAlign: "center", color: "#777" }}>불러오는 중...</p>
@@ -377,7 +357,9 @@ export default function MailModal({ onClose }) {
                   border: "1px solid #eee",
                 }}
               >
-                <p style={{ fontWeight: "600", color: "#333", marginBottom: "6px" }}>
+                <p
+                  style={{ fontWeight: "600", color: "#333", marginBottom: "6px" }}
+                >
                   ✉️ 내가 보낸 문의
                 </p>
                 <p

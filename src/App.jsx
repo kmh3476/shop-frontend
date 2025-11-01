@@ -316,7 +316,7 @@ function Navigation() {
     style={{
       position: "absolute",
       top: "35px",        // 기존 30px → 조금 아래로
-      right: "35px",      // ✅ calc(100% + 20px) → 패널 내부 오른쪽 상단
+      right: "300px",      // ✅ calc(100% + 20px) → 패널 내부 오른쪽 상단
       width: "55px",
       height: "55px",
       color: "#000",

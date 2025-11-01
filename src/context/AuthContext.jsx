@@ -8,7 +8,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState("");
   const [refreshToken, setRefreshToken] = useState("");
-  const [isRefreshing, setIsRefreshing] = useState(false); // ✅ 추가: 중복 갱신 방지
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const apiUrl =
     import.meta.env.VITE_API_URL || "https://shop-backend-1-dfsl.onrender.com";
 
@@ -26,6 +26,7 @@ export function AuthProvider({ children }) {
           parsedUser?.role === "admin" ||
           parsedUser?.email === "admin@onyou.com";
         const role = isAdmin ? "admin" : "user";
+
         setToken(storedToken);
         setRefreshToken(storedRefresh || "");
         setUser({ ...parsedUser, isAdmin, role });
@@ -45,7 +46,8 @@ export function AuthProvider({ children }) {
     const userWithAdmin = { ...userData, isAdmin, role };
 
     localStorage.setItem("token", newToken);
-    if (newRefreshToken) localStorage.setItem("refreshToken", newRefreshToken);
+    if (newRefreshToken)
+      localStorage.setItem("refreshToken", newRefreshToken);
     localStorage.setItem("user", JSON.stringify(userWithAdmin));
 
     setToken(newToken);
@@ -53,7 +55,7 @@ export function AuthProvider({ children }) {
     setUser(userWithAdmin);
   };
 
-  /* ✅ 로그아웃 시 데이터 삭제 */
+  /* ✅ 로그아웃 */
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("refreshToken");
@@ -77,17 +79,18 @@ export function AuthProvider({ children }) {
     }
   }, [user]);
 
-  /* ✅ 자동 토큰 갱신 (1시간마다 or 만료 시 시도) */
+  /* ✅ 자동 토큰 갱신 */
   useEffect(() => {
     if (!refreshToken) return;
 
     const refreshAccessToken = async () => {
-      if (isRefreshing) return; // ✅ 중복 요청 방지
+      if (isRefreshing) return;
       setIsRefreshing(true);
 
       try {
+        // ✅ 수정: { refreshToken } 으로 백엔드에 전달
         const res = await axios.post(`${apiUrl}/api/auth/refresh`, {
-          token: refreshToken,
+          refreshToken,
         });
         const newAccessToken = res.data.token;
         if (newAccessToken) {
@@ -97,23 +100,21 @@ export function AuthProvider({ children }) {
         }
       } catch (err) {
         console.warn("⚠️ 토큰 갱신 실패:", err.response?.data || err.message);
-        logout(); // 갱신 실패 시 로그아웃 처리
+        logout();
       } finally {
         setIsRefreshing(false);
       }
     };
 
-    // ✅ 55분마다 토큰 자동 갱신
     const interval = setInterval(refreshAccessToken, 55 * 60 * 1000);
-    // ✅ 즉시 1회 갱신 시도
     refreshAccessToken();
 
     return () => clearInterval(interval);
   }, [refreshToken]);
 
-  /* ✅ axios 전역 인터셉터 (요청마다 토큰 자동 삽입 + 401 자동 재시도) */
+  /* ✅ axios 인터셉터 (401 재시도 포함) */
   useEffect(() => {
-    const interceptor = axios.interceptors.request.use(
+    const requestInterceptor = axios.interceptors.request.use(
       (config) => {
         const currentToken = localStorage.getItem("token") || token || "";
         if (currentToken) {
@@ -124,13 +125,11 @@ export function AuthProvider({ children }) {
       (error) => Promise.reject(error)
     );
 
-    // ✅ 응답 인터셉터: 401 발생 시 자동 refresh 후 재시도
     const responseInterceptor = axios.interceptors.response.use(
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
 
-        // 이미 재시도한 요청이면 무한 루프 방지
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
 
@@ -138,18 +137,17 @@ export function AuthProvider({ children }) {
             const storedRefresh = localStorage.getItem("refreshToken");
             if (!storedRefresh) throw new Error("리프레시 토큰 없음");
 
+            // ✅ 수정: refresh 요청 시 필드명 통일
             const res = await axios.post(`${apiUrl}/api/auth/refresh`, {
-              token: storedRefresh,
+              refreshToken: storedRefresh,
             });
 
             const newToken = res.data.token;
             if (newToken) {
               localStorage.setItem("token", newToken);
               setToken(newToken);
-
-              // 새로운 토큰으로 Authorization 헤더 갱신 후 재요청
               originalRequest.headers.Authorization = `Bearer ${newToken}`;
-              console.log("🔁 토큰 갱신 후 요청 재시도됨:", originalRequest.url);
+              console.log("🔁 토큰 갱신 후 요청 재시도:", originalRequest.url);
               return axios(originalRequest);
             }
           } catch (refreshErr) {
@@ -163,7 +161,7 @@ export function AuthProvider({ children }) {
     );
 
     return () => {
-      axios.interceptors.request.eject(interceptor);
+      axios.interceptors.request.eject(requestInterceptor);
       axios.interceptors.response.eject(responseInterceptor);
     };
   }, [token, refreshToken]);
@@ -177,5 +175,4 @@ export function AuthProvider({ children }) {
   );
 }
 
-/* ✅ 커스텀 훅 */
 export const useAuth = () => useContext(AuthContext);

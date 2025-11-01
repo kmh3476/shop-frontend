@@ -1,6 +1,6 @@
 // 📁 src/pages/AdminSupport.jsx
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../api/axiosInstance"; // ✅ axiosInstance import
 import { useAuth } from "../context/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -13,16 +13,8 @@ export default function AdminSupport() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // ✅ API 경로 수정 (inquiries API 사용)
-  const API = "https://shop-backend-1-dfsl.onrender.com/api/inquiries";
-
-  /* ✅ 공통 Axios 헤더 설정 */
-  const axiosConfig = {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-      "Content-Type": "application/json",
-    },
-  };
+  // ✅ API 기본 경로
+  const API_URL = "/api/inquiries";
 
   /* ✅ 관리자 여부 확인 */
   useEffect(() => {
@@ -43,8 +35,8 @@ export default function AdminSupport() {
 
   async function fetchPosts() {
     try {
-      console.log("📡 관리자 문의 목록 요청 시작:", API);
-      const res = await axios.get(`${API}/all`, axiosConfig);
+      console.log("📡 관리자 문의 목록 요청 시작:", API_URL);
+      const res = await API.get(`${API_URL}/all`);
       let filtered = res.data;
 
       // ✅ 탭별 데이터 필터링
@@ -62,7 +54,7 @@ export default function AdminSupport() {
       console.log("✅ 관리자 문의 목록 응답:", filtered.length);
       setPosts(filtered);
     } catch (err) {
-      console.error("❌ 문의 목록 조회 실패:", err.response || err.message);
+      console.error("❌ 문의 목록 조회 실패:", err);
 
       if (err.response?.status === 401) {
         alert("인증이 만료되었거나 관리자 권한이 없습니다. 다시 로그인해주세요.");
@@ -80,21 +72,17 @@ export default function AdminSupport() {
   async function handleReply(id) {
     if (!reply[id]) return alert("답변 내용을 입력하세요.");
     try {
-      const res = await axios.post(
-        `${API}/${id}/reply`,
-        { reply: reply[id] },
-        axiosConfig
-      );
+      const res = await API.post(`${API_URL}/${id}/reply`, { reply: reply[id] });
       console.log("✅ 답변 전송 완료:", res.data);
       alert("답변이 성공적으로 전송되었습니다!");
       setReply({ ...reply, [id]: "" });
       fetchPosts();
     } catch (err) {
-      console.error("❌ 답변 전송 실패:", err.response || err.message);
+      console.error("❌ 답변 전송 실패:", err);
       if (err.response?.status === 401) {
         alert("관리자 권한이 없거나 세션이 만료되었습니다.");
       } else {
-        alert("답변 전송 중 오류가 발생했습니다.");
+        alert(err.response?.data?.message || "답변 전송 중 오류가 발생했습니다.");
       }
     }
   }
@@ -103,24 +91,24 @@ export default function AdminSupport() {
   async function handleDelete(id) {
     if (!window.confirm("정말 이 문의를 삭제하시겠습니까?")) return;
     try {
-      const res = await axios.delete(`${API}/${id}`, axiosConfig);
+      const res = await API.delete(`${API_URL}/${id}`);
       console.log("🗑️ 문의 삭제 성공:", res.data);
       alert("문의가 삭제되었습니다.");
       fetchPosts();
     } catch (err) {
-      console.error("❌ 삭제 실패:", err.response || err.message);
-      alert("문의 삭제 중 오류가 발생했습니다.");
+      console.error("❌ 삭제 실패:", err);
+      alert(err.response?.data?.message || "문의 삭제 중 오류가 발생했습니다.");
     }
   }
 
   /* ✅ 읽음 처리 토글 */
   async function toggleRead(id, current) {
     try {
-      const res = await axios.patch(`${API}/${id}`, { isRead: !current }, axiosConfig);
+      const res = await API.patch(`${API_URL}/${id}`, { isRead: !current });
       console.log("👁️ 읽음 상태 변경:", res.data);
       fetchPosts();
     } catch (err) {
-      console.error("❌ 읽음 상태 변경 실패:", err.response || err.message);
+      console.error("❌ 읽음 상태 변경 실패:", err);
     }
   }
 
@@ -161,9 +149,10 @@ export default function AdminSupport() {
       </div>
 
       <h1 className="text-4xl font-bold text-center mb-8">
-        {location.pathname === "/admin/product-support" ? "🛍️ 상품 문의 관리" : "📨 고객 문의 관리"}
+        {location.pathname === "/admin/product-support"
+          ? "🛍️ 상품 문의 관리"
+          : "📨 고객 문의 관리"}
       </h1>
-
       <div className="max-w-7xl mx-auto overflow-x-auto">
         <table className="w-full border-collapse border-t border-gray-300 text-sm">
           <thead className="bg-gray-100">
