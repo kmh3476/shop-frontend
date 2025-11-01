@@ -482,35 +482,45 @@ export default function ProductSupport() {
    ✅ 전체 페이지 레이아웃 (Support.jsx 스타일로 통일)
   -------------------------------------------------------- */
   return (
-    <div className="min-h-screen bg-gray-50 pt-16 pb-20">
+    <div className="min-h-screen bg-white pt-16 pb-20">
       <div className="max-w-6xl mx-auto text-center">
         {/* 상단 타이틀 */}
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-10">
-          🛍 상품 문의 게시판
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-8">
+          고객센터
         </h1>
 
-        {/* 상단 버튼 (Support.jsx 동일 배치) */}
-        <div className="flex justify-center gap-4 mb-10">
+        {/* ✅ 사용자 문의 / 상품 문의 탭 버튼 */}
+        <div className="flex justify-center gap-2 mb-10">
           <button
-            onClick={() => setIsResizeMode((p) => !p)}
-            className={`px-4 py-2 text-sm rounded-lg shadow-sm ${
-              isResizeMode
-                ? "bg-green-600 text-white"
-                : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+            onClick={() => navigate("/support")}
+            className={`px-6 py-2 rounded-full font-semibold text-sm shadow-sm transition-all duration-150 ${
+              location.pathname === "/support"
+                ? "bg-black text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
-            {isResizeMode ? "리사이즈 모드 해제" : "리사이즈 모드"}
+            사용자 문의
           </button>
 
           <button
-            onClick={() => setIsEditMode((p) => !p)}
-            className={`px-4 py-2 text-sm rounded-lg shadow-sm ${
-              isEditMode
-                ? "bg-blue-700 text-white"
-                : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+            onClick={() => navigate("/product-support")}
+            className={`px-6 py-2 rounded-full font-semibold text-sm shadow-sm transition-all duration-150 ${
+              location.pathname === "/product-support"
+                ? "bg-black text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
-            {isEditMode ? "편집 모드 해제" : "편집 모드"}
+            상품 문의
+          </button>
+        </div>
+
+        {/* 문의 작성 버튼 */}
+        <div className="mb-10">
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-black hover:bg-gray-800 text-white font-medium px-6 py-3 rounded-lg shadow"
+          >
+            ✉ 문의 작성하기
           </button>
         </div>
 
@@ -523,4 +533,3 @@ export default function ProductSupport() {
       </div>
     </div>
   );
-}
