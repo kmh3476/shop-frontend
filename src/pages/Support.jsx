@@ -6,7 +6,14 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useEditMode } from "../context/EditModeContext";
 import EditableText from "../components/EditableText";
 
-// ✅ 리사이즈 훅
+// ✅ 이메일 유효성 검사 함수 추가
+function isValidEmail(email) {
+  if (!email) return true; // 선택 입력이므로 비어있으면 통과
+  const regex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
+  return regex.test(email);
+}
+
+// ✅ 리사이즈 훅 (기존 그대로)
 function useResizableBox(id, defaultSize = { width: 900, height: 600 }, active) {
   const [size, setSize] = useState(() => {
     const saved = localStorage.getItem(`resizable-${id}`);
@@ -69,13 +76,20 @@ export default function Support() {
   const [loading, setLoading] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
 
-  const { user } = useAuth();
+  const { user } = useAuth(); // ✅ 로그인 정보 사용
   const { isEditMode, setIsEditMode, isResizeMode, setIsResizeMode } = useEditMode();
   const location = useLocation();
   const navigate = useNavigate();
 
   const API = "https://shop-backend-1-dfsl.onrender.com/api/inquiries";
   const NOTICE_API = `${API}/notice`;
+
+  // ✅ 로그인 상태일 경우 자동으로 이메일 입력란 채움
+  useEffect(() => {
+    if (user?.email) {
+      setNewPost((prev) => ({ ...prev, email: user.email }));
+    }
+  }, [user]);
 
   // ✅ 리사이즈 가능한 주요 영역
   const { ref: formRef, size: formSize, startResize: startFormResize } = useResizableBox(
@@ -126,19 +140,37 @@ export default function Support() {
   // ✅ 문의 작성
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!newPost.email || !newPost.question || !newPost.answer)
-      return alert("모든 항목을 입력해주세요.");
+
+    // 🔒 로그인 확인
+    if (!user) {
+      alert("로그인 후 문의 작성이 가능합니다.");
+      return;
+    }
+
+    // 제목과 내용은 필수
+    if (!newPost.question || !newPost.answer)
+      return alert("제목과 내용을 모두 입력해주세요.");
+
+    // ✅ 이메일 형식 유효성 검사 (입력된 경우만 검사)
+    if (newPost.email && !isValidEmail(newPost.email)) {
+      return alert("올바른 이메일 형식을 입력해주세요.");
+    }
 
     try {
       setLoading(true);
       await axios.post(API, {
-        email: newPost.email,
+        email: newPost.email || "",
         question: newPost.question,
         answer: newPost.answer,
         isPrivate: newPost.isPrivate,
       });
-      alert("문의가 등록되었습니다! 답변은 이메일로 발송됩니다.");
-      setNewPost({ email: "", question: "", answer: "", isPrivate: false });
+      alert("문의가 등록되었습니다!");
+      setNewPost({
+        email: user?.email || "",
+        question: "",
+        answer: "",
+        isPrivate: false,
+      });
       setShowForm(false);
       setTimeout(fetchPosts, 500);
     } catch (err) {
@@ -252,11 +284,19 @@ export default function Support() {
         <EditableText id="support-title" defaultText="고객센터" />
       </h1>
 
-      {/* ✅ 문의 작성 버튼 (사용자용 추가됨) */}
+      {/* ✅ 문의 작성 버튼 */}
       {!showForm && !selectedPost && (
         <div className="flex justify-center mb-10">
           <button
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              if (!user) {
+                if (window.confirm("로그인이 필요합니다. 로그인 페이지로 이동할까요?")) {
+                  navigate("/login");
+                }
+                return;
+              }
+              setShowForm(true);
+            }}
             className="bg-black text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-all"
           >
             ✉ 문의 작성하기
@@ -264,8 +304,8 @@ export default function Support() {
         </div>
       )}
 
-      {/* 작성 폼 */}
-      {showForm && !selectedPost && (
+      {/* ✅ 작성 폼 (로그인 시에만 표시) */}
+      {showForm && user && !selectedPost && (
         <div
           ref={formRef}
           onMouseDown={startFormResize}
@@ -280,7 +320,7 @@ export default function Support() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <input
               type="email"
-              placeholder="답변 받을 이메일"
+              placeholder="답변 받을 이메일 (선택)"
               value={newPost.email}
               onChange={(e) => setNewPost({ ...newPost, email: e.target.value })}
               className="border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black"
@@ -330,7 +370,7 @@ export default function Support() {
           </form>
         </div>
       )}
-      {/* 문의 목록 */}
+      {/* ✅ 문의 목록 */}
       {!selectedPost && (
         <div
           ref={tableRef}
@@ -442,7 +482,9 @@ export default function Support() {
               </p>
             </div>
           ) : (
-            <div className="text-gray-500 italic">아직 답변이 등록되지 않았습니다.</div>
+            <div className="text-gray-500 italic">
+              아직 답변이 등록되지 않았습니다.
+            </div>
           )}
         </div>
       )}

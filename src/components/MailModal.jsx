@@ -12,14 +12,19 @@ export default function MailModal({ onClose }) {
   const API_URL = "https://shop-backend-1-dfsl.onrender.com/api/support/replies";
   const token = localStorage.getItem("token");
 
+  // ✅ 로그인 확인 및 토큰 검증
+  useEffect(() => {
+    if (!token) {
+      setError("로그인이 필요합니다.");
+      setLoading(false);
+    }
+  }, [token]);
+
+  // ✅ 메일 목록 불러오기
   useEffect(() => {
     async function fetchReplies() {
       try {
-        if (!token) {
-          setError("로그인이 필요합니다.");
-          setLoading(false);
-          return;
-        }
+        if (!token) return;
 
         const res = await fetch(API_URL, {
           headers: {
@@ -44,9 +49,10 @@ export default function MailModal({ onClose }) {
       }
     }
 
-    fetchReplies();
+    if (token) fetchReplies();
   }, [token]);
 
+  // ✅ 개별 삭제
   async function handleDelete(id) {
     if (!window.confirm("정말 이 메일을 삭제하시겠습니까?")) return;
 
@@ -68,23 +74,27 @@ export default function MailModal({ onClose }) {
     }
   }
 
+  // ✅ 여러 개 삭제
   async function handleBulkDelete() {
     if (selectedIds.length === 0) return alert("삭제할 메일을 선택하세요.");
     if (!window.confirm(`${selectedIds.length}개의 메일을 삭제하시겠습니까?`))
       return;
 
+    // 순차 삭제
     for (const id of selectedIds) {
-      await Promise.all(selectedIds.map((id) => handleDelete(id)));
+      await handleDelete(id);
     }
     setSelectedIds([]);
   }
 
+  // ✅ 개별 선택 토글
   const toggleSelect = (id) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
     );
   };
 
+  // ✅ 전체 선택/해제
   const toggleSelectAll = () => {
     if (selectedIds.length === replies.length) {
       setSelectedIds([]);
@@ -93,6 +103,7 @@ export default function MailModal({ onClose }) {
     }
   };
 
+  // ✅ 렌더링
   return (
     <div
       style={{
@@ -123,6 +134,7 @@ export default function MailModal({ onClose }) {
         }}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* 닫기 버튼 */}
         <button
           onClick={onClose}
           style={{
@@ -139,6 +151,7 @@ export default function MailModal({ onClose }) {
           <X size={26} />
         </button>
 
+        {/* 타이틀 */}
         <h2
           style={{
             textAlign: "center",
@@ -187,7 +200,7 @@ export default function MailModal({ onClose }) {
           </button>
         </div>
 
-        {/* ✅ 로딩 / 에러 / 데이터 표시 */}
+        {/* ✅ 로딩/에러/데이터 표시 */}
         {loading ? (
           <p style={{ textAlign: "center", color: "#777" }}>불러오는 중...</p>
         ) : error ? (
@@ -326,6 +339,7 @@ export default function MailModal({ onClose }) {
               }}
               onClick={(e) => e.stopPropagation()}
             >
+              {/* 닫기 버튼 */}
               <button
                 onClick={() => setSelectedMail(null)}
                 style={{
@@ -387,7 +401,13 @@ export default function MailModal({ onClose }) {
                   border: "1px solid #f0c36d",
                 }}
               >
-                <p style={{ fontWeight: "600", color: "#c27800", marginBottom: "6px" }}>
+                <p
+                  style={{
+                    fontWeight: "600",
+                    color: "#c27800",
+                    marginBottom: "6px",
+                  }}
+                >
                   🧑‍💼 관리자 답장
                 </p>
                 <p

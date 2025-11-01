@@ -131,6 +131,7 @@ function Login() {
     </div>
   );
 }
+
 /* -------------------- ✅ 관리자 보호 라우트 -------------------- */
 function AdminRoute({ children }) {
   const { user } = useAuth();
@@ -147,7 +148,6 @@ function AdminRoute({ children }) {
     );
   return children;
 }
-
 /* -------------------- ✅ 네비게이션 -------------------- */
 function Navigation() {
   const location = useLocation();
@@ -291,16 +291,26 @@ function Navigation() {
             </>
           ) : (
             <>
-              <Link to="/login" onClick={() => setIsOpen(false)} style={{ color: "white" }}>
+              <Link
+                to="/login"
+                onClick={() => setIsOpen(false)}
+                style={{ color: "white" }}
+              >
                 로그인
               </Link>
               <span>|</span>
-              <Link to="/signup" onClick={() => setIsOpen(false)} style={{ color: "white" }}>
+              <Link
+                to="/signup"
+                onClick={() => setIsOpen(false)}
+                style={{ color: "white" }}
+              >
                 회원가입
               </Link>
             </>
           )}
         </div>
+
+        {/* ✅ 메일함 아이콘 (로그인 시만 표시) */}
         {user && isOpen && (
           <Mail
             style={{
@@ -317,6 +327,7 @@ function Navigation() {
           />
         )}
 
+        {/* 메뉴 항목 */}
         <nav style={{ marginTop: "60px", width: "80%" }}>
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
             {[...(user?.isAdmin
@@ -356,11 +367,11 @@ function Navigation() {
         </nav>
       </div>
 
+      {/* ✅ 메일 모달 */}
       {showMailModal && <MailModal onClose={() => setShowMailModal(false)} />}
     </>
   );
 }
-
 /* -------------------- ✅ 라우팅 -------------------- */
 function InnerApp() {
   const { user } = useAuth();
@@ -425,6 +436,7 @@ function InnerApp() {
             <Route path="/find-id" element={<FindId />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
           </Route>
+
           {/* 404 페이지 */}
           <Route
             path="*"
