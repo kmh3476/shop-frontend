@@ -212,6 +212,13 @@ export default function Support() {
           >
             {isResizeMode ? "📐 크기조절 ON" : "📏 크기조절 OFF"}
           </button>
+          {/* ✅ 공지 등록 버튼 (관리자만) */}
+          <button
+            onClick={handleNoticeSubmit}
+            className="px-4 py-2 rounded bg-yellow-500 text-white font-semibold hover:bg-yellow-600"
+          >
+            📢 공지 등록
+          </button>
         </div>
       )}
 
@@ -244,6 +251,18 @@ export default function Support() {
       <h1 className="text-4xl font-extrabold text-center mb-14">
         <EditableText id="support-title" defaultText="고객센터" />
       </h1>
+
+      {/* ✅ 문의 작성 버튼 (사용자용 추가됨) */}
+      {!showForm && !selectedPost && (
+        <div className="flex justify-center mb-10">
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-black text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-all"
+          >
+            ✉ 문의 작성하기
+          </button>
+        </div>
+      )}
 
       {/* 작성 폼 */}
       {showForm && !selectedPost && (
@@ -311,7 +330,6 @@ export default function Support() {
           </form>
         </div>
       )}
-
       {/* 문의 목록 */}
       {!selectedPost && (
         <div
@@ -379,6 +397,53 @@ export default function Support() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* ✅ 문의 상세 보기 */}
+      {selectedPost && (
+        <div
+          ref={detailRef}
+          onMouseDown={startDetailResize}
+          style={{
+            width: `${detailSize.width}px`,
+            minHeight: `${detailSize.height}px`,
+            cursor: isResizeMode ? "se-resize" : "default",
+          }}
+          className="max-w-3xl mx-auto bg-gray-50 rounded-2xl p-8 shadow relative"
+        >
+          <button
+            onClick={closeDetail}
+            className="absolute top-4 right-4 bg-gray-300 text-black px-3 py-1 rounded hover:bg-gray-400"
+          >
+            닫기
+          </button>
+
+          <h2 className="text-2xl font-bold mb-4">{selectedPost.question}</h2>
+          <p className="text-gray-600 text-sm mb-6">
+            작성자:{" "}
+            {selectedPost.isNotice
+              ? "관리자"
+              : displayEmail(selectedPost.email)}{" "}
+            | {new Date(selectedPost.createdAt).toLocaleDateString()}
+          </p>
+
+          <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+            <p className="text-gray-800 whitespace-pre-wrap">
+              {selectedPost.answer}
+            </p>
+          </div>
+
+          {selectedPost.reply ? (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h3 className="font-semibold text-green-700 mb-2">관리자 답변</h3>
+              <p className="text-gray-800 whitespace-pre-wrap">
+                {selectedPost.reply}
+              </p>
+            </div>
+          ) : (
+            <div className="text-gray-500 italic">아직 답변이 등록되지 않았습니다.</div>
+          )}
         </div>
       )}
     </div>
