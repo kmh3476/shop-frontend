@@ -7,7 +7,7 @@ import EditableText from "../components/EditableText";
 import { useLocation, useNavigate } from "react-router-dom";
 
 /* --------------------------------------------------------
- ✅ 리사이즈 가능한 박스 훅 (Support.jsx 기반 복제)
+ ✅ 리사이즈 가능한 박스 훅
 -------------------------------------------------------- */
 function useResizableBox(id, defaultSize = { width: 900, height: 600 }, active) {
   const [size, setSize] = useState(() => {
@@ -62,7 +62,7 @@ function useResizableBox(id, defaultSize = { width: 900, height: 600 }, active) 
 }
 
 /* --------------------------------------------------------
- ✅ ProductSupport 메인 컴포넌트 시작
+ ✅ ProductSupport 메인 컴포넌트
 -------------------------------------------------------- */
 export default function ProductSupport() {
   const { user } = useAuth();
@@ -106,26 +106,29 @@ export default function ProductSupport() {
     isResizeMode
   );
 
-  /* ✅ 게시글 불러오기 */
+  /* --------------------------------------------------------
+   ✅ 게시글 불러오기
+  -------------------------------------------------------- */
   useEffect(() => {
     fetchPosts();
   }, []);
 
   async function fetchPosts() {
     try {
-      const res = await API.get(`${API_URL}/all`);
-const filtered = res.data.filter(
-  (p) => p.productId === "product-page" || (p.isNotice && p.productId === "product-page")
-);
-const sorted = filtered.sort((a, b) => {
-  if (a.isNotice && !b.isNotice) return -1;
-  if (!a.isNotice && b.isNotice) return 1;
-  return new Date(b.createdAt) - new Date(a.createdAt);
-});
-setPosts(sorted);
-
+      const res = await API.get(`${API_URL}/product-page`); // ✅ 상품문의 전용 API로 변경
+      const filtered = res.data.filter(
+        (p) =>
+          p.productId === "product-page" ||
+          (p.isNotice && p.productId === "product-page")
+      );
+      const sorted = filtered.sort((a, b) => {
+        if (a.isNotice && !b.isNotice) return -1;
+        if (!a.isNotice && b.isNotice) return 1;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+      setPosts(sorted);
     } catch (err) {
-      console.error("상품 문의 불러오기 실패:", err);
+      console.error("❌ 상품 문의 불러오기 실패:", err);
     }
   }
 
@@ -159,9 +162,9 @@ setPosts(sorted);
         question: newPost.question,
         answer: newPost.answer,
         isPrivate: newPost.isPrivate,
-        productId: "product-page", // ✅ 상품문의 구분용
+        productId: "product-page", // ✅ 상품문의 전용 식별자
       });
-      alert("상품 문의가 등록되었습니다!");
+      alert("✅ 상품 문의가 등록되었습니다!");
       setNewPost({
         email: user.email || "",
         question: "",
@@ -171,7 +174,7 @@ setPosts(sorted);
       setShowForm(false);
       fetchPosts();
     } catch (err) {
-      console.error("문의 등록 실패:", err);
+      console.error("❌ 문의 등록 실패:", err);
       alert("문의 등록 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
@@ -191,12 +194,12 @@ setPosts(sorted);
       await API.post(`${API_URL}/notice`, {
         question: title,
         answer: content,
-        productId: "product-page", // ✅ 상품문의 전용 공지
+        productId: "product-page", // ✅ 상품문의 공지 구분
       });
-      alert("상품문의 공지가 등록되었습니다.");
+      alert("✅ 상품 문의 공지가 등록되었습니다.");
       fetchPosts();
     } catch (err) {
-      console.error("상품문의 공지 등록 실패:", err);
+      console.error("❌ 상품문의 공지 등록 실패:", err);
       alert("공지 등록 중 오류가 발생했습니다.");
     }
   }
@@ -301,7 +304,6 @@ setPosts(sorted);
           </button>
         </div>
       )}
-
       {/* ✅ 문의 작성 폼 */}
       {showForm && user && !selectedPost && (
         <div

@@ -1,19 +1,23 @@
 // 📁 src/pages/Support.jsx
 import React, { useEffect, useState, useRef } from "react";
-import API from "../api/axiosInstance"; // ✅ axiosInstance import
+import API from "../api/axiosInstance";
 import { useAuth } from "../context/AuthContext";
-import { useLocation, useNavigate } from "react-router-dom";
 import { useEditMode } from "../context/EditModeContext";
 import EditableText from "../components/EditableText";
+import { useLocation, useNavigate } from "react-router-dom";
 
-// ✅ 이메일 유효성 검사 함수 추가
+/* --------------------------------------------------------
+ ✅ 이메일 유효성 검사
+-------------------------------------------------------- */
 function isValidEmail(email) {
-  if (!email) return true; // 선택 입력이므로 비어있으면 통과
+  if (!email) return true; // 선택입력 허용
   const regex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
   return regex.test(email);
 }
 
-// ✅ 리사이즈 훅 (기존 그대로)
+/* --------------------------------------------------------
+ ✅ 리사이즈 가능한 박스 훅
+-------------------------------------------------------- */
 function useResizableBox(id, defaultSize = { width: 900, height: 600 }, active) {
   const [size, setSize] = useState(() => {
     const saved = localStorage.getItem(`resizable-${id}`);
@@ -29,10 +33,11 @@ function useResizableBox(id, defaultSize = { width: 900, height: 600 }, active) 
       const dx = e.clientX - start.current.x;
       const dy = e.clientY - start.current.y;
       setSize({
-        width: Math.max(400, start.current.width + dx),
+        width: Math.max(500, start.current.width + dx),
         height: Math.max(300, start.current.height + dy),
       });
     };
+
     const up = () => {
       if (resizing.current) {
         resizing.current = false;
@@ -40,6 +45,7 @@ function useResizableBox(id, defaultSize = { width: 900, height: 600 }, active) 
         localStorage.setItem(`resizable-${id}`, JSON.stringify(size));
       }
     };
+
     window.addEventListener("mousemove", move);
     window.addEventListener("mouseup", up);
     return () => {
@@ -64,9 +70,15 @@ function useResizableBox(id, defaultSize = { width: 900, height: 600 }, active) 
   return { ref, size, startResize };
 }
 
+/* --------------------------------------------------------
+ ✅ Support 메인 컴포넌트
+-------------------------------------------------------- */
 export default function Support() {
+  const { user } = useAuth();
+  const { isEditMode, isResizeMode, setIsEditMode, setIsResizeMode } = useEditMode();
   const [posts, setPosts] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
   const [newPost, setNewPost] = useState({
     email: "",
     question: "",
@@ -74,92 +86,86 @@ export default function Support() {
     isPrivate: false,
   });
   const [loading, setLoading] = useState(false);
-  const [selectedPost, setSelectedPost] = useState(null);
 
-  const { user } = useAuth(); // ✅ 로그인 정보 사용
-  const { isEditMode, setIsEditMode, isResizeMode, setIsResizeMode } = useEditMode();
   const location = useLocation();
   const navigate = useNavigate();
-
   const API_URL = "/api/inquiries";
-  const NOTICE_API = `${API_URL}/notice`;
 
-  // ✅ 로그인 상태일 경우 자동으로 이메일 입력란 채움
+  /* ✅ 로그인 시 이메일 자동입력 */
   useEffect(() => {
     if (user?.email) {
       setNewPost((prev) => ({ ...prev, email: user.email }));
     }
   }, [user]);
 
-  // ✅ 리사이즈 가능한 주요 영역
+  /* ✅ 리사이즈 훅 연결 */
   const { ref: formRef, size: formSize, startResize: startFormResize } = useResizableBox(
     "support-form",
-    { width: 800, height: 540 },
+    { width: 800, height: 520 },
     isResizeMode
   );
   const { ref: tableRef, size: tableSize, startResize: startTableResize } = useResizableBox(
     "support-table",
-    { width: 1100, height: 600 },
+    { width: 1100, height: 580 },
     isResizeMode
   );
   const { ref: detailRef, size: detailSize, startResize: startDetailResize } = useResizableBox(
     "support-detail",
-    { width: 800, height: 540 },
+    { width: 800, height: 520 },
     isResizeMode
   );
 
+  /* --------------------------------------------------------
+   ✅ 문의글 불러오기 (상품문의 제외)
+  -------------------------------------------------------- */
   useEffect(() => {
-    console.log("✅ Support 페이지 렌더링됨");
     fetchPosts();
   }, []);
 
-  // ✅ 문의 목록 불러오기 (axiosInstance로 변경)
   async function fetchPosts() {
-  try {
-    const res = await API.get(API_URL);
-    // 상품문의(product-page) 제외 (사용자 문의만 표시)
-    const filtered = res.data.filter(
-      (p) =>
-        !p.productId ||
-        p.productId === "" ||
-        p.productId === null ||
-        (typeof p.productId === "string" &&
-          !p.productId.toLowerCase().includes("product-page"))
-    );
-    const sorted = filtered.sort((a, b) => {
-      if (a.isNotice && !b.isNotice) return -1;
-      if (!a.isNotice && b.isNotice) return 1;
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    });
-    setPosts(sorted);
-  } catch (err) {
-    console.error("문의 목록 불러오기 실패:", err);
+    try {
+      const res = await API.get(`${API_URL}/all`);
+      const filtered = res.data.filter(
+        (p) =>
+          !p.productId ||
+          p.productId === "" ||
+          p.productId === null ||
+          (typeof p.productId === "string" && p.productId !== "product-page")
+      );
+      const sorted = filtered.sort((a, b) => {
+        if (a.isNotice && !b.isNotice) return -1;
+        if (!a.isNotice && b.isNotice) return 1;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
+      setPosts(sorted);
+    } catch (err) {
+      console.error("❌ 사용자 문의 불러오기 실패:", err);
+    }
   }
-}
 
-  // ✅ 이메일 표시
-  function displayEmail(email) {
-    if (!email || typeof email !== "string") return "익명";
-    if (!email.includes("@")) return email;
+  /* ✅ 이메일 마스킹 */
+  const displayEmail = (email) => {
+    if (!email) return "익명";
     const [id] = email.split("@");
     return id.slice(0, 2) + "****";
-  }
-
-  // ✅ 문의 작성
+  };
+  /* --------------------------------------------------------
+   ✅ 문의 작성 처리
+  -------------------------------------------------------- */
   async function handleSubmit(e) {
     e.preventDefault();
 
-    // 🔒 로그인 확인
     if (!user) {
-      alert("로그인 후 문의 작성이 가능합니다.");
+      if (window.confirm("로그인이 필요합니다. 로그인 페이지로 이동할까요?")) {
+        navigate("/login");
+      }
       return;
     }
 
-    // 제목과 내용은 필수
-    if (!newPost.question || !newPost.answer)
+    if (!newPost.question.trim() || !newPost.answer.trim()) {
       return alert("제목과 내용을 모두 입력해주세요.");
+    }
 
-    // ✅ 이메일 형식 유효성 검사 (입력된 경우만 검사)
     if (newPost.email && !isValidEmail(newPost.email)) {
       return alert("올바른 이메일 형식을 입력해주세요.");
     }
@@ -167,77 +173,80 @@ export default function Support() {
     try {
       setLoading(true);
       await API.post(API_URL, {
-        email: newPost.email || "",
+        email: newPost.email || user.email,
         question: newPost.question,
         answer: newPost.answer,
         isPrivate: newPost.isPrivate,
+        productId: null, // ✅ 명시적으로 일반 문의로 설정
       });
-      alert("문의가 등록되었습니다!");
+      alert("✅ 문의가 등록되었습니다!");
       setNewPost({
-        email: user?.email || "",
+        email: user.email || "",
         question: "",
         answer: "",
         isPrivate: false,
       });
       setShowForm(false);
-      setTimeout(fetchPosts, 500);
+      fetchPosts();
     } catch (err) {
-      console.error("문의 작성 실패:", err);
-      alert(err.response?.data?.message || "문의 등록 중 오류가 발생했습니다.");
+      console.error("❌ 문의 등록 실패:", err);
+      alert("문의 등록 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
   }
-  // ✅ 공지글 작성 (관리자)
+
+  /* --------------------------------------------------------
+   ✅ 공지 등록 (사용자문의 전용)
+  -------------------------------------------------------- */
   async function handleNoticeSubmit() {
+    if (!user?.isAdmin) return;
     const title = prompt("공지 제목을 입력하세요:");
     const content = prompt("공지 내용을 입력하세요:");
-    if (!title || !content) return alert("제목과 내용을 모두 입력해주세요.");
+    if (!title || !content) return;
 
     try {
-      await API.post(NOTICE_API, {
+      await API.post(`${API_URL}/notice`, {
         question: title,
         answer: content,
-        isNotice: true,
+        productId: null, // ✅ 상품 문의와 구분
       });
-      alert("공지글이 등록되었습니다!");
+      alert("✅ 사용자 문의 공지가 등록되었습니다.");
       fetchPosts();
     } catch (err) {
-      console.error("공지글 등록 실패:", err);
-      alert(err.response?.data?.message || "공지글 등록 중 오류가 발생했습니다.");
+      console.error("❌ 공지 등록 실패:", err);
+      alert("공지 등록 중 오류가 발생했습니다.");
     }
   }
 
-  // ✅ 상세 보기
-  function handleViewDetail(post) {
-    const isOwner = user?.email && post.email?.includes(user.email.slice(0, 3));
-    if (post.isPrivate && !isOwner) {
-      alert("비공개 문의는 작성자만 볼 수 있습니다.");
-      return;
+  /* --------------------------------------------------------
+   ✅ 상세보기 닫기 & 삭제
+  -------------------------------------------------------- */
+  const closeDetail = () => setSelectedPost(null);
+
+  async function handleDelete(id) {
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+    try {
+      await API.delete(`${API_URL}/${id}`);
+      alert("삭제되었습니다.");
+      setSelectedPost(null);
+      fetchPosts();
+    } catch (err) {
+      console.error("삭제 실패:", err);
+      alert("삭제 중 오류가 발생했습니다.");
     }
-    setSelectedPost(post);
   }
 
-  function closeDetail() {
-    setSelectedPost(null);
-  }
-
-  const toggleEdit = () => {
-    if (!user?.isAdmin) return alert("관리자만 접근 가능합니다.");
-    setIsEditMode(!isEditMode);
-  };
-  const toggleResize = () => {
-    if (!user?.isAdmin) return alert("관리자만 접근 가능합니다.");
-    setIsResizeMode(!isResizeMode);
-  };
-
+  /* --------------------------------------------------------
+   ✅ 렌더링 시작
+  -------------------------------------------------------- */
   return (
     <div className="min-h-screen bg-white text-black py-16 px-4 font-['Pretendard'] relative">
-      {/* 관리자 툴바 */}
+      {/* ✅ 관리자 툴바 */}
       {user?.isAdmin && (
         <div className="fixed top-6 left-6 z-50 flex gap-3">
           <button
-            onClick={toggleEdit}
+            onClick={() => setIsEditMode((p) => !p)}
             className={`px-4 py-2 rounded text-white font-semibold ${
               isEditMode ? "bg-green-600" : "bg-gray-700"
             }`}
@@ -245,14 +254,13 @@ export default function Support() {
             {isEditMode ? "🖊 디자인모드 ON" : "✏ 디자인모드 OFF"}
           </button>
           <button
-            onClick={toggleResize}
+            onClick={() => setIsResizeMode((p) => !p)}
             className={`px-4 py-2 rounded text-white font-semibold ${
               isResizeMode ? "bg-blue-600" : "bg-gray-700"
             }`}
           >
             {isResizeMode ? "📐 크기조절 ON" : "📏 크기조절 OFF"}
           </button>
-          {/* ✅ 공지 등록 버튼 (관리자만) */}
           <button
             onClick={handleNoticeSubmit}
             className="px-4 py-2 rounded bg-yellow-500 text-white font-semibold hover:bg-yellow-600"
@@ -262,7 +270,7 @@ export default function Support() {
         </div>
       )}
 
-      {/* 상단 탭 */}
+      {/* ✅ 상단 탭 */}
       <div className="flex justify-center mb-12">
         <div className="inline-flex bg-gray-100 rounded-full p-1 shadow-sm">
           <button
@@ -311,12 +319,11 @@ export default function Support() {
           </button>
         </div>
       )}
-
-      {/* ✅ 작성 폼 (로그인 시에만 표시) */}
+      {/* ✅ 문의 작성 폼 */}
       {showForm && user && !selectedPost && (
         <div
           ref={formRef}
-          onMouseDown={startFormResize}
+          onContextMenu={startFormResize}
           style={{
             width: `${formSize.width}px`,
             minHeight: `${formSize.height}px`,
@@ -351,9 +358,7 @@ export default function Support() {
               <input
                 type="checkbox"
                 checked={newPost.isPrivate}
-                onChange={(e) =>
-                  setNewPost({ ...newPost, isPrivate: e.target.checked })
-                }
+                onChange={(e) => setNewPost({ ...newPost, isPrivate: e.target.checked })}
               />
               비공개 문의로 등록하기
             </label>
@@ -378,11 +383,12 @@ export default function Support() {
           </form>
         </div>
       )}
+
       {/* ✅ 문의 목록 */}
       {!selectedPost && (
         <div
           ref={tableRef}
-          onMouseDown={startTableResize}
+          onContextMenu={startTableResize}
           style={{
             width: `${tableSize.width}px`,
             minHeight: `${tableSize.height}px`,
@@ -408,7 +414,7 @@ export default function Support() {
                   className={`border-b border-gray-200 hover:bg-gray-50 ${
                     p.isNotice ? "bg-gray-200" : ""
                   }`}
-                  onClick={() => handleViewDetail(p)}
+                  onClick={() => setSelectedPost(p)}
                 >
                   <td className="p-3 text-center">{i + 1}</td>
                   <td className="p-3 text-sm">
@@ -443,6 +449,14 @@ export default function Support() {
                   </td>
                 </tr>
               ))}
+
+              {posts.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="text-center text-gray-500 py-6 bg-gray-50">
+                    등록된 문의가 없습니다.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -452,7 +466,7 @@ export default function Support() {
       {selectedPost && (
         <div
           ref={detailRef}
-          onMouseDown={startDetailResize}
+          onContextMenu={startDetailResize}
           style={{
             width: `${detailSize.width}px`,
             minHeight: `${detailSize.height}px`,
@@ -477,22 +491,27 @@ export default function Support() {
           </p>
 
           <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-            <p className="text-gray-800 whitespace-pre-wrap">
-              {selectedPost.answer}
-            </p>
+            <p className="text-gray-800 whitespace-pre-wrap">{selectedPost.answer}</p>
           </div>
 
           {selectedPost.reply ? (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <h3 className="font-semibold text-green-700 mb-2">관리자 답변</h3>
-              <p className="text-gray-800 whitespace-pre-wrap">
-                {selectedPost.reply}
-              </p>
+              <p className="text-gray-800 whitespace-pre-wrap">{selectedPost.reply}</p>
             </div>
           ) : (
-            <div className="text-gray-500 italic">
-              아직 답변이 등록되지 않았습니다.
-            </div>
+            <div className="text-gray-500 italic">아직 답변이 등록되지 않았습니다.</div>
+          )}
+
+          {/* ✅ 삭제 버튼 (작성자 or 관리자만) */}
+          {(user?.isAdmin ||
+            (user?.email && selectedPost.email && user.email === selectedPost.email)) && (
+            <button
+              onClick={() => handleDelete(selectedPost._id)}
+              className="mt-6 bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded"
+            >
+              삭제
+            </button>
           )}
         </div>
       )}
