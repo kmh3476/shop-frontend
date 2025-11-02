@@ -69,6 +69,26 @@ export default function ProductSupport() {
     const [id] = email.split("@");
     return id.slice(0, 2) + "****";
   }
+/* --------------------------------------------------------
+ ✅ 관리자 공지 등록 함수
+-------------------------------------------------------- */
+async function handleNoticeSubmit() {
+  const title = prompt("공지 제목을 입력하세요:");
+  const content = prompt("공지 내용을 입력하세요:");
+  if (!title || !content) return;
+
+  try {
+    await API.post("/api/inquiries/notice", {
+      question: title,
+      answer: content,
+    });
+    alert("공지글이 등록되었습니다.");
+    fetchPosts(); // ✅ 등록 후 목록 갱신
+  } catch (err) {
+    console.error("공지 등록 실패:", err);
+    alert("공지 등록 중 오류가 발생했습니다.");
+  }
+}
 
   /* ✅ 문의 등록 처리 */
   async function handleSubmit(e) {
