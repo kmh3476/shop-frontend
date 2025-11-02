@@ -431,16 +431,6 @@ function InnerApp() {
                 </AdminRoute>
               }
             />
-
-            <Route
-  path="/admin/product-support"
-  element={
-    <AdminRoute>
-      <AdminProductSupport /> {/* ✅ 새 컴포넌트 */}
-    </AdminRoute>
-  }
-/>
-
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/find-id" element={<FindId />} />
