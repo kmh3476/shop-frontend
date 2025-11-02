@@ -114,10 +114,16 @@ export default function ProductSupport() {
   async function fetchPosts() {
     try {
       const res = await API.get(`${API_URL}/all`);
-      const filtered = res.data
-        .filter((p) => p.productId) // ✅ 상품문의만 표시
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      setPosts(filtered);
+const filtered = res.data.filter(
+  (p) => p.productId === "product-page" || (p.isNotice && p.productId === "product-page")
+);
+const sorted = filtered.sort((a, b) => {
+  if (a.isNotice && !b.isNotice) return -1;
+  if (!a.isNotice && b.isNotice) return 1;
+  return new Date(b.createdAt) - new Date(a.createdAt);
+});
+setPosts(sorted);
+
     } catch (err) {
       console.error("상품 문의 불러오기 실패:", err);
     }
