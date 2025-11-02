@@ -431,6 +431,14 @@ function InnerApp() {
                 </AdminRoute>
               }
             />
+<Route
+  path="/admin/support"
+  element={
+    <AdminRoute>
+      <AdminSupport /> {/* ✅ 이 하나로 일반/상품 문의 둘 다 관리 */}
+    </AdminRoute>
+  }
+/>
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/find-id" element={<FindId />} />
