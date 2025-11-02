@@ -117,11 +117,15 @@ export default function Support() {
   async function fetchPosts() {
   try {
     const res = await API.get(API_URL);
--   const filtered = res.data.filter((p) => !p.productId);
-+   // 상품문의(product-page) 제외 (사용자 문의만 표시)
-+   const filtered = res.data.filter(
-+     (p) => !p.productId || p.productId === "" || p.productId === null
-+   );
+    // 상품문의(product-page) 제외 (사용자 문의만 표시)
+    const filtered = res.data.filter(
+      (p) =>
+        !p.productId ||
+        p.productId === "" ||
+        p.productId === null ||
+        (typeof p.productId === "string" &&
+          !p.productId.toLowerCase().includes("product-page"))
+    );
     const sorted = filtered.sort((a, b) => {
       if (a.isNotice && !b.isNotice) return -1;
       if (!a.isNotice && b.isNotice) return 1;
