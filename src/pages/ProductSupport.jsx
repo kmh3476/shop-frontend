@@ -160,9 +160,19 @@ export default function ProductSupport() {
         고객센터
       </h1>
 
-      {/* ✅ 문의 작성 버튼 */}
+        {/* ✅ 문의 작성 버튼 */}
       {!showForm && !selectedPost && (
-        <div className="flex justify-center mb-10">
+        <div className="flex justify-center mb-10 gap-4">
+          {/* ✅ 관리자 공지 등록 버튼 */}
+          {user?.isAdmin && (
+            <button
+              onClick={handleNoticeSubmit}
+              className="px-4 py-2 rounded bg-yellow-500 text-white font-semibold hover:bg-yellow-600"
+            >
+              📢 공지 등록
+            </button>
+          )}
+
           <button
             onClick={() => {
               if (!user) {
@@ -187,13 +197,15 @@ export default function ProductSupport() {
         <div className="max-w-3xl mx-auto mb-16 bg-gray-50 rounded-2xl p-8 shadow">
           <h2 className="text-2xl font-bold mb-6">상품 문의 작성</h2>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* 이메일 자동 입력 */}
+            {/* ✅ 이메일 입력칸 — 자동 입력 + 수정 가능 */}
             <input
               type="email"
-              placeholder="이메일 (자동 입력)"
+              placeholder="답변 받을 이메일 (선택)"
               value={newPost.email}
-              readOnly
-              className="border border-gray-300 rounded-lg p-3 bg-gray-100 text-gray-600 cursor-not-allowed"
+              onChange={(e) =>
+                setNewPost({ ...newPost, email: e.target.value })
+              }
+              className="border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black"
             />
 
             {/* 제목 */}
@@ -218,7 +230,7 @@ export default function ProductSupport() {
               className="border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black resize-none"
             />
 
-            {/* 비공개 옵션 */}
+            {/* 비공개 체크 */}
             <label className="flex items-center gap-2 text-gray-700 text-sm">
               <input
                 type="checkbox"
@@ -230,7 +242,7 @@ export default function ProductSupport() {
               비공개 문의로 등록하기
             </label>
 
-            {/* 버튼 */}
+            {/* 버튼 영역 */}
             <div className="flex gap-4 mt-4">
               <button
                 type="submit"
