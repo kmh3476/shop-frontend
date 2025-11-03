@@ -126,7 +126,12 @@ export default function Support() {
     try {
       const res = await API.get(`${API_URL}/all`);
       // ✅ 공지만 제외하고 모든 문의 표시 (상품문의 포함)
-      const filtered = res.data.filter((p) => !p.isNotice);
+      const filtered = res.data.filter(
+  (p) =>
+    !p.isNotice && // 공지 제외
+    (!p.productId || p.productId === "" || p.productId === null) // 상품문의 제외
+);
+
 
       // ✅ 최신순 + 공지 우선 정렬
       const sorted = filtered.sort((a, b) => {
