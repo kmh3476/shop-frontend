@@ -45,9 +45,15 @@ export default function AdminSupport() {
       // 사용자 문의 탭 → productId 없는 문의
       filtered = res.data.filter((p) => !p.productId || p.productId === "");
     } else if (location.pathname === "/admin/product-support") {
-      // 상품 문의 탭 → productId === 'product-page' 인 항목
-      filtered = res.data.filter((p) => p.productId === "product-page");
-    }
+  // product-page로 저장된 상품공지 + productId 존재하는 일반 상품문의 모두 표시
+  filtered = res.data.filter(
+    (p) =>
+      p.productId === "product-page" ||
+      (typeof p.productId === "string" && p.productId.trim() !== "") ||
+      (p.productId && typeof p.productId === "object") // ObjectId 형태 대비
+  );
+}
+
 
     // 최신순 정렬
     filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));

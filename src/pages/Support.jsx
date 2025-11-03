@@ -127,11 +127,35 @@ export default function Support() {
     const res = await API.get(`${API_URL}/all`);
     // ✅ 상품 문의는 제외하지만, 답변 여부는 상관없이 전부 표시
     const filtered = res.data.filter(
+      async function fetchPosts() {
+  try {
+    const res = await API.get(`${API_URL}/all`);
+    // ✅ 공지는 제외하고, 답변 여부 상관없이 모든 사용자 문의 표시
+    const filtered = res.data.filter(
       (p) =>
-        !p.productId ||
-        p.productId === "" ||
-        p.productId === null ||
-        (typeof p.productId === "string" && p.productId !== "product-page")
+        !p.isNotice && // 공지글 제외
+        (
+          !p.productId ||                       // productId 없는 일반문의
+          p.productId === "" ||                 // 빈 문자열
+          p.productId === null ||               // null 값
+          (typeof p.productId === "string" && p.productId.trim() === "") || // 공백 문자열
+          (p.productId && typeof p.productId === "object" && !p.productId.$oid) // ObjectId로 저장된 일반 문의
+        )
+    );
+
+    // ✅ 최신순 + 공지 우선 정렬
+    const sorted = filtered.sort((a, b) => {
+      if (a.isNotice && !b.isNotice) return -1;
+      if (!a.isNotice && b.isNotice) return 1;
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
+    setPosts(sorted);
+  } catch (err) {
+    console.error("❌ 사용자 문의 불러오기 실패:", err);
+  }
+}
+
     );
     const sorted = filtered.sort((a, b) => {
       if (a.isNotice && !b.isNotice) return -1;
