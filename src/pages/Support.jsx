@@ -116,65 +116,37 @@ export default function Support() {
   );
 
   /* --------------------------------------------------------
-   ✅ 문의글 불러오기 (상품문의 제외)
+   ✅ 문의글 불러오기 (상품문의 포함, 공지만 제외)
   -------------------------------------------------------- */
   useEffect(() => {
     fetchPosts();
   }, []);
 
   async function fetchPosts() {
-  try {
-    const res = await API.get(`${API_URL}/all`);
-    // ✅ 상품 문의는 제외하지만, 답변 여부는 상관없이 전부 표시
-    const filtered = res.data.filter(
-      async function fetchPosts() {
-  try {
-    const res = await API.get(`${API_URL}/all`);
-    // ✅ 공지는 제외하고, 답변 여부 상관없이 모든 사용자 문의 표시
-    const filtered = res.data.filter(
-      (p) =>
-        !p.isNotice && // 공지글 제외
-        (
-          !p.productId ||                       // productId 없는 일반문의
-          p.productId === "" ||                 // 빈 문자열
-          p.productId === null ||               // null 값
-          (typeof p.productId === "string" && p.productId.trim() === "") || // 공백 문자열
-          (p.productId && typeof p.productId === "object" && !p.productId.$oid) // ObjectId로 저장된 일반 문의
-        )
-    );
+    try {
+      const res = await API.get(`${API_URL}/all`);
+      // ✅ 공지만 제외하고 모든 문의 표시 (상품문의 포함)
+      const filtered = res.data.filter((p) => !p.isNotice);
 
-    // ✅ 최신순 + 공지 우선 정렬
-    const sorted = filtered.sort((a, b) => {
-      if (a.isNotice && !b.isNotice) return -1;
-      if (!a.isNotice && b.isNotice) return 1;
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    });
+      // ✅ 최신순 + 공지 우선 정렬
+      const sorted = filtered.sort((a, b) => {
+        if (a.isNotice && !b.isNotice) return -1;
+        if (!a.isNotice && b.isNotice) return 1;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
 
-    setPosts(sorted);
-  } catch (err) {
-    console.error("❌ 사용자 문의 불러오기 실패:", err);
+      setPosts(sorted);
+    } catch (err) {
+      console.error("❌ 사용자 문의 불러오기 실패:", err);
+    }
   }
-}
-
-    );
-    const sorted = filtered.sort((a, b) => {
-      if (a.isNotice && !b.isNotice) return -1;
-      if (!a.isNotice && b.isNotice) return 1;
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    });
-    setPosts(sorted);
-  } catch (err) {
-    console.error("❌ 사용자 문의 불러오기 실패:", err);
-  }
-}
-
-
   /* ✅ 이메일 마스킹 */
   const displayEmail = (email) => {
     if (!email) return "익명";
     const [id] = email.split("@");
     return id.slice(0, 2) + "****";
   };
+
   /* --------------------------------------------------------
    ✅ 문의 작성 처리
   -------------------------------------------------------- */
@@ -345,6 +317,7 @@ export default function Support() {
           </button>
         </div>
       )}
+
       {/* ✅ 문의 작성 폼 */}
       {showForm && user && !selectedPost && (
         <div
@@ -384,7 +357,9 @@ export default function Support() {
               <input
                 type="checkbox"
                 checked={newPost.isPrivate}
-                onChange={(e) => setNewPost({ ...newPost, isPrivate: e.target.checked })}
+                onChange={(e) =>
+                  setNewPost({ ...newPost, isPrivate: e.target.checked })
+                }
               />
               비공개 문의로 등록하기
             </label>
@@ -409,7 +384,6 @@ export default function Support() {
           </form>
         </div>
       )}
-
       {/* ✅ 문의 목록 */}
       {!selectedPost && (
         <div
@@ -478,7 +452,10 @@ export default function Support() {
 
               {posts.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="text-center text-gray-500 py-6 bg-gray-50">
+                  <td
+                    colSpan="5"
+                    className="text-center text-gray-500 py-6 bg-gray-50"
+                  >
                     등록된 문의가 없습니다.
                   </td>
                 </tr>
@@ -514,24 +491,38 @@ export default function Support() {
               ? "관리자"
               : displayEmail(selectedPost.email)}{" "}
             | {new Date(selectedPost.createdAt).toLocaleDateString()}
+            {selectedPost.productId &&
+              !selectedPost.isNotice && (
+                <span className="ml-2 text-gray-500 text-xs">
+                  (상품 관련 문의)
+                </span>
+              )}
           </p>
 
           <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-            <p className="text-gray-800 whitespace-pre-wrap">{selectedPost.answer}</p>
+            <p className="text-gray-800 whitespace-pre-wrap">
+              {selectedPost.answer}
+            </p>
           </div>
 
           {selectedPost.reply ? (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <h3 className="font-semibold text-green-700 mb-2">관리자 답변</h3>
-              <p className="text-gray-800 whitespace-pre-wrap">{selectedPost.reply}</p>
+              <p className="text-gray-800 whitespace-pre-wrap">
+                {selectedPost.reply}
+              </p>
             </div>
           ) : (
-            <div className="text-gray-500 italic">아직 답변이 등록되지 않았습니다.</div>
+            <div className="text-gray-500 italic">
+              아직 답변이 등록되지 않았습니다.
+            </div>
           )}
 
           {/* ✅ 삭제 버튼 (작성자 or 관리자만) */}
           {(user?.isAdmin ||
-            (user?.email && selectedPost.email && user.email === selectedPost.email)) && (
+            (user?.email &&
+              selectedPost.email &&
+              user.email === selectedPost.email)) && (
             <button
               onClick={() => handleDelete(selectedPost._id)}
               className="mt-6 bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded"
