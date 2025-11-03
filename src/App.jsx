@@ -423,14 +423,6 @@ function InnerApp() {
                 </AdminRoute>
               }
             />
-            <Route
-              path="/admin/support"
-              element={
-                <AdminRoute>
-                  <AdminSupport />
-                </AdminRoute>
-              }
-            />
 <Route
   path="/admin/support"
   element={
