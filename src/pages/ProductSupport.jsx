@@ -115,30 +115,29 @@ export default function ProductSupport() {
 
   async function fetchPosts() {
   try {
-    // ✅ 쿼리 파라미터에서 productId 가져오기
-    const searchParams = new URLSearchParams(window.location.search);
-    const productId = searchParams.get("productId");
+    const res = await API.get(`${API_URL}/all`);
+    let filtered = res.data;
 
-    // ✅ productId가 있으면 해당 상품의 문의만, 없으면 상품 전체 공지
-    const endpoint = productId ? `/api/inquiries/${productId}` : `/api/inquiries/product-page`;
-    const res = await API.get(endpoint);
+    // ✅ 상품 문의 + 상품 공지 전부 표시
+    filtered = res.data.filter(
+      (p) =>
+        // 상품 공지 (관리자가 등록한 product-page)
+        p.productId === "product-page" ||
+        // 일반 상품문의 (productId가 문자열인 경우)
+        (p.productId && typeof p.productId === "string" && p.productId.trim() !== "") ||
+        // 실제 상품 상세에서 쓴 문의 (ObjectId로 저장된 경우)
+        (p.productId && typeof p.productId === "object")
+    );
 
-    // ✅ 정렬
-    const sorted = res.data.sort((a, b) => {
-      if (a.isNotice && !b.isNotice) return -1;
-      if (!a.isNotice && b.isNotice) return 1;
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    });
+    // ✅ 최신순 정렬
+    filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    setPosts(sorted);
+    console.log("✅ 상품 문의 목록 로드 완료:", filtered.length);
+    setPosts(filtered);
   } catch (err) {
     console.error("❌ 상품 문의 불러오기 실패:", err);
   }
 }
-
-
-
-
 
   /* ✅ 이메일 마스킹 */
   const displayEmail = (email) => {
