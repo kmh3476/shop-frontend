@@ -130,7 +130,13 @@ export default function ProductSupport() {
     );
 
     // ✅ 최신순 정렬
-    filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    // ✅ 공지(isNotice) 먼저 → 나머지는 최신순
+filtered.sort((a, b) => {
+  if (a.isNotice && !b.isNotice) return -1;   // 공지를 위로
+  if (!a.isNotice && b.isNotice) return 1;    // 공지 아닌 건 아래로
+  return new Date(b.createdAt) - new Date(a.createdAt); // 나머지는 최신순
+});
+
 
     console.log("✅ 상품 문의 목록 로드 완료:", filtered.length);
     setPosts(filtered);
