@@ -441,6 +441,17 @@ export default function ProductDetail() {
                 등록
               </button>
             </div>
+
+            {/* ✅ 상품 문의 전체보기 버튼 */}
+<div className="mt-6 text-center">
+  <Link
+    to={`/product-support?productId=${id}`} // ✅ 현재 상품 ID 전달
+    className="text-blue-600 hover:underline text-sm"
+  >
+    상품 문의 전체보기
+  </Link>
+</div>
+
           </section>
 
           {/* 문의 섹션 */}

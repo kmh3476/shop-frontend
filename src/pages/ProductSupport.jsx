@@ -115,10 +115,15 @@ export default function ProductSupport() {
 
   async function fetchPosts() {
   try {
-    // ✅ 상품 문의 전용 라우트로 호출
-    const res = await API.get(`${API_URL}/product-page`);
+    // ✅ 쿼리 파라미터에서 productId 가져오기
+    const searchParams = new URLSearchParams(window.location.search);
+    const productId = searchParams.get("productId");
 
-    // ✅ 공지 포함, 답변 여부 상관없이 전부 표시
+    // ✅ productId가 있으면 해당 상품의 문의만, 없으면 상품 전체 공지
+    const endpoint = productId ? `/api/inquiries/${productId}` : `/api/inquiries/product-page`;
+    const res = await API.get(endpoint);
+
+    // ✅ 정렬
     const sorted = res.data.sort((a, b) => {
       if (a.isNotice && !b.isNotice) return -1;
       if (!a.isNotice && b.isNotice) return 1;
@@ -130,6 +135,9 @@ export default function ProductSupport() {
     console.error("❌ 상품 문의 불러오기 실패:", err);
   }
 }
+
+
+
 
 
   /* ✅ 이메일 마스킹 */
