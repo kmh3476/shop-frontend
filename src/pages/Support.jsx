@@ -123,28 +123,27 @@ export default function Support() {
   }, []);
 
   async function fetchPosts() {
-    try {
-      const res = await API.get(`${API_URL}/all`);
-      // ✅ 공지만 제외하고 모든 문의 표시 (상품문의 포함)
-      const filtered = res.data.filter(
-  (p) =>
-    !p.isNotice && // 공지 제외
-    (!p.productId || p.productId === "" || p.productId === null) // 상품문의 제외
-);
+  try {
+    const res = await API.get(`${API_URL}/all`);
+    // ✅ 공지 포함 + 일반 문의 표시 (상품문의 제외)
+    const filtered = res.data.filter(
+      (p) =>
+        !p.productId || p.productId === "" || p.productId === null
+    );
 
+    // ✅ 공지 먼저 정렬
+    const sorted = filtered.sort((a, b) => {
+      if (a.isNotice && !b.isNotice) return -1;
+      if (!a.isNotice && b.isNotice) return 1;
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
 
-      // ✅ 최신순 + 공지 우선 정렬
-      const sorted = filtered.sort((a, b) => {
-        if (a.isNotice && !b.isNotice) return -1;
-        if (!a.isNotice && b.isNotice) return 1;
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      });
-
-      setPosts(sorted);
-    } catch (err) {
-      console.error("❌ 사용자 문의 불러오기 실패:", err);
-    }
+    setPosts(sorted);
+  } catch (err) {
+    console.error("❌ 사용자 문의 불러오기 실패:", err);
   }
+}
+
   /* ✅ 이메일 마스킹 */
   const displayEmail = (email) => {
     if (!email) return "익명";
