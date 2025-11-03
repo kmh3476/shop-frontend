@@ -123,25 +123,27 @@ export default function Support() {
   }, []);
 
   async function fetchPosts() {
-    try {
-      const res = await API.get(`${API_URL}/all`);
-      const filtered = res.data.filter(
-        (p) =>
-          !p.productId ||
-          p.productId === "" ||
-          p.productId === null ||
-          (typeof p.productId === "string" && p.productId !== "product-page")
-      );
-      const sorted = filtered.sort((a, b) => {
-        if (a.isNotice && !b.isNotice) return -1;
-        if (!a.isNotice && b.isNotice) return 1;
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      });
-      setPosts(sorted);
-    } catch (err) {
-      console.error("❌ 사용자 문의 불러오기 실패:", err);
-    }
+  try {
+    const res = await API.get(`${API_URL}/all`);
+    // ✅ 상품 문의는 제외하지만, 답변 여부는 상관없이 전부 표시
+    const filtered = res.data.filter(
+      (p) =>
+        !p.productId ||
+        p.productId === "" ||
+        p.productId === null ||
+        (typeof p.productId === "string" && p.productId !== "product-page")
+    );
+    const sorted = filtered.sort((a, b) => {
+      if (a.isNotice && !b.isNotice) return -1;
+      if (!a.isNotice && b.isNotice) return 1;
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+    setPosts(sorted);
+  } catch (err) {
+    console.error("❌ 사용자 문의 불러오기 실패:", err);
   }
+}
+
 
   /* ✅ 이메일 마스킹 */
   const displayEmail = (email) => {

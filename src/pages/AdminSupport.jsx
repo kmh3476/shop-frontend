@@ -34,39 +34,41 @@ export default function AdminSupport() {
   }, [token, location.pathname]); // 탭 변경 시 새로 불러오기
 
   async function fetchPosts() {
-    try {
-      console.log("📡 관리자 문의 목록 요청 시작:", API_URL);
-      const res = await API.get(`${API_URL}/all`);
-      let filtered = res.data;
+  try {
+    console.log("📡 관리자 문의 목록 요청 시작:", API_URL);
+    const res = await API.get(`${API_URL}/all`);
+    let filtered = res.data;
 
-      // ✅ 탭별 데이터 필터링
-      if (location.pathname === "/admin/support") {
-        // 사용자 문의 → productId 없는 것만
-        filtered = res.data.filter((p) => !p.productId);
-      } else if (location.pathname === "/admin/product-support") {
-        // 상품 문의 → productId 있는 것만
-        filtered = res.data.filter((p) => p.productId);
-      }
+    // ✅ 모든 문의(일반 + 상품) 다 표시
+    // 단, 탭 구분 시 필터링 적용
+    if (location.pathname === "/admin/support") {
+      // 사용자 문의 탭 → productId 없는 문의
+      filtered = res.data.filter((p) => !p.productId || p.productId === "");
+    } else if (location.pathname === "/admin/product-support") {
+      // 상품 문의 탭 → productId === 'product-page' 인 항목
+      filtered = res.data.filter((p) => p.productId === "product-page");
+    }
 
-      // 최신순 정렬
-      filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    // 최신순 정렬
+    filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-      console.log("✅ 관리자 문의 목록 응답:", filtered.length);
-      setPosts(filtered);
-    } catch (err) {
-      console.error("❌ 문의 목록 조회 실패:", err);
+    console.log("✅ 관리자 문의 목록 응답:", filtered.length);
+    setPosts(filtered);
+  } catch (err) {
+    console.error("❌ 문의 목록 조회 실패:", err);
 
-      if (err.response?.status === 401) {
-        alert("인증이 만료되었거나 관리자 권한이 없습니다. 다시 로그인해주세요.");
-        window.location.href = "/login";
-      } else if (err.response?.status === 403) {
-        alert("관리자 권한이 없습니다.");
-        window.location.href = "/";
-      } else {
-        alert("문의 목록을 불러올 수 없습니다. (서버 응답 오류)");
-      }
+    if (err.response?.status === 401) {
+      alert("인증이 만료되었거나 관리자 권한이 없습니다. 다시 로그인해주세요.");
+      window.location.href = "/login";
+    } else if (err.response?.status === 403) {
+      alert("관리자 권한이 없습니다.");
+      window.location.href = "/";
+    } else {
+      alert("문의 목록을 불러올 수 없습니다. (서버 응답 오류)");
     }
   }
+}
+
 
   /* ✅ 관리자 답변 전송 */
   async function handleReply(id) {
