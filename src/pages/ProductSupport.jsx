@@ -114,23 +114,23 @@ export default function ProductSupport() {
   }, []);
 
   async function fetchPosts() {
-    try {
-      const res = await API.get(`${API_URL}/product-page`); // ✅ 상품문의 전용 API로 변경
-      const filtered = res.data.filter(
-        (p) =>
-          p.productId === "product-page" ||
-          (p.isNotice && p.productId === "product-page")
-      );
-      const sorted = filtered.sort((a, b) => {
-        if (a.isNotice && !b.isNotice) return -1;
-        if (!a.isNotice && b.isNotice) return 1;
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      });
-      setPosts(sorted);
-    } catch (err) {
-      console.error("❌ 상품 문의 불러오기 실패:", err);
-    }
+  try {
+    // ✅ 상품 문의 전용 라우트로 호출
+    const res = await API.get(`${API_URL}/product-page`);
+
+    // ✅ 공지 포함, 답변 여부 상관없이 전부 표시
+    const sorted = res.data.sort((a, b) => {
+      if (a.isNotice && !b.isNotice) return -1;
+      if (!a.isNotice && b.isNotice) return 1;
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
+    setPosts(sorted);
+  } catch (err) {
+    console.error("❌ 상품 문의 불러오기 실패:", err);
   }
+}
+
 
   /* ✅ 이메일 마스킹 */
   const displayEmail = (email) => {
