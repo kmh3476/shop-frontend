@@ -111,19 +111,21 @@ function AdminProductEdit() {
     setForm((prev) => ({ ...prev, images: [...prev.images, ...previews] }));
 
     // 업로드
-    const uploaded = await handleImageUpload(selected);
-    if (uploaded.length) {
-      setForm((prev) => {
-        const replaced = prev.images.map((img) =>
-          img.startsWith("blob:") ? uploaded.shift() || img : img
-        );
-        return {
-          ...prev,
-          images: [...replaced, ...uploaded].filter(Boolean),
-          mainImage: prev.mainImage || replaced[0],
-        };
-      });
-    }
+    // 업로드
+const uploaded = await handleImageUpload(selected);
+if (uploaded.length) {
+  setForm((prev) => {
+    // ✅ blob: URL 전부 제거하고 Cloudinary URL만 남기기
+    const validOld = prev.images.filter((img) => img.startsWith("http"));
+    const merged = [...validOld, ...uploaded].filter(Boolean);
+
+    return {
+      ...prev,
+      images: merged,
+      mainImage: prev.mainImage || merged[0], // 대표 이미지 자동 설정
+    };
+  });
+}
   };
 
   // ✅ 메인 이미지 설정
