@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 import AdminProductForm from "./AdminProductForm"; // ✅ 상품 등록 컴포넌트 연결 추가
+import { useNavigate } from "react-router-dom";
 
 // ✅ 로그인 토큰 자동 포함 헬퍼
 const getAuthHeader = () => {
@@ -71,6 +72,8 @@ function ImageModal({ images = [], startIndex = 0, onClose }) {
 }
 
 function Admin() {
+  const navigate = useNavigate();
+
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [form, setForm] = useState({
@@ -674,18 +677,19 @@ function Admin() {
                 )}
               </div>
               <button
-                onClick={() => startEdit(p)}
-                style={{
-                  padding: "6px 10px",
-                  background: "#007bff",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                }}
-              >
-                ✏️ 수정
-              </button>
+  onClick={() => navigate(`/admin/products/${p._id}/edit`)}
+  style={{
+    padding: "6px 10px",
+    background: "#007bff",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+  }}
+>
+  ✏️ 수정
+</button>
+
               <button
                 onClick={() => deleteProduct(p._id)}
                 style={{
