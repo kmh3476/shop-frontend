@@ -366,10 +366,11 @@ export default function ProductDetail() {
           >
             <h2 className="text-lg font-semibold mb-2">📋 상품 상세정보</h2>
             <EditableText
-              id={`detail-info-${id}`}
-              defaultText={product.detailText || "여기에 상품 상세정보를 입력하세요."}
-              onSave={(t) => localStorage.setItem(`detail-info-${id}`, t)}
-            />
+  key={product.detailText} // ✅ 새로고침 없이 강제 리렌더
+  id={`detail-info-${id}`}
+  defaultText={product.detailText || "여기에 상품 상세정보를 입력하세요."}
+/>
+
           </section>
 
           {/* 사이즈 안내 */}
