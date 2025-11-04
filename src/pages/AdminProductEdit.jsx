@@ -438,4 +438,19 @@ const productData = {
   );
 }
 
+// ✅ 컴포넌트 언마운트 시 blob URL 정리
+useEffect(() => {
+  return () => {
+    form.images.forEach((img) => {
+      if (img.startsWith("blob:")) {
+        try {
+          URL.revokeObjectURL(img);
+        } catch (e) {
+          console.warn("blob revoke 실패:", img);
+        }
+      }
+    });
+  };
+}, [form.images]);
+
 export default AdminProductEdit;
