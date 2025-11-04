@@ -1,50 +1,78 @@
+// 📁 src/pages/AdminProductEdit.jsx
 import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 
-// ✅ 로그인 토큰 자동 포함
-const getAuthHeader = () => {
-  const token =
-    localStorage.getItem("token") || sessionStorage.getItem("token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
+// ✅ 관리자 상품 수정 페이지
+function AdminProductEdit() {
+  const { id } = useParams();
+  const navigate = useNavigate();
 
-function AdminProductForm({ selectedPage, onSave }) {
   const [form, setForm] = useState({
     name: "",
     price: "",
     description: "",
-    detailText: "", // ✅ 상품 상세정보 추가
-    sizeText: "",   // ✅ 사이즈 및 구매안내 추가
+    detailText: "",
+    sizeText: "",
     images: [],
     mainImage: "",
-    categoryPage: selectedPage || "",
+    categoryPage: "",
   });
 
   const [pages, setPages] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  // ✅ 로그인 토큰 헤더
+  const getAuthHeader = () => {
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
+  // ✅ 초기 로딩 시 상품 불러오기
   useEffect(() => {
     fetchPages();
-  }, []);
+    fetchProduct();
+  }, [id]);
 
-  useEffect(() => {
-    if (selectedPage) {
-      setForm((prev) => ({ ...prev, categoryPage: selectedPage }));
+  // ✅ 상품 데이터 가져오기
+  const fetchProduct = async () => {
+    try {
+      const res = await api.get(`/api/products/${id}`, {
+        headers: getAuthHeader(),
+      });
+      const product = res.data;
+      setForm({
+        name: product.name || "",
+        price: product.price || "",
+        description: product.description || "",
+        detailText: product.detailText || "",
+        sizeText: product.sizeText || "",
+        images: product.images || [],
+        mainImage: product.mainImage || "",
+        categoryPage: product.categoryPage || "",
+      });
+    } catch (err) {
+      console.error("❌ 상품 불러오기 실패:", err);
+      alert("상품 정보를 불러오지 못했습니다.");
+    } finally {
+      setLoading(false);
     }
-  }, [selectedPage]);
+  };
 
-  // ✅ 탭(카테고리 페이지) 목록 불러오기
+  // ✅ 카테고리 탭 불러오기
   const fetchPages = async () => {
     try {
       const res = await api.get("/api/pages", { headers: getAuthHeader() });
       setPages(res.data || []);
     } catch (err) {
-      console.error("❌ 탭 불러오기 실패:", err);
+      console.error("❌ 탭 목록 불러오기 실패:", err);
     }
   };
 
-  // ✅ Cloudinary 단일 업로드
+  // ✅ Cloudinary 업로드
   const uploadSingle = async (file) => {
     try {
       const formData = new FormData();
@@ -73,7 +101,7 @@ function AdminProductForm({ selectedPage, onSave }) {
     return uploadedUrls;
   };
 
-  // ✅ 이미지 선택 시 업로드 처리
+  // ✅ 이미지 추가 처리
   const handleFileChange = async (e) => {
     const selected = Array.from(e.target.files);
     if (!selected.length) return;
@@ -91,7 +119,7 @@ function AdminProductForm({ selectedPage, onSave }) {
         );
         return {
           ...prev,
-          images: replaced.filter(Boolean),
+          images: [...replaced, ...uploaded].filter(Boolean),
           mainImage: prev.mainImage || replaced[0],
         };
       });
@@ -103,14 +131,14 @@ function AdminProductForm({ selectedPage, onSave }) {
     setForm((prev) => ({ ...prev, mainImage: img }));
   };
 
-  // ✅ 이미지 제거
+  // ✅ 이미지 삭제
   const removeImage = (index) => {
     const newImages = form.images.filter((_, i) => i !== index);
     const newMain =
       form.mainImage === form.images[index] ? newImages[0] || "" : form.mainImage;
     setForm({ ...form, images: newImages, mainImage: newMain });
   };
-  // ✅ 상품 저장
+  // ✅ 상품 수정 저장
   const saveProduct = async () => {
     if (!form.name || !form.price) {
       alert("상품명과 가격은 필수입니다!");
@@ -126,43 +154,38 @@ function AdminProductForm({ selectedPage, onSave }) {
         ? form.mainImage
         : cleanImages[0] || "https://placehold.co/250x200?text=No+Image";
 
-    // ✅ 상품 상세정보(detailText), 사이즈(sizeText) 함께 전송
     const productData = {
       name: form.name.trim(),
       price: Number(form.price),
       description: form.description.trim(),
-      detailText: form.detailText.trim(), // ✅ 추가됨
-      sizeText: form.sizeText.trim(),     // ✅ 추가됨
+      detailText: form.detailText.trim(),
+      sizeText: form.sizeText.trim(),
       images: cleanImages,
       mainImage: mainImg,
       categoryPage:
         form.categoryPage && form.categoryPage !== "null" && form.categoryPage !== ""
           ? form.categoryPage
-          : selectedPage || null,
+          : null,
     };
 
     try {
-      setUploading("🕓 상품 저장 중...");
-      await api.post("/products", productData, { headers: getAuthHeader() });
-      alert("✅ 상품이 추가되었습니다!");
-      if (onSave) onSave();
-      setForm({
-        name: "",
-        price: "",
-        description: "",
-        detailText: "", // ✅ 초기화
-        sizeText: "",   // ✅ 초기화
-        images: [],
-        mainImage: "",
-        categoryPage: selectedPage || "",
+      setUploading("🕓 상품 수정 중...");
+      await api.put(`/api/products/${id}`, productData, {
+        headers: getAuthHeader(),
       });
-      setUploading(false);
+      alert("✅ 상품이 성공적으로 수정되었습니다!");
+      navigate("/admin/products"); // 수정 후 상품목록으로 이동
     } catch (err) {
-      console.error("❌ 상품 저장 실패:", err);
-      alert("상품 저장 실패 (권한 필요)");
+      console.error("❌ 상품 수정 실패:", err);
+      alert("상품 수정 중 오류가 발생했습니다.");
+    } finally {
       setUploading(false);
     }
   };
+
+  if (loading) {
+    return <p style={{ padding: "20px" }}>⏳ 상품 정보를 불러오는 중...</p>;
+  }
 
   return (
     <div
@@ -170,48 +193,99 @@ function AdminProductForm({ selectedPage, onSave }) {
         border: "1px solid #ccc",
         borderRadius: "10px",
         padding: "20px",
-        maxWidth: "400px",
-        marginBottom: "30px",
+        maxWidth: "600px",
+        margin: "40px auto",
+        background: "#fafafa",
       }}
     >
-      <h3>🛒 상품 추가</h3>
+      <h2 style={{ marginBottom: "20px" }}>🛠 상품 수정</h2>
+
+      {/* ✅ 상품명 */}
       <input
         type="text"
         placeholder="상품명"
         value={form.name}
         onChange={(e) => setForm({ ...form, name: e.target.value })}
+        style={{
+          width: "100%",
+          padding: "10px",
+          marginBottom: "10px",
+          borderRadius: "6px",
+          border: "1px solid #ccc",
+        }}
       />
+
+      {/* ✅ 가격 */}
       <input
         type="number"
         placeholder="가격"
         value={form.price}
         onChange={(e) => setForm({ ...form, price: e.target.value })}
+        style={{
+          width: "100%",
+          padding: "10px",
+          marginBottom: "10px",
+          borderRadius: "6px",
+          border: "1px solid #ccc",
+        }}
       />
+
+      {/* ✅ 설명 */}
       <textarea
-        placeholder="상품 설명"
+        placeholder="상품 요약 설명"
         rows={3}
         value={form.description}
         onChange={(e) => setForm({ ...form, description: e.target.value })}
+        style={{
+          width: "100%",
+          padding: "10px",
+          marginBottom: "10px",
+          borderRadius: "6px",
+          border: "1px solid #ccc",
+        }}
       />
-      {/* ✅ 상품 상세정보 추가 */}
+
+      {/* ✅ 상세정보 */}
       <textarea
-        placeholder="상품 상세정보 입력 (예: 원단, 세탁법, 재질 등)"
-        rows={4}
+        placeholder="상품 상세정보 (detailText)"
+        rows={6}
         value={form.detailText}
         onChange={(e) => setForm({ ...form, detailText: e.target.value })}
-        style={{ marginTop: "10px" }}
+        style={{
+          width: "100%",
+          padding: "10px",
+          marginBottom: "10px",
+          borderRadius: "6px",
+          border: "1px solid #ccc",
+        }}
       />
-      {/* ✅ 사이즈 및 구매안내 추가 */}
+
+      {/* ✅ 사이즈 안내 */}
       <textarea
-        placeholder="사이즈 및 구매 안내 입력 (예: 사이즈표, 주의사항 등)"
+        placeholder="사이즈 안내 (sizeText)"
         rows={4}
         value={form.sizeText}
         onChange={(e) => setForm({ ...form, sizeText: e.target.value })}
-        style={{ marginTop: "10px" }}
+        style={{
+          width: "100%",
+          padding: "10px",
+          marginBottom: "10px",
+          borderRadius: "6px",
+          border: "1px solid #ccc",
+        }}
       />
+
+      {/* ✅ 카테고리 */}
       <select
         value={form.categoryPage}
         onChange={(e) => setForm({ ...form, categoryPage: e.target.value })}
+        style={{
+          width: "100%",
+          padding: "10px",
+          marginBottom: "10px",
+          borderRadius: "6px",
+          border: "1px solid #ccc",
+        }}
       >
         <option value="">탭 선택 없음</option>
         {pages.map((p) => (
@@ -221,16 +295,19 @@ function AdminProductForm({ selectedPage, onSave }) {
         ))}
       </select>
 
-      {/* ✅ 이미지 업로드 입력 */}
+      {/* ✅ 이미지 업로드 */}
       <input
         type="file"
         accept="image/*"
         multiple
         onChange={handleFileChange}
-        style={{ marginTop: "10px" }}
+        style={{
+          width: "100%",
+          marginTop: "10px",
+          marginBottom: "10px",
+        }}
       />
 
-      {/* ✅ 업로드 상태 표시 */}
       {uploading && (
         <p style={{ color: "blue", marginTop: "8px" }}>
           {uploading === true ? "업로드 중..." : uploading}
@@ -282,7 +359,6 @@ function AdminProductForm({ selectedPage, onSave }) {
           </div>
         ))}
       </div>
-
       {/* ✅ 메인 이미지 표시 */}
       {form.mainImage && (
         <div style={{ marginTop: "10px" }}>
@@ -291,34 +367,55 @@ function AdminProductForm({ selectedPage, onSave }) {
             src={form.mainImage || noImage}
             alt="main"
             style={{
-              width: "120px",
-              height: "120px",
+              width: "150px",
+              height: "150px",
               objectFit: "cover",
               borderRadius: "8px",
               border: "2px solid #007bff",
+              marginBottom: "10px",
             }}
           />
         </div>
       )}
 
-      {/* ✅ 저장 버튼 */}
-      <button
-        onClick={saveProduct}
+      {/* ✅ 버튼 영역 */}
+      <div
         style={{
-          display: "block",
+          display: "flex",
+          justifyContent: "space-between",
           marginTop: "20px",
-          background: "#28a745",
-          color: "white",
-          border: "none",
-          padding: "8px 12px",
-          borderRadius: "6px",
-          cursor: "pointer",
         }}
       >
-        💾 상품 추가 완료
-      </button>
+        <button
+          onClick={() => navigate("/admin/products")}
+          style={{
+            background: "#6c757d",
+            color: "white",
+            border: "none",
+            padding: "10px 16px",
+            borderRadius: "6px",
+            cursor: "pointer",
+          }}
+        >
+          ← 목록으로
+        </button>
+
+        <button
+          onClick={saveProduct}
+          style={{
+            background: "#28a745",
+            color: "white",
+            border: "none",
+            padding: "10px 16px",
+            borderRadius: "6px",
+            cursor: "pointer",
+          }}
+        >
+          💾 수정 완료
+        </button>
+      </div>
     </div>
   );
 }
 
-export default AdminProductForm;
+export default AdminProductEdit;

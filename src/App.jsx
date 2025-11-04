@@ -20,6 +20,9 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Support from "./pages/Support";
 import AdminSupport from "./pages/AdminSupport";
 import ProductSupport from "./pages/ProductSupport";
+import AdminProducts from "./pages/AdminProducts";  // ✅ 관리자 상품 관리 페이지
+import AdminProductEdit from "./pages/AdminProductEdit";  // ✅ 관리자 상품 수정 페이지
+
 
 import { useState, useEffect } from "react";
 import { useAuth } from "./context/AuthContext";
@@ -439,6 +442,27 @@ function InnerApp() {
     </AdminRoute>
   }
 />
+
+{/* ✅ 관리자 상품 관리 페이지 */}
+<Route
+  path="/admin/products"
+  element={
+    <AdminRoute>
+      <AdminProducts />
+    </AdminRoute>
+  }
+/>
+
+{/* ✅ 관리자 상품 수정 페이지 */}
+<Route
+  path="/admin/products/:id/edit"
+  element={
+    <AdminRoute>
+      <AdminProductEdit />
+    </AdminRoute>
+  }
+/>
+
 
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />

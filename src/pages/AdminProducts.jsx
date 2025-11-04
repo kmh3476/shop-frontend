@@ -1,17 +1,19 @@
-// src/pages/AdminProducts.jsx
+// 📁 src/pages/AdminProducts.jsx
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Table, Button, Space, Popconfirm, message } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import AdminProductForm from "./AdminProductForm";
+import { useNavigate } from "react-router-dom"; // ✅ 추가
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // ✅ 추가
 
-  // 상품 목록 불러오기
+  // ✅ 상품 목록 불러오기
   const fetchProducts = async () => {
     setLoading(true);
     try {
@@ -29,7 +31,7 @@ const AdminProducts = () => {
     fetchProducts();
   }, []);
 
-  // 삭제
+  // ✅ 삭제
   const handleDelete = async (id) => {
     try {
       await axios.delete(`/api/products/${id}`);
@@ -41,13 +43,14 @@ const AdminProducts = () => {
     }
   };
 
-  // 폼 저장 후 목록 갱신
+  // ✅ 폼 저장 후 목록 갱신
   const handleSave = () => {
     setShowForm(false);
     setEditingProduct(null);
     fetchProducts();
   };
 
+  // ✅ 테이블 컬럼 정의
   const columns = [
     {
       title: "이미지",
@@ -64,7 +67,12 @@ const AdminProducts = () => {
         ),
     },
     { title: "상품명", dataIndex: "name" },
-    { title: "가격", dataIndex: "price", render: (p) => `${p.toLocaleString()}원` },
+    {
+      title: "가격",
+      dataIndex: "price",
+      render: (p) =>
+        typeof p === "number" ? `${p.toLocaleString()}원` : "가격 없음",
+    },
     {
       title: "페이지(탭)",
       dataIndex: ["categoryPage", "label"],
@@ -74,15 +82,15 @@ const AdminProducts = () => {
       title: "관리",
       render: (_, record) => (
         <Space>
+          {/* ✅ 수정 버튼 - AdminProductEdit.jsx 페이지로 이동 */}
           <Button
             icon={<EditOutlined />}
-            onClick={() => {
-              setEditingProduct(record);
-              setShowForm(true);
-            }}
+            onClick={() => navigate(`/admin/products/${record._id}/edit`)}
           >
             수정
           </Button>
+
+          {/* ✅ 삭제 버튼 */}
           <Popconfirm
             title="삭제하시겠습니까?"
             onConfirm={() => handleDelete(record._id)}
@@ -96,6 +104,7 @@ const AdminProducts = () => {
     },
   ];
 
+  // ✅ 렌더링
   return (
     <div className="p-6">
       {showForm ? (
@@ -120,6 +129,8 @@ const AdminProducts = () => {
               상품 추가
             </Button>
           </div>
+
+          {/* ✅ 상품 테이블 */}
           <Table
             dataSource={products}
             columns={columns}
