@@ -182,8 +182,9 @@ export default function ProductDetail() {
           ...product,
           name: localStorage.getItem(`detail-name-${id}`) ?? product.name,
           description: localStorage.getItem(`detail-desc-${id}`) ?? product.description,
-          detailText: localStorage.getItem(`detail-info-${id}`) ?? "",
-          sizeText: localStorage.getItem(`size-info-${id}`) ?? "",
+          detailText: product.detailText || "",
+sizeText: product.sizeText || "",
+
           images: imgs,
         });
         setMainImage(imgs[0]);
