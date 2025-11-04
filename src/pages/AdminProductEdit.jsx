@@ -110,6 +110,13 @@ function AdminProductEdit() {
     const previews = selected.map((f) => URL.createObjectURL(f));
     setForm((prev) => ({ ...prev, images: [...prev.images, ...previews] }));
 
+    // ✅ blob 메모리 누수 방지 및 파일 삭제 후 에러 방지
+selected.forEach((f) => {
+  const url = URL.createObjectURL(f);
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+});
+
+
     // 업로드
     // 업로드
 const uploaded = await handleImageUpload(selected);
