@@ -335,15 +335,27 @@ function MainLayout() {
       </motion.div>
     );
   };
-  /** ✅ 일반 상품 슬라이드 섹션 */
-  const SlideSection = ({ title, products, category }) => {
-    const filteredProducts = allProducts.filter(
-      (p) => p.categoryName === category
+  /** ✅ 공용 상품 슬라이드 섹션 */
+  const SlideSection = ({ title, id, filter }) => {
+    const filteredProducts = allProducts.filter((p) =>
+      filter ? filter(p) : true
     );
 
     return (
-      <section className="my-16">
-        <h2 className="text-2xl font-bold mb-6">{title}</h2>
+      <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black font-['Pretendard']">
+        <motion.h2
+          className="text-4xl md:text-5xl font-extrabold mb-10 drop-shadow-sm tracking-tight text-gray-900"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          viewport={{ once: true }}
+        >
+          <EditableText
+            id={id}
+            defaultText={title}
+            apiUrl="http://localhost:1337/api/texts"
+          />
+        </motion.h2>
 
         <Swiper
           modules={[Navigation, Pagination]}
@@ -354,51 +366,61 @@ function MainLayout() {
           allowTouchMove={!isEditMode && !isResizeMode}
           simulateTouch={!isEditMode && !isResizeMode}
           draggable={!isEditMode && !isResizeMode}
-          loop={filteredProducts.length > 1} // ✅ 수정됨: 상품 1개 이하일 땐 loop 비활성화
+          loop={filteredProducts.length > 1} // ✅ 수정됨: 상품이 1개 이하일 때 loop 비활성화
           className="pb-12 swiper-backface-hidden"
         >
-          {filteredProducts.map((product) => (
-            <SwiperSlide key={product._id || product.name}>
-              <ProductCard product={product} />
-            </SwiperSlide>
-          ))}
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((product) => (
+              <SwiperSlide key={product._id || product.name}>
+                <ProductCard product={product} />
+              </SwiperSlide>
+            ))
+          ) : (
+            <p className="text-gray-500 text-center w-full py-10">
+              상품이 없습니다.
+            </p>
+          )}
         </Swiper>
       </section>
     );
   };
 
-  /** ✅ 추천상품 슬라이드 */
+  /** ✅ 추천상품 전용 Swiper */
   const FeaturedSwiper = () => {
-    const featured = allProducts.filter((p) => p.isRecommended);
+    const featured = allProducts.filter(
+      (p) => p.categoryPage?.label === "추천상품"
+    );
 
     return (
-      <section className="my-20">
-        <h2 className="text-2xl font-bold mb-6">추천 상품</h2>
-
-        <Swiper
-          modules={[Autoplay, Navigation, Pagination]}
-          spaceBetween={10}
-          slidesPerView={2.8}
-          navigation={!isEditMode && !isResizeMode}
-          pagination={!isEditMode && !isResizeMode ? { clickable: true } : false}
-          autoplay={
-            isResizeMode || isEditMode
-              ? false
-              : { delay: 4500, disableOnInteraction: false }
-          }
-          allowTouchMove={!isEditMode && !isResizeMode}
-          simulateTouch={!isEditMode && !isResizeMode}
-          draggable={!isEditMode && !isResizeMode}
-          loop={featured.length > 1} // ✅ 수정됨: 추천상품 1개 이하일 땐 loop 비활성화
-          className="pb-12 swiper-horizontal swiper-backface-hidden"
-        >
-          {featured.map((product) => (
+      <Swiper
+        modules={[Autoplay, Navigation, Pagination]}
+        spaceBetween={10}
+        slidesPerView={2.8}
+        navigation={!isEditMode && !isResizeMode}
+        pagination={!isEditMode && !isResizeMode ? { clickable: true } : false}
+        autoplay={
+          isResizeMode || isEditMode
+            ? false
+            : { delay: 4500, disableOnInteraction: false }
+        }
+        allowTouchMove={!isEditMode && !isResizeMode}
+        simulateTouch={!isEditMode && !isResizeMode}
+        draggable={!isEditMode && !isResizeMode}
+        loop={featured.length > 1} // ✅ 수정됨: 추천상품이 1개 이하일 때 loop 비활성화
+        className="pb-12 swiper-horizontal swiper-backface-hidden"
+      >
+        {featured.length > 0 ? (
+          featured.map((product) => (
             <SwiperSlide key={product._id || product.name}>
               <FeaturedCard product={product} />
             </SwiperSlide>
-          ))}
-        </Swiper>
-      </section>
+          ))
+        ) : (
+          <p className="text-gray-500 text-center w-full py-10">
+            추천 상품이 없습니다.
+          </p>
+        )}
+      </Swiper>
     );
   };
 
@@ -416,50 +438,119 @@ function MainLayout() {
       });
     };
   }, [allProducts]);
-
-  /** ✅ 전체 페이지 구성 */
+  /** ✅ 메인 구조 */
   return (
-    <div className="max-w-[1200px] mx-auto px-4 py-10 font-['Pretendard']">
-      <div className="flex justify-end gap-3 mb-6">
-        <button
-          onClick={toggleEditMode}
-          className={`px-4 py-2 rounded-md text-white ${
-            isEditMode ? "bg-red-500" : "bg-blue-600"
-          }`}
+    <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden font-['Pretendard']">
+      {/* ✅ 관리자 모드 버튼 */}
+      {user?.isAdmin && (
+        <div className="fixed top-6 left-6 z-[9999] flex gap-3 items-center">
+          <button
+            onClick={toggleEditMode}
+            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
+              isEditMode ? "bg-green-600" : "bg-gray-800"
+            }`}
+          >
+            {isEditMode ? "🖊 디자인 모드 ON" : "✏ 디자인 모드 OFF"}
+          </button>
+          <button
+            onClick={toggleResizeMode}
+            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
+              isResizeMode ? "bg-blue-600" : "bg-gray-700"
+            }`}
+          >
+            {isResizeMode ? "📐 크기 조절 ON" : "📏 크기 조절 OFF"}
+          </button>
+        </div>
+      )}
+
+      {/* ✅ 메인 비주얼 영역 */}
+      <section
+        className="relative flex flex-col items-center justify-center w-full min-h-[110vh]"
+        style={{
+          backgroundImage: "url('/woodcard.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      ></section>
+
+      {/* ✅ 추천상품 섹션 */}
+      <section className="flex flex-col items-center justify-center py-[10vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
+        <motion.h2
+          className="text-5xl md:text-6xl font-extrabold mb-12 drop-shadow-sm tracking-tight text-gray-600"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          viewport={{ once: true }}
         >
-          {isEditMode ? "디자인 모드 종료" : "디자인 모드"}
-        </button>
-        <button
-          onClick={toggleResizeMode}
-          className={`px-4 py-2 rounded-md text-white ${
-            isResizeMode ? "bg-yellow-500" : "bg-gray-600"
-          }`}
-        >
-          {isResizeMode ? "크기 조절 종료" : "크기 조절"}
-        </button>
-      </div>
-      <EditableText
-        id="main-title"
-        defaultText="우리의 새로운 컬렉션"
-        tag="h1"
-        className="text-4xl font-bold mb-4"
+          <EditableText
+            id="featured-section-title"
+            defaultText="추천 상품"
+            apiUrl="http://localhost:1337/api/texts"
+          />
+        </motion.h2>
+        <div className="w-full max-w-[1200px]">
+          <FeaturedSwiper />
+        </div>
+      </section>
+
+      {/* ✅ 상품 섹션 - 상의 / 하의 / 코디 추천 */}
+      <SlideSection
+        id="top-section"
+        title="상의"
+        filter={(p) => p.categoryPage?.label === "상의"}
+      />
+      <SlideSection
+        id="bottom-section"
+        title="하의"
+        filter={(p) => p.categoryPage?.label === "하의"}
+      />
+      <SlideSection
+        id="coordi-section"
+        title="코디 추천"
+        filter={(p) => p.categoryPage?.label === "코디 추천"}
       />
 
-      <EditableText
-        id="main-subtitle"
-        defaultText="지금 바로 만나보세요"
-        tag="p"
-        className="text-lg text-gray-600 mb-12"
-      />
+      {/* ✅ 브랜드 스토리 */}
+      <section
+        className="flex flex-col items-center justify-center py-[15vh] px-6 text-center bg-gray-100 font-['Pretendard']"
+        style={{
+          backgroundImage: "url('/texture.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <motion.h2
+          className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <EditableText
+            id="brand-title"
+            defaultText="브랜드 스토리"
+            apiUrl="http://localhost:1337/api/texts"
+          />
+        </motion.h2>
 
-      {/* ✅ 추천 상품 슬라이드 */}
-      <FeaturedSwiper />
+        <motion.p
+          className="max-w-[700px] text-gray-700 leading-relaxed text-lg md:text-xl font-light"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
+        >
+          <EditableText
+            id="brand-description"
+            defaultText={`ONYOU는 심플하지만 감각적인 디자인을 통해 일상 속의 편안함을 추구합니다.
+자연, 색감, 질감에서 영감을 받아 제작된 제품들은 당신의 일상을 새롭게 만듭니다.`}
+            apiUrl="http://localhost:1337/api/texts"
+          />
+        </motion.p>
+      </section>
 
-      {/* ✅ 카테고리별 상품 슬라이드 */}
-      <SlideSection title="아우터" products={allProducts} category="outer" />
-      <SlideSection title="상의" products={allProducts} category="top" />
-      <SlideSection title="하의" products={allProducts} category="bottom" />
-      <SlideSection title="기타" products={allProducts} category="etc" />
+      {/* ✅ 푸터 */}
+      <footer className="py-6 text-black text-sm border-t border-gray-300 w-full text-center bg-white font-light tracking-tight">
+        © 2025 ONYOU — All rights reserved.
+      </footer>
     </div>
   );
 }
