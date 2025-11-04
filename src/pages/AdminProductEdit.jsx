@@ -148,27 +148,31 @@ if (uploaded.length) {
     }
 
     const cleanImages = form.images
-      .filter((i) => i && i.startsWith("http"))
-      .filter((v, i, arr) => arr.indexOf(v) === i);
+  .filter((i) => i && i.startsWith("http"))
+  .filter((v, i, arr) => arr.indexOf(v) === i);
 
-    const mainImg =
-      form.mainImage && cleanImages.includes(form.mainImage)
-        ? form.mainImage
-        : cleanImages[0] || "https://placehold.co/250x200?text=No+Image";
+// ✅ setForm은 유지 (UI 업데이트용)
+setForm((prev) => ({ ...prev, images: cleanImages }));
 
-    const productData = {
-      name: form.name.trim(),
-      price: Number(form.price),
-      description: form.description.trim(),
-      detailText: form.detailText.trim(),
-      sizeText: form.sizeText.trim(),
-      images: cleanImages,
-      mainImage: mainImg,
-      categoryPage:
-        form.categoryPage && form.categoryPage !== "null" && form.categoryPage !== ""
-          ? form.categoryPage
-          : null,
-    };
+const mainImg =
+  form.mainImage && cleanImages.includes(form.mainImage)
+    ? form.mainImage
+    : cleanImages[0] || "https://placehold.co/250x200?text=No+Image";
+
+const productData = {
+  name: form.name.trim(),
+  price: Number(form.price),
+  description: form.description.trim(),
+  detailText: form.detailText.trim(),
+  sizeText: form.sizeText.trim(),
+  images: cleanImages, // ✅ 여기 cleanImages 직접 사용
+  mainImage: mainImg,
+  categoryPage:
+    form.categoryPage && form.categoryPage !== "null" && form.categoryPage !== ""
+      ? form.categoryPage
+      : null,
+};
+
 
     try {
       setUploading("🕓 상품 수정 중...");

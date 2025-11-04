@@ -177,7 +177,11 @@ export default function ProductDetail() {
           api.get(`/api/inquiries/${id}`),
         ]);
         const product = p.data;
-        const imgs = product.images?.filter(Boolean) || [product.imageUrl || noImage];
+        // ✅ blob: URL 제거 + Cloudinary URL만 남기기
+const imgs = (product.images || [])
+  .filter((img) => img && img.startsWith("http"))
+  .filter((v, i, arr) => arr.indexOf(v) === i); // 중복 제거
+
         setProduct({
           ...product,
           name: localStorage.getItem(`detail-name-${id}`) ?? product.name,
@@ -498,8 +502,9 @@ sizeText: product.sizeText || "",
 
       {/* ✅ 이미지 모달 */}
       {selectedIndex !== null && (
-        <ImageModal
-          images={product.images}
+  <ImageModal
+    images={product.images?.filter((img) => img && img.startsWith("http")) || []} // ✅ blob 제거
+
           currentIndex={selectedIndex}
           onClose={() => setSelectedIndex(null)}
           onNavigate={(dir) =>
