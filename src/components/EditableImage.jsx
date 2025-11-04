@@ -1,11 +1,13 @@
 // 📁 src/components/EditableImage.jsx
 import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
 import { useEditMode } from "../context/EditModeContext";
 
 /**
  * ✅ 동작 개요
- * - 디자인 모드 ✏ : 텍스트만 점선 표시 (이미지, 카드에는 점선 표시 안함)
- * - 크기조절 모드 📐 : 카드 전체 파란 점선 표시 + 우클릭 드래그로 크기 변경
+ * - 디자인 모드 ✏ : 클릭 시 이미지 교체 / 우클릭 시 URL 입력
+ * - 크기조절 모드 📐 : 우클릭 드래그로 크기 조절
+ * - Cloudinary 업로드 / blob URL 정리 추가
  */
 export default function EditableImage({
   id,
@@ -38,6 +40,7 @@ export default function EditableImage({
   const [saved, setSaved] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [resizing, setResizing] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null); // ✅ blob 프리뷰 관리용
   const fileInputRef = useRef(null);
   const startPos = useRef({ x: 0, y: 0, width: 0, height: 0 });
 
@@ -78,18 +81,42 @@ export default function EditableImage({
     fileInputRef.current?.click();
   };
 
-  /** ✅ 파일 업로드 */
-  const handleFileChange = (e) => {
+  /** ✅ 파일 업로드 (Cloudinary 적용) */
+  const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const newSrc = reader.result;
-        setImageSrc(newSrc);
-        saveImageData(newSrc);
-        e.target.value = "";
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // ✅ blob 미리보기 생성
+    const tempPreview = URL.createObjectURL(file);
+    setPreviewUrl(tempPreview);
+    setImageSrc(tempPreview);
+
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const { data } = await axios.post(
+        "https://shop-backend-1-dfsl.onrender.com/api/upload",
+        formData
+      );
+
+      if (data?.imageUrl) {
+        // ✅ Cloudinary URL 적용
+        setImageSrc(data.imageUrl);
+        saveImageData(data.imageUrl);
+      } else {
+        console.warn("⚠️ 업로드 결과에 imageUrl이 없습니다:", data);
+      }
+    } catch (err) {
+      console.error("❌ 이미지 업로드 실패:", err);
+      alert("이미지 업로드 중 오류가 발생했습니다.");
+    } finally {
+      // ✅ blob URL 정리
+      if (tempPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(tempPreview);
+        setPreviewUrl(null);
+      }
+      e.target.value = "";
     }
   };
 
@@ -121,167 +148,137 @@ export default function EditableImage({
     document.body.style.cursor = "se-resize";
     document.body.style.userSelect = "none";
   };
-
-  const handleMouseMove = (e) => {
+  /** ✅ 마우스 이동 / 업로드 종료 시 크기조절 종료 */
+  useEffect(() => {
     if (!resizing) return;
-    const dx = e.clientX - startPos.current.x;
-    const dy = e.clientY - startPos.current.y;
-    const newWidth = Math.max(50, startPos.current.width + dx);
-    const newHeight =
-      startPos.current.height === "auto"
-        ? "auto"
-        : Math.max(50, startPos.current.height + dy);
-    setSize({ width: newWidth, height: newHeight });
-  };
 
-  const handleMouseUp = () => {
-    if (resizing) {
+    const handleMouseMove = (e) => {
+      const dx = e.clientX - startPos.current.x;
+      const dy = e.clientY - startPos.current.y;
+      const newWidth = Math.max(50, startPos.current.width + dx);
+      const newHeight = Math.max(50, startPos.current.height + dy);
+      const updated = { width: newWidth, height: newHeight };
+      setSize(updated);
+      saveSizeData(updated);
+    };
+
+    const handleMouseUp = () => {
       setResizing(false);
       document.body.style.cursor = "auto";
       document.body.style.userSelect = "auto";
-      saveSizeData(size);
-    }
-  };
+    };
 
-  useEffect(() => {
-    if (resizing) {
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
-    } else {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    }
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [resizing, size]);
+  }, [resizing]);
 
-  /** ✅ 우클릭 메뉴 차단 */
+  /** ✅ Blob URL 정리 (unmount 시점) */
   useEffect(() => {
-    const handleCtx = (e) => {
-      if (isEditMode || isResizeMode) e.preventDefault();
+    return () => {
+      if (previewUrl && previewUrl.startsWith("blob:")) {
+        try {
+          URL.revokeObjectURL(previewUrl);
+          console.log("🧹 Blob URL 정리 완료:", previewUrl);
+        } catch (err) {
+          console.warn("⚠️ Blob 정리 중 오류:", err);
+        }
+      }
     };
-    window.addEventListener("contextmenu", handleCtx);
-    return () => window.removeEventListener("contextmenu", handleCtx);
-  }, [isEditMode, isResizeMode]);
+  }, [previewUrl]);
+
+  /** ✅ hover 상태 시 시각적 표시 */
+  const overlayStyle = {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    background: isEditMode
+      ? "rgba(0,0,0,0.3)"
+      : "rgba(0,0,0,0)",
+    color: "white",
+    display: isHovering && isEditMode ? "flex" : "none",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "1rem",
+    fontWeight: "500",
+    transition: "all 0.2s ease",
+    borderRadius: "0.5rem",
+  };
 
   return (
     <div
       style={{
         position: "relative",
-        display: "inline-block",
-        cursor: isEditMode ? "pointer" : isResizeMode ? "se-resize" : "default",
-        boxSizing: "border-box",
-        zIndex: isEditMode || isResizeMode ? 9999 : "auto",
-        overflow: "visible",
-        width: typeof size.width === "number" ? `${size.width}px` : size.width,
+        width:
+          typeof size.width === "number" ? `${size.width}px` : size.width,
         height:
-          size.height === "auto"
-            ? "auto"
-            : typeof size.height === "number"
+          typeof size.height === "number"
             ? `${size.height}px`
             : size.height,
-        // ✅ 크기조절 모드에서만 카드 테두리 표시
-        border: "none",
-borderRadius: "0",
-        transition: "border 0.2s ease",
+        overflow: "hidden",
+        border:
+          isResizeMode && !isEditMode
+            ? "2px dashed #4a90e2"
+            : "none",
+        borderRadius: "0.5rem",
+        cursor: isResizeMode
+          ? "se-resize"
+          : isEditMode
+          ? "pointer"
+          : "default",
         ...style,
       }}
-      data-file={filePath || import.meta.url || "unknown"}
-      data-component={componentName || "EditableImage"}
+      onClick={handleClick}
+      onContextMenu={handleContextMenu}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
-      onClick={handleClick}
       onMouseDown={handleMouseDown}
-      onContextMenu={handleContextMenu}
     >
-      {/* ✅ 이미지 본체 */}
       <img
         src={imageSrc}
-        alt={alt || ""}
+        alt={alt || "EditableImage"}
         style={{
           width: "100%",
           height: "100%",
           objectFit: "cover",
-          opacity: isResizeMode && isHovering ? 0.85 : 1,
-          transition: "opacity 0.2s ease",
-          userSelect: "none",
-          pointerEvents: "none",
           display: "block",
-          borderRadius: "inherit",
+          borderRadius: "0.5rem",
+          pointerEvents: "none",
         }}
-        draggable={false}
-        onError={(e) => (e.target.src = defaultSrc)}
+        onError={(e) => {
+          e.target.src = "/fallback.jpg";
+        }}
       />
 
-      {/* ✅ 저장됨 표시 */}
+      {isEditMode && (
+        <div style={overlayStyle}>
+          <span>이미지 변경</span>
+        </div>
+      )}
+
+      {/* ✅ 저장 알림 표시 */}
       {saved && (
-        <span
+        <div
           style={{
             position: "absolute",
             bottom: "8px",
             right: "8px",
-            backgroundColor: "rgba(0,0,0,0.7)",
-            color: "white",
-            fontSize: "0.8em",
-            padding: "2px 6px",
+            background: "rgba(0,0,0,0.6)",
+            color: "#fff",
+            padding: "4px 8px",
             borderRadius: "4px",
-            zIndex: 10,
+            fontSize: "0.8rem",
           }}
         >
-          ✔ 저장됨
-        </span>
-      )}
-
-      {/* ✅ 크기조절 모드일 때 안내 */}
-      {isResizeMode && isHovering && (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            backgroundColor: "rgba(0,0,0,0.25)",
-            color: "#fff",
-            fontSize: "0.9em",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            textAlign: "center",
-            fontWeight: "bold",
-            pointerEvents: "none",
-            zIndex: 6,
-            borderRadius: "inherit",
-          }}
-        >
-          우클릭 + 드래그 : 크기 조절
+          ✅ 저장됨
         </div>
       )}
 
-      {/* ✅ 디자인모드일 때는 오버레이만 (점선 ❌) */}
-      {isEditMode && isHovering && !isResizeMode && (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            backgroundColor: "rgba(0,0,0,0.3)",
-            color: "#fff",
-            fontSize: "0.9em",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            textAlign: "center",
-            fontWeight: "bold",
-            pointerEvents: "none",
-            zIndex: 6,
-            borderRadius: "inherit",
-          }}
-        >
-          클릭: 이미지 교체 <br />
-          우클릭: URL 입력
-        </div>
-      )}
-
-      {/* ✅ 파일 업로드 input */}
       <input
         type="file"
         accept="image/*"
