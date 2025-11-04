@@ -173,6 +173,13 @@ function AdminProductEdit() {
       await api.put(`/api/products/${id}`, productData, {
         headers: getAuthHeader(),
       });
+
+        // ✅ ✅ ✅ [추가된 부분] 상품 수정 후 localStorage 캐시 초기화
+      localStorage.removeItem(`detail-name-${id}`);
+      localStorage.removeItem(`detail-desc-${id}`);
+      localStorage.removeItem(`detail-info-${id}`);
+      localStorage.removeItem(`size-info-${id}`);
+      
       alert("✅ 상품이 성공적으로 수정되었습니다!");
       navigate("/admin/products"); // 수정 후 상품목록으로 이동
     } catch (err) {
