@@ -3,10 +3,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
-import ReactQuill, { Quill } from "react-quill"; // ✅ 한 줄만
-import "react-quill/dist/quill.snow.css";
-import ImageResize from "quill-image-resize-module-react"; // ✅ react 호환 버전 사용
-
+import ReactQuill, { Quill } from "react-quill";
+import ImageResize from "quill-image-resize-module"; // ✅ react 버전 아님
 Quill.register("modules/imageResize", ImageResize);
 
 // ✅ ReactQuill 이미지 업로드 모듈 설정
