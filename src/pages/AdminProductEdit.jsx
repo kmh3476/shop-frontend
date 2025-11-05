@@ -5,16 +5,11 @@ import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 import ReactQuill, { Quill } from "react-quill";
 import "react-quill/dist/quill.snow.css";
-
-// ✅ 1. 블롯 포맷터 (이미지 드래그/이동/정렬)
 import BlotFormatter from "@enzedonline/quill-blot-formatter2";
-Quill.register("modules/blotFormatter", BlotFormatter);
-
-// ✅ 2. 이미지 리사이즈 모듈
 import QuillImageResizer from "@mouseoverllc/quill-image-resizer";
 import "@mouseoverllc/quill-image-resizer/dist/style.css";
 
-// ✅ ⚙️ 여기서부터 추가 👇 — Quill.register 보호용
+// ✅ Quill 모듈 등록 (중복 방지)
 if (typeof window !== "undefined" && Quill) {
   if (!Quill.imports["modules/blotFormatter"]) {
     Quill.register("modules/blotFormatter", BlotFormatter);
@@ -23,13 +18,8 @@ if (typeof window !== "undefined" && Quill) {
     Quill.register("modules/imageResizer", QuillImageResizer);
   }
 }
-// ✅ ⚙️ 여기까지 추가 👆
 
-// ✅ 3. (옵션) quill-resize-module — 필요 시 활성화
-// import QuillResize from "quill-resize-module";
-// Quill.register("modules/resize", QuillResize);
-
-// ✅ Cloudinary 업로드 + 툴바 설정
+// ✅ Quill 모듈 설정
 const quillModules = {
   toolbar: {
     container: [
@@ -51,7 +41,7 @@ const quillModules = {
           const file = input.files[0];
           const formData = new FormData();
           formData.append("file", file);
-          formData.append("upload_preset", "onyou_uploads");
+          formData.append("upload_preset", "onyou_uploads"); // ✅ Cloudinary preset
 
           try {
             const res = await fetch(
@@ -63,25 +53,20 @@ const quillModules = {
             const range = quill.getSelection(true);
             quill.insertEmbed(range.index, "image", data.secure_url);
           } catch (err) {
+            console.error("❌ 이미지 업로드 실패:", err);
             alert("이미지 업로드 실패");
-            console.error(err);
           }
         };
       },
     },
   },
   blotFormatter: {
-    // ✅ 이미지 드래그 이동/정렬 시 시각적 표시
     overlay: { style: { border: "2px dashed #007bff" } },
   },
   imageResizer: {
-    // ✅ 이미지 비율 유지하며 리사이즈
     keepAspectRatio: true,
   },
-  // resize: { /* 필요 시 옵션 추가 */ },
 };
-
-
 
 // ✅ 관리자 상품 수정 페이지
 function AdminProductEdit() {
