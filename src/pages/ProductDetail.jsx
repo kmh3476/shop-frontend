@@ -7,6 +7,9 @@ import { useEditMode } from "../context/EditModeContext";
 import { useAuth } from "../context/AuthContext";
 import EditableText from "../components/EditableText";
 import EditableImage from "../components/EditableImage";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+
 
 // ✅ 이미지 확대 모달
 function ImageModal({ images, currentIndex, onClose, onNavigate }) {
@@ -432,22 +435,39 @@ export default function ProductDetail() {
         <div className="bg-white p-6 mt-2 rounded-lg shadow-sm space-y-16">
           {/* 상세정보 */}
           <section
-            ref={refs.detail}
-            onMouseDown={detailBox.startResize}
-            style={{
-              width: detailBox.size.width,
-              minHeight: detailBox.size.height,
-              cursor: isResizeMode ? "se-resize" : "default",
-            }}
-            className="p-4 border border-gray-200 rounded-md"
-          >
-            <h2 className="text-lg font-semibold mb-2">📋 상품 상세정보</h2>
-            <EditableText
-              key={product.detailText}
-              id={`detail-info-${id}`}
-              defaultText={product.detailText || "여기에 상품 상세정보를 입력하세요."}
-            />
-          </section>
+  ref={refs.detail}
+  onMouseDown={detailBox.startResize}
+  style={{
+    width: detailBox.size.width,
+    minHeight: detailBox.size.height,
+    cursor: isResizeMode ? "se-resize" : "default",
+  }}
+  className="p-4 border border-gray-200 rounded-md"
+>
+  <h2 className="text-lg font-semibold mb-2">📋 상품 상세정보</h2>
+  <div
+    className="prose max-w-none"
+    dangerouslySetInnerHTML={{ __html: product.detailText || "" }}
+  />
+</section>
+
+<section
+  ref={refs.size}
+  onMouseDown={sizeBox.startResize}
+  style={{
+    width: sizeBox.size.width,
+    minHeight: sizeBox.size.height,
+    cursor: isResizeMode ? "se-resize" : "default",
+  }}
+  className="p-4 border border-gray-200 rounded-md"
+>
+  <h2 className="text-lg font-semibold mb-2">📏 사이즈 & 구매안내</h2>
+  <div
+    className="prose max-w-none"
+    dangerouslySetInnerHTML={{ __html: product.sizeText || "" }}
+  />
+</section>
+
 
           {/* 사이즈 안내 */}
           <section

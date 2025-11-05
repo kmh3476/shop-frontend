@@ -3,6 +3,52 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+
+// ✅ ReactQuill 이미지 업로드 모듈 설정
+const quillModules = {
+  toolbar: {
+    container: [
+      ["bold", "italic", "underline", "strike"],
+      [{ header: 1 }, { header: 2 }],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ align: [] }],
+      ["link", "image"], // ✅ 이미지 업로드 버튼
+      ["clean"],
+    ],
+    handlers: {
+      image: function () {
+        const input = document.createElement("input");
+        input.setAttribute("type", "file");
+        input.setAttribute("accept", "image/*");
+        input.click();
+
+        input.onchange = async () => {
+          const file = input.files[0];
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("upload_preset", "shop-products"); // Cloudinary preset 이름
+
+          try {
+            const res = await fetch(
+              "https://api.cloudinary.com/v1_1/dhvw6oqiy/image/upload",
+              { method: "POST", body: formData }
+            );
+            const data = await res.json();
+            const quill = this.quill;
+            const range = quill.getSelection(true);
+            quill.insertEmbed(range.index, "image", data.secure_url);
+          } catch (err) {
+            alert("이미지 업로드 실패");
+            console.error(err);
+          }
+        };
+      },
+    },
+  },
+};
+
 
 // ✅ 관리자 상품 수정 페이지
 function AdminProductEdit() {
@@ -298,33 +344,22 @@ function AdminProductEdit() {
       />
 
       {/* ✅ 상세정보 */}
-      <textarea
-        placeholder="상품 상세정보 (detailText)"
-        rows={6}
-        value={form.detailText}
-        onChange={(e) => setForm({ ...form, detailText: e.target.value })}
-        style={{
-          width: "100%",
-          padding: "10px",
-          marginBottom: "10px",
-          borderRadius: "6px",
-          border: "1px solid #ccc",
-        }}
-      />
-      {/* ✅ 사이즈 안내 */}
-      <textarea
-        placeholder="사이즈 안내 (sizeText)"
-        rows={4}
-        value={form.sizeText}
-        onChange={(e) => setForm({ ...form, sizeText: e.target.value })}
-        style={{
-          width: "100%",
-          padding: "10px",
-          marginBottom: "10px",
-          borderRadius: "6px",
-          border: "1px solid #ccc",
-        }}
-      />
+      <label>📋 상품 상세정보</label>
+<ReactQuill
+  theme="snow"
+  value={form.detailText || ""}
+  onChange={(value) => setForm((prev) => ({ ...prev, detailText: value }))}
+  modules={quillModules}
+/>
+
+<label>📏 사이즈 & 구매안내</label>
+<ReactQuill
+  theme="snow"
+  value={form.sizeText || ""}
+  onChange={(value) => setForm((prev) => ({ ...prev, sizeText: value }))}
+  modules={quillModules}
+/>
+
 
       {/* ✅ 카테고리 */}
       <select
