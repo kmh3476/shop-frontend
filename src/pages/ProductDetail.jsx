@@ -130,7 +130,6 @@ function useResizableBox(id, defaultSize = { width: 900, height: 400 }, active) 
 
   return { ref, size, startResize };
 }
-
 export default function ProductDetail() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
@@ -177,26 +176,26 @@ export default function ProductDetail() {
           api.get(`/api/inquiries/${id}`),
         ]);
         const product = p.data;
-        // ✅ blob: URL 제거 + Cloudinary URL만 남기기
-// ✅ 대표 이미지 + 나머지 이미지 배열 구성
-const imgs = product.mainImage
-  ? [product.mainImage, ...(product.images || []).filter((img) => img && img !== product.mainImage)]
-  : (product.images || []).filter((img) => img && img.startsWith("http"));
 
-// ✅ 중복 제거
-const uniqueImgs = [...new Set(imgs.filter((img) => img && img.startsWith("http")))];
+        // ✅ blob 제거 및 Cloudinary 이미지만 유지
+        const imgs = product.mainImage
+          ? [product.mainImage, ...(product.images || []).filter((img) => img && img !== product.mainImage)]
+          : (product.images || []).filter((img) => img && img.startsWith("http"));
 
-setProduct({
-  ...product,
-  name: localStorage.getItem(`detail-name-${id}`) ?? product.name,
-  description: localStorage.getItem(`detail-desc-${id}`) ?? product.description,
-  detailText: product.detailText || "",
-  sizeText: product.sizeText || "",
-  images: uniqueImgs,
-});
+        // ✅ 중복 제거
+        const uniqueImgs = [...new Set(imgs.filter((img) => img && img.startsWith("http")))];
 
-// ✅ 대표이미지 우선 표시
-setMainImage(product.mainImage || uniqueImgs[0]);
+        setProduct({
+          ...product,
+          name: localStorage.getItem(`detail-name-${id}`) ?? product.name,
+          description: localStorage.getItem(`detail-desc-${id}`) ?? product.description,
+          detailText: product.detailText || "",
+          sizeText: product.sizeText || "",
+          images: uniqueImgs,
+        });
+
+        // ✅ 대표이미지 우선 표시
+        setMainImage(product.mainImage || uniqueImgs[0]);
 
         setReviews(r.data || []);
         setInquiries(q.data || []);
@@ -208,6 +207,7 @@ setMainImage(product.mainImage || uniqueImgs[0]);
     };
     load();
   }, [id]);
+
   // ✅ 후기 등록
   const addReview = async () => {
     if (!reviewInput.name || !reviewInput.comment) return alert("이름과 내용을 입력해주세요.");
@@ -256,11 +256,11 @@ setMainImage(product.mainImage || uniqueImgs[0]);
 
   return (
     <div className="bg-gray-50 min-h-screen pb-20">
-      {/* 관리자 툴바 */}
+      {/* ✅ 관리자 툴바 */}
       {user?.isAdmin && (
         <div className="fixed top-6 left-6 z-50 flex gap-3">
           <button
-            onClick={() => setIsEditMode(!isEditMode)}
+            onClick={toggleEdit}
             className={`px-4 py-2 rounded text-white font-semibold ${
               isEditMode ? "bg-green-600" : "bg-gray-700"
             }`}
@@ -268,7 +268,7 @@ setMainImage(product.mainImage || uniqueImgs[0]);
             {isEditMode ? "🖊 디자인모드 ON" : "✏ 디자인모드 OFF"}
           </button>
           <button
-            onClick={() => setIsResizeMode(!isResizeMode)}
+            onClick={toggleResize}
             className={`px-4 py-2 rounded text-white font-semibold ${
               isResizeMode ? "bg-blue-600" : "bg-gray-700"
             }`}
@@ -277,7 +277,6 @@ setMainImage(product.mainImage || uniqueImgs[0]);
           </button>
         </div>
       )}
-
       <div className="max-w-3xl mx-auto py-10">
         <Link
           to="/products"
@@ -310,7 +309,11 @@ setMainImage(product.mainImage || uniqueImgs[0]);
               objectFit: "contain",
               cursor: isEditMode ? "crosshair" : "zoom-in",
             }}
-            onClick={() => !isEditMode && !isResizeMode && setSelectedIndex(0)}
+            onClick={() =>
+              !isEditMode &&
+              !isResizeMode &&
+              setSelectedIndex(product.images?.indexOf(mainImage) ?? 0)
+            }
           />
 
           <div className="p-6">
@@ -321,6 +324,7 @@ setMainImage(product.mainImage || uniqueImgs[0]);
                 onSave={(t) => localStorage.setItem(`detail-name-${id}`, t)}
               />
             </h2>
+
             <p className="text-gray-600 mb-4 whitespace-pre-line">
               <EditableText
                 id={`detail-desc-${id}`}
@@ -328,9 +332,11 @@ setMainImage(product.mainImage || uniqueImgs[0]);
                 onSave={(t) => localStorage.setItem(`detail-desc-${id}`, t)}
               />
             </p>
+
             <p className="text-xl font-bold text-blue-600 mb-6">
               {product.price?.toLocaleString()}원
             </p>
+
             <button
               disabled={isEditMode || isResizeMode}
               className="px-5 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition disabled:opacity-60"
@@ -377,11 +383,10 @@ setMainImage(product.mainImage || uniqueImgs[0]);
           >
             <h2 className="text-lg font-semibold mb-2">📋 상품 상세정보</h2>
             <EditableText
-  key={product.detailText} // ✅ 새로고침 없이 강제 리렌더
-  id={`detail-info-${id}`}
-  defaultText={product.detailText || "여기에 상품 상세정보를 입력하세요."}
-/>
-
+              key={product.detailText}
+              id={`detail-info-${id}`}
+              defaultText={product.detailText || "여기에 상품 상세정보를 입력하세요."}
+            />
           </section>
 
           {/* 사이즈 안내 */}
@@ -421,7 +426,6 @@ setMainImage(product.mainImage || uniqueImgs[0]);
                 </div>
               ))
             )}
-
             <div className="mt-5 border-t pt-4">
               <h3 className="font-semibold mb-2">리뷰 작성하기</h3>
               <input
@@ -455,15 +459,14 @@ setMainImage(product.mainImage || uniqueImgs[0]);
             </div>
 
             {/* ✅ 상품 문의 전체보기 버튼 */}
-<div className="mt-6 text-center">
-  <Link
-    to={`/product-support?productId=${id}`} // ✅ 현재 상품 ID 전달
-    className="text-blue-600 hover:underline text-sm"
-  >
-    상품 문의 전체보기
-  </Link>
-</div>
-
+            <div className="mt-6 text-center">
+              <Link
+                to={`/product-support?productId=${id}`} // ✅ 현재 상품 ID 전달
+                className="text-blue-600 hover:underline text-sm"
+              >
+                상품 문의 전체보기
+              </Link>
+            </div>
           </section>
 
           {/* 문의 섹션 */}
@@ -507,10 +510,10 @@ setMainImage(product.mainImage || uniqueImgs[0]);
       </div>
 
       {/* ✅ 이미지 모달 */}
+                  {/* ✅ 이미지 모달 */}
       {selectedIndex !== null && (
-  <ImageModal
-    images={product.images?.filter((img) => img && img.startsWith("http")) || []} // ✅ blob 제거
-
+        <ImageModal
+          images={product.images?.filter((img) => img && img.startsWith("http")) || []}
           currentIndex={selectedIndex}
           onClose={() => setSelectedIndex(null)}
           onNavigate={(dir) =>
@@ -522,6 +525,6 @@ setMainImage(product.mainImage || uniqueImgs[0]);
           }
         />
       )}
-    </div>
+    </div> /* ✅ ProductDetail 최상위 div 닫기 */
   );
 }
