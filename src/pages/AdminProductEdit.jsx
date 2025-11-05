@@ -4,10 +4,15 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 import ReactQuill, { Quill } from "react-quill";
-import ImageResize from "quill-image-resize-module"; // ✅ react 버전 아님
-Quill.register("modules/imageResize", ImageResize);
+import "react-quill/dist/quill.snow.css";
+import ImageResize from "quill-image-resize-module-react";
 
-// ✅ ReactQuill 이미지 업로드 모듈 설정
+// ✅ Quill 모듈 등록 (중복 방지)
+if (typeof window !== "undefined" && Quill && !Quill.imports["modules/imageResize"]) {
+  Quill.register("modules/imageResize", ImageResize);
+}
+
+// ✅ ReactQuill 툴바 + Cloudinary 업로드 설정
 const quillModules = {
   toolbar: {
     container: [
@@ -27,6 +32,8 @@ const quillModules = {
 
         input.onchange = async () => {
           const file = input.files[0];
+          if (!file) return;
+
           const formData = new FormData();
           formData.append("file", file);
           formData.append("upload_preset", "onyou_uploads");
@@ -34,14 +41,18 @@ const quillModules = {
           try {
             const res = await fetch(
               "https://api.cloudinary.com/v1_1/dhvw6oqiy/image/upload",
-              { method: "POST", body: formData }
+              {
+                method: "POST",
+                body: formData,
+              }
             );
             const data = await res.json();
             const quill = this.quill;
             const range = quill.getSelection(true);
             quill.insertEmbed(range.index, "image", data.secure_url);
+            quill.setSelection(range.index + 1);
           } catch (err) {
-            alert("이미지 업로드 실패");
+            alert("❌ 이미지 업로드 실패");
             console.error(err);
           }
         };
@@ -49,9 +60,10 @@ const quillModules = {
     },
   },
   imageResize: {
-    modules: ["Resize", "DisplaySize", "Toolbar"], // ✅ 이미지 클릭 후 조절 가능
+    modules: ["Resize", "DisplaySize", "Toolbar"],
   },
 };
+
 
 
 // ✅ 관리자 상품 수정 페이지
