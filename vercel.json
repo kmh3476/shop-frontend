@@ -10,9 +10,8 @@
       }
     }
   ],
-  "buildCommand": "npm install --legacy-peer-deps && npm run build",
-  "installCommand": "npm install --legacy-peer-deps",
-  "outputDirectory": "dist",
+
+  "buildCommand": "bash vercel-build.sh",
 
   "rewrites": [
     {
@@ -54,10 +53,6 @@
     "VITE_BUILDER_API_URL": "https://cdn.builder.io/api/v3",
     "VITE_BUILDER_MODEL": "page",
     "VITE_BUILDER_PREVIEW": "true",
-    "VITE_ENV": "production",
-    "CI": "false",
-    "NPM_FLAGS": "--legacy-peer-deps",
-    "NODE_ENV": "production",
-    "VERCEL_FORCE_NPM_INSTALL_FLAGS": "--legacy-peer-deps"
+    "VITE_ENV": "production"
   }
 }
