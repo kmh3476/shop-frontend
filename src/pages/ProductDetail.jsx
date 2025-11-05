@@ -178,20 +178,26 @@ export default function ProductDetail() {
         ]);
         const product = p.data;
         // ✅ blob: URL 제거 + Cloudinary URL만 남기기
-const imgs = (product.images || [])
-  .filter((img) => img && img.startsWith("http"))
-  .filter((v, i, arr) => arr.indexOf(v) === i); // 중복 제거
+// ✅ 대표 이미지 + 나머지 이미지 배열 구성
+const imgs = product.mainImage
+  ? [product.mainImage, ...(product.images || []).filter((img) => img && img !== product.mainImage)]
+  : (product.images || []).filter((img) => img && img.startsWith("http"));
 
-        setProduct({
-          ...product,
-          name: localStorage.getItem(`detail-name-${id}`) ?? product.name,
-          description: localStorage.getItem(`detail-desc-${id}`) ?? product.description,
-          detailText: product.detailText || "",
-sizeText: product.sizeText || "",
+// ✅ 중복 제거
+const uniqueImgs = [...new Set(imgs.filter((img) => img && img.startsWith("http")))];
 
-          images: imgs,
-        });
-        setMainImage(imgs[0]);
+setProduct({
+  ...product,
+  name: localStorage.getItem(`detail-name-${id}`) ?? product.name,
+  description: localStorage.getItem(`detail-desc-${id}`) ?? product.description,
+  detailText: product.detailText || "",
+  sizeText: product.sizeText || "",
+  images: uniqueImgs,
+});
+
+// ✅ 대표이미지 우선 표시
+setMainImage(product.mainImage || uniqueImgs[0]);
+
         setReviews(r.data || []);
         setInquiries(q.data || []);
       } catch (err) {
