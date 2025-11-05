@@ -111,35 +111,32 @@ function AdminProductEdit() {
     setForm((prev) => ({ ...prev, images: [...prev.images, ...previews] }));
 
     // ✅ blob 메모리 누수 방지 및 파일 삭제 후 에러 방지
-selected.forEach((f) => {
-  const url = URL.createObjectURL(f);
-  setTimeout(() => URL.revokeObjectURL(url), 5000);
-});
+    selected.forEach((f) => {
+      const url = URL.createObjectURL(f);
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    });
 
+    // ✅ 업로드
+    const uploaded = await handleImageUpload(selected);
+    if (uploaded.length) {
+      setForm((prev) => {
+        // ✅ blob: URL 전부 제거하고 Cloudinary URL만 남기기
+        const validOld = prev.images.filter((img) => img.startsWith("http"));
+        const merged = [...validOld, ...uploaded].filter(Boolean);
 
-    // 업로드
-    // 업로드
-const uploaded = await handleImageUpload(selected);
-if (uploaded.length) {
-  setForm((prev) => {
-    // ✅ blob: URL 전부 제거하고 Cloudinary URL만 남기기
-    const validOld = prev.images.filter((img) => img.startsWith("http"));
-    const merged = [...validOld, ...uploaded].filter(Boolean);
-
-    return {
-      ...prev,
-      images: merged,
-      mainImage: prev.mainImage || merged[0], // 대표 이미지 자동 설정
-    };
-  });
-}
+        return {
+          ...prev,
+          images: merged,
+          mainImage: prev.mainImage || merged[0], // 대표 이미지 자동 설정
+        };
+      });
+    }
   };
 
   // ✅ 메인 이미지 설정
   const setAsMainImage = (img) => {
     setForm((prev) => ({ ...prev, mainImage: img }));
   };
-
   // ✅ 이미지 삭제
   const removeImage = (index) => {
     const newImages = form.images.filter((_, i) => i !== index);
@@ -147,6 +144,7 @@ if (uploaded.length) {
       form.mainImage === form.images[index] ? newImages[0] || "" : form.mainImage;
     setForm({ ...form, images: newImages, mainImage: newMain });
   };
+
   // ✅ 상품 수정 저장
   const saveProduct = async () => {
     if (!form.name || !form.price) {
@@ -155,31 +153,30 @@ if (uploaded.length) {
     }
 
     const cleanImages = form.images
-  .filter((i) => i && i.startsWith("http"))
-  .filter((v, i, arr) => arr.indexOf(v) === i);
+      .filter((i) => i && i.startsWith("http"))
+      .filter((v, i, arr) => arr.indexOf(v) === i);
 
-// ✅ setForm은 유지 (UI 업데이트용)
-setForm((prev) => ({ ...prev, images: cleanImages }));
+    // ✅ setForm은 유지 (UI 업데이트용)
+    setForm((prev) => ({ ...prev, images: cleanImages }));
 
-const mainImg =
-  form.mainImage && cleanImages.includes(form.mainImage)
-    ? form.mainImage
-    : cleanImages[0] || "https://placehold.co/250x200?text=No+Image";
+    const mainImg =
+      form.mainImage && cleanImages.includes(form.mainImage)
+        ? form.mainImage
+        : cleanImages[0] || "https://placehold.co/250x200?text=No+Image";
 
-const productData = {
-  name: form.name.trim(),
-  price: Number(form.price),
-  description: form.description.trim(),
-  detailText: form.detailText.trim(),
-  sizeText: form.sizeText.trim(),
-  images: cleanImages, // ✅ 여기 cleanImages 직접 사용
-  mainImage: mainImg,
-  categoryPage:
-    form.categoryPage && form.categoryPage !== "null" && form.categoryPage !== ""
-      ? form.categoryPage
-      : null,
-};
-
+    const productData = {
+      name: form.name.trim(),
+      price: Number(form.price),
+      description: form.description.trim(),
+      detailText: form.detailText.trim(),
+      sizeText: form.sizeText.trim(),
+      images: cleanImages, // ✅ 여기 cleanImages 직접 사용
+      mainImage: mainImg,
+      categoryPage:
+        form.categoryPage && form.categoryPage !== "null" && form.categoryPage !== ""
+          ? form.categoryPage
+          : null,
+    };
 
     try {
       setUploading("🕓 상품 수정 중...");
@@ -187,12 +184,31 @@ const productData = {
         headers: getAuthHeader(),
       });
 
-        // ✅ ✅ ✅ [추가된 부분] 상품 수정 후 localStorage 캐시 초기화
+      // ✅ ✅ ✅ [추가된 부분] 상품 수정 후 localStorage 캐시 초기화
       localStorage.removeItem(`detail-name-${id}`);
       localStorage.removeItem(`detail-desc-${id}`);
       localStorage.removeItem(`detail-info-${id}`);
       localStorage.removeItem(`size-info-${id}`);
-      
+
+      // ✅ 상품 수정 후 blob URL 정리
+      if (form.images && Array.isArray(form.images)) {
+        form.images.forEach((img) => {
+          if (img && img.startsWith("blob:")) {
+            try {
+              URL.revokeObjectURL(img);
+            } catch (e) {
+              console.warn("blob revoke 실패:", img);
+            }
+          }
+        });
+      }
+
+      // ✅ blob 제거 후 UI 상태 정리
+      setForm((prev) => ({
+        ...prev,
+        images: prev.images.filter((img) => !img.startsWith("blob:")),
+      }));
+
       alert("✅ 상품이 성공적으로 수정되었습니다!");
       navigate("/admin/products"); // 수정 후 상품목록으로 이동
     } catch (err) {
@@ -203,20 +219,21 @@ const productData = {
     }
   };
 
+  // ✅ blob 정리용 useEffect
   useEffect(() => {
-  const imagesSnapshot = [...(form.images || [])]; // ✅ 안전 복사
-  return () => {
-    imagesSnapshot.forEach((img) => {
-      if (img && img.startsWith("blob:")) {
-        try {
-          URL.revokeObjectURL(img);
-        } catch (e) {
-          console.warn("blob revoke 실패:", img);
+    const imagesSnapshot = [...(form.images || [])]; // ✅ 안전 복사
+    return () => {
+      imagesSnapshot.forEach((img) => {
+        if (img && img.startsWith("blob:")) {
+          try {
+            URL.revokeObjectURL(img);
+          } catch (e) {
+            console.warn("blob revoke 실패:", img);
+          }
         }
-      }
-    });
-  };
-}, [form.images]);
+      });
+    };
+  }, [form.images]);
 
   if (loading) {
     return <p style={{ padding: "20px" }}>⏳ 상품 정보를 불러오는 중...</p>;
@@ -294,7 +311,6 @@ const productData = {
           border: "1px solid #ccc",
         }}
       />
-
       {/* ✅ 사이즈 안내 */}
       <textarea
         placeholder="사이즈 안내 (sizeText)"
@@ -394,6 +410,7 @@ const productData = {
           </div>
         ))}
       </div>
+
       {/* ✅ 메인 이미지 표시 */}
       {form.mainImage && (
         <div style={{ marginTop: "10px" }}>
