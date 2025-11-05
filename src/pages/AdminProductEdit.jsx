@@ -19,7 +19,7 @@ const quillModules = {
       ["bold", "italic", "underline", "strike"],
       [{ header: 1 }, { header: 2 }],
       [{ list: "ordered" }, { list: "bullet" }],
-      [{ align: [] }],
+      [{ align: [] }], // ✅ 정렬 옵션 추가
       ["link", "image"],
       ["clean"],
     ],
@@ -41,10 +41,7 @@ const quillModules = {
           try {
             const res = await fetch(
               "https://api.cloudinary.com/v1_1/dhvw6oqiy/image/upload",
-              {
-                method: "POST",
-                body: formData,
-              }
+              { method: "POST", body: formData }
             );
             const data = await res.json();
             const quill = this.quill;
@@ -59,12 +56,7 @@ const quillModules = {
       },
     },
   },
-  imageResize: {
-    modules: ["Resize", "DisplaySize", "Toolbar"],
-  },
 };
-
-
 
 // ✅ 관리자 상품 수정 페이지
 function AdminProductEdit() {
