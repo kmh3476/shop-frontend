@@ -207,6 +207,21 @@ const productData = {
     return <p style={{ padding: "20px" }}>⏳ 상품 정보를 불러오는 중...</p>;
   }
 
+  useEffect(() => {
+  const imagesSnapshot = [...(form.images || [])]; // ✅ 안전 복사
+  return () => {
+    imagesSnapshot.forEach((img) => {
+      if (img && img.startsWith("blob:")) {
+        try {
+          URL.revokeObjectURL(img);
+        } catch (e) {
+          console.warn("blob revoke 실패:", img);
+        }
+      }
+    });
+  };
+}, [form.images]);
+
   return (
     <div
       style={{
@@ -437,20 +452,5 @@ const productData = {
     </div>
   );
 }
-
-useEffect(() => {
-  const imagesSnapshot = [...(form.images || [])]; // ✅ 안전 복사
-  return () => {
-    imagesSnapshot.forEach((img) => {
-      if (img && img.startsWith("blob:")) {
-        try {
-          URL.revokeObjectURL(img);
-        } catch (e) {
-          console.warn("blob revoke 실패:", img);
-        }
-      }
-    });
-  };
-}, [form.images]);
 
 export default AdminProductEdit;
