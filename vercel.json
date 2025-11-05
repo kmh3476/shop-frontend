@@ -57,6 +57,7 @@
     "VITE_ENV": "production",
     "CI": "false",
     "NPM_FLAGS": "--legacy-peer-deps",
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "VERCEL_FORCE_NPM_INSTALL_FLAGS": "--legacy-peer-deps"
   }
 }
