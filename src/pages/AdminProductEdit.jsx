@@ -5,6 +5,10 @@ import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import Quill from "quill";
+import ImageResize from "quill-image-resize-module";
+Quill.register("modules/imageResize", ImageResize);
+
 
 // ✅ ReactQuill 이미지 업로드 모듈 설정
 const quillModules = {
@@ -14,7 +18,7 @@ const quillModules = {
       [{ header: 1 }, { header: 2 }],
       [{ list: "ordered" }, { list: "bullet" }],
       [{ align: [] }],
-      ["link", "image"], // ✅ 이미지 업로드 버튼
+      ["link", "image"],
       ["clean"],
     ],
     handlers: {
@@ -29,11 +33,10 @@ const quillModules = {
           const formData = new FormData();
           formData.append("file", file);
           formData.append("upload_preset", "onyou_uploads");
- // Cloudinary preset 이름
 
           try {
             const res = await fetch(
-              "https://api.cloudinary.com/v1_1/dhvw6oqiy/image/upload",
+              "https://api.cloudinary.com/v1_1/dhvw8odyf/image/upload",
               { method: "POST", body: formData }
             );
             const data = await res.json();
@@ -48,7 +51,11 @@ const quillModules = {
       },
     },
   },
+  imageResize: {
+    modules: ["Resize", "DisplaySize", "Toolbar"], // ✅ 이미지 클릭 후 조절 가능
+  },
 };
+
 
 
 // ✅ 관리자 상품 수정 페이지
