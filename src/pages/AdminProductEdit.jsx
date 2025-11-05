@@ -203,10 +203,6 @@ const productData = {
     }
   };
 
-  if (loading) {
-    return <p style={{ padding: "20px" }}>⏳ 상품 정보를 불러오는 중...</p>;
-  }
-
   useEffect(() => {
   const imagesSnapshot = [...(form.images || [])]; // ✅ 안전 복사
   return () => {
@@ -221,6 +217,10 @@ const productData = {
     });
   };
 }, [form.images]);
+
+  if (loading) {
+    return <p style={{ padding: "20px" }}>⏳ 상품 정보를 불러오는 중...</p>;
+  }
 
   return (
     <div
