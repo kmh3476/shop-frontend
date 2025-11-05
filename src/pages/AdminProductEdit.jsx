@@ -5,9 +5,10 @@ import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import Quill from "quill";
-import ImageResize from "quill-image-resize-module";
+import ReactQuill, { Quill } from "react-quill"; // ✅ ReactQuill에서 Quill을 가져오기
+import ImageResize from "quill-image-resize-module-react"; // ✅ react 호환 버전 사용
 Quill.register("modules/imageResize", ImageResize);
+
 
 
 // ✅ ReactQuill 이미지 업로드 모듈 설정
@@ -44,18 +45,17 @@ const quillModules = {
             const range = quill.getSelection(true);
             quill.insertEmbed(range.index, "image", data.secure_url);
           } catch (err) {
-            alert("이미지 업로드 실패");
-            console.error(err);
+            console.error("이미지 업로드 실패:", err);
           }
         };
       },
     },
   },
   imageResize: {
-    modules: ["Resize", "DisplaySize", "Toolbar"], // ✅ 이미지 클릭 후 조절 가능
+    parchment: Quill.import("parchment"),
+    modules: ["Resize", "DisplaySize", "Toolbar"],
   },
 };
-
 
 
 // ✅ 관리자 상품 수정 페이지
