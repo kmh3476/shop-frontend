@@ -3,13 +3,11 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
-import ReactQuill from "react-quill";
+import ReactQuill, { Quill } from "react-quill"; // ✅ 한 줄만
 import "react-quill/dist/quill.snow.css";
-import ReactQuill, { Quill } from "react-quill"; // ✅ ReactQuill에서 Quill을 가져오기
 import ImageResize from "quill-image-resize-module-react"; // ✅ react 호환 버전 사용
+
 Quill.register("modules/imageResize", ImageResize);
-
-
 
 // ✅ ReactQuill 이미지 업로드 모듈 설정
 const quillModules = {
@@ -45,15 +43,15 @@ const quillModules = {
             const range = quill.getSelection(true);
             quill.insertEmbed(range.index, "image", data.secure_url);
           } catch (err) {
-            console.error("이미지 업로드 실패:", err);
+            alert("이미지 업로드 실패");
+            console.error(err);
           }
         };
       },
     },
   },
   imageResize: {
-    parchment: Quill.import("parchment"),
-    modules: ["Resize", "DisplaySize", "Toolbar"],
+    modules: ["Resize", "DisplaySize", "Toolbar"], // ✅ 이미지 클릭 후 조절 가능
   },
 };
 
