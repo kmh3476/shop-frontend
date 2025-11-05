@@ -438,11 +438,11 @@ const productData = {
   );
 }
 
-// ✅ 컴포넌트 언마운트 시 blob URL 정리
 useEffect(() => {
+  const imagesSnapshot = [...(form.images || [])]; // ✅ 안전 복사
   return () => {
-    form.images.forEach((img) => {
-      if (img.startsWith("blob:")) {
+    imagesSnapshot.forEach((img) => {
+      if (img && img.startsWith("blob:")) {
         try {
           URL.revokeObjectURL(img);
         } catch (e) {
