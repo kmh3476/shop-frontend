@@ -28,7 +28,8 @@ const quillModules = {
           const file = input.files[0];
           const formData = new FormData();
           formData.append("file", file);
-          formData.append("upload_preset", "shop-products"); // Cloudinary preset 이름
+          formData.append("upload_preset", "onyou_uploads");
+ // Cloudinary preset 이름
 
           try {
             const res = await fetch(
