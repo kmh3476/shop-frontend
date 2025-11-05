@@ -74,3 +74,9 @@ body {
   margin-left: 0;
   float: none !important;
 }
+
+.ql-editor img {
+  margin: 10px;
+  max-width: 100%;
+  cursor: move;
+}

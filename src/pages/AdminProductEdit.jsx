@@ -5,58 +5,30 @@ import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 import ReactQuill, { Quill } from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import ImageResize from "quill-image-resize-module-react";
-
-// ✅ Quill 모듈 등록 (중복 방지)
-if (typeof window !== "undefined" && Quill && !Quill.imports["modules/imageResize"]) {
-  Quill.register("modules/imageResize", ImageResize);
-}
+import BlotFormatter from "quill-blot-formatter"; // ✅ 추가
+Quill.register("modules/blotFormatter", BlotFormatter);
 
 // ✅ ReactQuill 툴바 + Cloudinary 업로드 설정
 const quillModules = {
-  toolbar: {
-    container: [
-      ["bold", "italic", "underline", "strike"],
-      [{ header: 1 }, { header: 2 }],
-      [{ list: "ordered" }, { list: "bullet" }],
-      [{ align: [] }], // ✅ 정렬 옵션 추가
-      ["link", "image"],
-      ["clean"],
-    ],
-    handlers: {
-      image: function () {
-        const input = document.createElement("input");
-        input.setAttribute("type", "file");
-        input.setAttribute("accept", "image/*");
-        input.click();
-
-        input.onchange = async () => {
-          const file = input.files[0];
-          if (!file) return;
-
-          const formData = new FormData();
-          formData.append("file", file);
-          formData.append("upload_preset", "onyou_uploads");
-
-          try {
-            const res = await fetch(
-              "https://api.cloudinary.com/v1_1/dhvw6oqiy/image/upload",
-              { method: "POST", body: formData }
-            );
-            const data = await res.json();
-            const quill = this.quill;
-            const range = quill.getSelection(true);
-            quill.insertEmbed(range.index, "image", data.secure_url);
-            quill.setSelection(range.index + 1);
-          } catch (err) {
-            alert("❌ 이미지 업로드 실패");
-            console.error(err);
-          }
-        };
+  toolbar: [
+    ["bold", "italic", "underline", "strike"],
+    [{ header: 1 }, { header: 2 }],
+    [{ list: "ordered" }, { list: "bullet" }],
+    [{ align: [] }],
+    ["link", "image"],
+    ["clean"],
+  ],
+  blotFormatter: {
+    // ✅ 이미지 드래그 & 리사이즈 활성화
+    overlay: {
+      style: {
+        border: "1px dashed #007bff",
       },
     },
   },
 };
+
+
 
 // ✅ 관리자 상품 수정 페이지
 function AdminProductEdit() {
