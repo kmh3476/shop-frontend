@@ -5,7 +5,7 @@ import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 import ReactQuill, { Quill } from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import BlotFormatter from "quill-blot-formatter"; // ✅ 추가
+import BlotFormatter from "quill-blot-formatter-react";
 Quill.register("modules/blotFormatter", BlotFormatter);
 
 // ✅ ReactQuill 툴바 + Cloudinary 업로드 설정
