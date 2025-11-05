@@ -5,63 +5,40 @@ import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 import ReactQuill, { Quill } from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import BlotFormatter from "quill-blot-formatter";
+import BlotFormatter2 from "@enzedonline/quill-blot-formatter2";
 
-// ✅ Quill 2.x와 호환되는 모듈 등록
-if (typeof window !== "undefined" && Quill && !Quill.imports["modules/blotFormatter"]) {
-  Quill.register("modules/blotFormatter", BlotFormatter);
-}
+// Quill 모듈 등록
+Quill.register("modules/blotFormatter2", BlotFormatter2);
 
-// ✅ Quill 에디터 설정
+// 에디터 모듈 설정 예시
 const quillModules = {
-  toolbar: [
-    ["bold", "italic", "underline", "strike"],
-    [{ header: 1 }, { header: 2 }],
-    [{ list: "ordered" }, { list: "bullet" }],
-    [{ align: [] }],
-    ["link", "image"],
-    ["clean"],
-  ],
-  
-  handlers: {
-  image: function () {
-    const input = document.createElement("input");
-    input.setAttribute("type", "file");
-    input.setAttribute("accept", "image/*");
-    input.click();
-
-    input.onchange = async () => {
-      const file = input.files[0];
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", "onyou_uploads");
-
-      try {
-        const res = await fetch(
-          "https://api.cloudinary.com/v1_1/dhvw6oqiy/image/upload",
-          { method: "POST", body: formData }
-        );
-        const data = await res.json();
-        const quill = this.quill;
-        const range = quill.getSelection(true);
-        quill.insertEmbed(range.index, "image", data.secure_url);
-      } catch (err) {
-        alert("이미지 업로드 실패");
-        console.error(err);
-      }
-    };
-  },
-},
-
-  blotFormatter: {
-    // ✅ 이미지 드래그 / 리사이즈 / 정렬 가능
-    overlay: {
-      style: {
-        border: "2px dashed #007bff",
-      },
+  toolbar: {
+    container: [
+      ["bold", "italic", "underline", "strike"],
+      [{ header: 1 }, { header: 2 }],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ align: [] }],
+      ["link", "image"],
+      ["clean"],
+    ],
+    handlers: {
+      // 이미지 삽입 후 Cloudinary 업로드 처리 등 추가 가능
     },
   },
+  blotFormatter2: {
+    resize: {
+      useRelativeSize: true,
+      allowResizeModeChange: true,
+      imageOversizeProtection: true,
+    },
+    image: {
+      allowAltTitleEdit: true,
+      allowLinkEdit: false,
+    },
+    // 필요시 video/iframe 설정도 가능
+  },
 };
+
 
 // ✅ 관리자 상품 수정 페이지
 function AdminProductEdit() {
