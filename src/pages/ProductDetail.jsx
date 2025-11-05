@@ -306,7 +306,7 @@ export default function ProductDetail() {
     <img
       src={mainImage || noImage}
       alt={product.name}
-      className="max-h-[450px] object-contain transition-all duration-300"
+      className="w-auto max-w-full max-h-[90vh] object-contain transition-transform duration-300"
       onClick={() => {
         if (!isEditMode && !isResizeMode) {
           const filteredImages =
