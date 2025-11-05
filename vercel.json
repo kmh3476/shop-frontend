@@ -54,5 +54,7 @@
     "VITE_BUILDER_MODEL": "page",
     "VITE_BUILDER_PREVIEW": "true",
     "VITE_ENV": "production"
-  }
+  },
+
+  "ignoreCommand": "echo '✅ Using custom build script (vercel-build.sh)'"
 }
