@@ -302,20 +302,18 @@ export default function ProductDetail() {
           {/* ✅ 상품 이미지 영역 (화살표 + 썸네일 포함) */}
 <div className="flex flex-col items-center relative select-none">
   {/* ✅ 대표 이미지 */}
-  <div className="relative w-full h-[450px] flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
-    <img
-      src={mainImage || noImage}
-      alt={product.name}
-      className="w-auto max-w-full max-h-[90vh] object-contain transition-transform duration-300"
-      onClick={() => {
-        if (!isEditMode && !isResizeMode) {
-          const filteredImages =
-            product.images?.filter((img) => img && img.startsWith("http")) || [];
-          const idx = filteredImages.indexOf(mainImage);
-          setSelectedIndex(idx >= 0 ? idx : 0);
-        }
-      }}
-    />
+  {/* ✅ 상품 대표 이미지 (꽉 차게 확대) */}
+<div className="relative w-full flex justify-center items-center bg-white rounded-lg overflow-hidden" style={{ minHeight: "800px" }}>
+  <img
+    src={mainImage || noImage}
+    alt={product.name}
+    className="w-auto h-auto max-w-none max-h-none object-scale-down transition-transform duration-300"
+    style={{
+      width: "100%",
+      height: "auto",
+      objectFit: "cover",
+    }}
+  />
 
     {/* ✅ 왼쪽 화살표 */}
     {product.images?.length > 1 && (
