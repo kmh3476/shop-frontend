@@ -299,31 +299,83 @@ export default function ProductDetail() {
           }}
           className="bg-white shadow-md rounded-lg overflow-hidden mb-8"
         >
-          <div className="flex flex-col items-center">
-  <div className="w-full h-[400px] mb-4">
+          {/* ✅ 상품 이미지 영역 (화살표 + 썸네일 포함) */}
+<div className="flex flex-col items-center relative select-none">
+  {/* ✅ 대표 이미지 */}
+  <div className="relative w-full h-[450px] flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden">
     <img
       src={mainImage || noImage}
       alt={product.name}
-      className="w-full h-full object-contain rounded-lg"
+      className="max-h-[450px] object-contain transition-all duration-300"
+      onClick={() => {
+        if (!isEditMode && !isResizeMode) {
+          const filteredImages =
+            product.images?.filter((img) => img && img.startsWith("http")) || [];
+          const idx = filteredImages.indexOf(mainImage);
+          setSelectedIndex(idx >= 0 ? idx : 0);
+        }
+      }}
     />
+
+    {/* ✅ 왼쪽 화살표 */}
+    {product.images?.length > 1 && (
+      <>
+        <button
+          className="absolute left-3 text-3xl text-white bg-black/40 hover:bg-black/60 rounded-full p-2 transition"
+          onClick={(e) => {
+            e.stopPropagation();
+            const filteredImages =
+              product.images?.filter((img) => img && img.startsWith("http")) || [];
+            const currentIdx = filteredImages.indexOf(mainImage);
+            const prevIdx =
+              currentIdx <= 0 ? filteredImages.length - 1 : currentIdx - 1;
+            setMainImage(filteredImages[prevIdx]);
+          }}
+        >
+          ←
+        </button>
+
+        {/* ✅ 오른쪽 화살표 */}
+        <button
+          className="absolute right-3 text-3xl text-white bg-black/40 hover:bg-black/60 rounded-full p-2 transition"
+          onClick={(e) => {
+            e.stopPropagation();
+            const filteredImages =
+              product.images?.filter((img) => img && img.startsWith("http")) || [];
+            const currentIdx = filteredImages.indexOf(mainImage);
+            const nextIdx =
+              currentIdx >= filteredImages.length - 1 ? 0 : currentIdx + 1;
+            setMainImage(filteredImages[nextIdx]);
+          }}
+        >
+          →
+        </button>
+      </>
+    )}
   </div>
 
-  {/* ✅ 이미지 여러 장 썸네일 표시 */}
-  <div className="flex gap-2 overflow-x-auto">
-    {product.images &&
-      product.images.map((img, idx) => (
-        <img
-          key={idx}
-          src={img}
-          alt={`thumbnail-${idx}`}
-          className={`w-20 h-20 object-cover rounded cursor-pointer ${
-            img === mainImage ? "ring-2 ring-blue-500" : ""
-          }`}
-          onClick={() => setMainImage(img)} // 클릭 시 대표 이미지 변경
-        />
-      ))}
-  </div>
+  {/* ✅ 썸네일 리스트 */}
+  {product.images?.length > 1 && (
+    <div className="flex gap-2 mt-4 overflow-x-auto justify-center w-full px-2">
+      {product.images
+        .filter((img) => img && img.startsWith("http"))
+        .map((img, idx) => (
+          <img
+            key={idx}
+            src={img}
+            alt={`thumb-${idx}`}
+            onClick={() => setMainImage(img)}
+            className={`w-20 h-20 object-cover rounded-lg cursor-pointer transition-all ${
+              img === mainImage
+                ? "ring-4 ring-blue-500 scale-105"
+                : "opacity-80 hover:opacity-100"
+            }`}
+          />
+        ))}
+    </div>
+  )}
 </div>
+
 
 
           <div className="p-6">
