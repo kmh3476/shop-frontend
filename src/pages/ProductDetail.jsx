@@ -299,25 +299,32 @@ export default function ProductDetail() {
           }}
           className="bg-white shadow-md rounded-lg overflow-hidden mb-8"
         >
-          <EditableImage
-            id={`detail-main-${id}`}
-            defaultSrc={mainImage || noImage}
-            alt={product.name}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
-              cursor: isEditMode ? "crosshair" : "zoom-in",
-            }}
-            onClick={() => {
-    if (!isEditMode && !isResizeMode) {
-      // ✅ product.images 중 실제 표시 가능한 Cloudinary 이미지만 필터링
-      const filteredImages = product.images?.filter((img) => img && img.startsWith("http")) || [];
-      const idx = filteredImages.indexOf(mainImage);
-      setSelectedIndex(idx >= 0 ? idx : 0); // ✅ 유효하지 않으면 0번부터 시작
-    }
-  }}
-          />
+          <div className="flex flex-col items-center">
+  <div className="w-full h-[400px] mb-4">
+    <img
+      src={mainImage || noImage}
+      alt={product.name}
+      className="w-full h-full object-contain rounded-lg"
+    />
+  </div>
+
+  {/* ✅ 이미지 여러 장 썸네일 표시 */}
+  <div className="flex gap-2 overflow-x-auto">
+    {product.images &&
+      product.images.map((img, idx) => (
+        <img
+          key={idx}
+          src={img}
+          alt={`thumbnail-${idx}`}
+          className={`w-20 h-20 object-cover rounded cursor-pointer ${
+            img === mainImage ? "ring-2 ring-blue-500" : ""
+          }`}
+          onClick={() => setMainImage(img)} // 클릭 시 대표 이미지 변경
+        />
+      ))}
+  </div>
+</div>
+
 
           <div className="p-6">
             <h2 className="text-2xl font-semibold mb-2">
