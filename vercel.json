@@ -12,6 +12,8 @@
   ],
 
   "buildCommand": "npm install --legacy-peer-deps && npm run build",
+  "installCommand": "npm install --legacy-peer-deps",
+  "outputDirectory": "dist",
 
   "rewrites": [
     {
@@ -44,7 +46,6 @@
       ]
     }
   ],
-
   "env": {
     "VITE_API_BASE_URL": "https://shop-backend-1-dfsl.onrender.com",
     "VITE_STRAPI_URL": "http://localhost:1337",
@@ -53,6 +54,15 @@
     "VITE_BUILDER_API_URL": "https://cdn.builder.io/api/v3",
     "VITE_BUILDER_MODEL": "page",
     "VITE_BUILDER_PREVIEW": "true",
-    "VITE_ENV": "production"
+    "VITE_ENV": "production",
+
+    "CI": "false",
+    "NPM_FLAGS": "--legacy-peer-deps",
+    "NODE_ENV": "production"
+  },
+
+  "cache": {
+    "enabled": true,
+    "path": ".vercel/cache"
   }
 }
