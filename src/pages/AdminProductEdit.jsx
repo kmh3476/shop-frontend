@@ -35,7 +35,7 @@ const quillModules = {
 
           try {
             const res = await fetch(
-              "https://api.cloudinary.com/v1_1/dhvw8odyf/image/upload",
+              "https://api.cloudinary.com/v1_1/dhvw6oqiy/image/upload",
               { method: "POST", body: formData }
             );
             const data = await res.json();
