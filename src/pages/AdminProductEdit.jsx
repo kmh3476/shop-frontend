@@ -5,10 +5,14 @@ import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 import ReactQuill, { Quill } from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import BlotFormatter from "quill-blot-formatter-react";
-Quill.register("modules/blotFormatter", BlotFormatter);
+import BlotFormatter from "quill-blot-formatter";
 
-// ✅ ReactQuill 툴바 + Cloudinary 업로드 설정
+// ✅ Quill 2.x와 호환되는 모듈 등록
+if (typeof window !== "undefined" && Quill && !Quill.imports["modules/blotFormatter"]) {
+  Quill.register("modules/blotFormatter", BlotFormatter);
+}
+
+// ✅ Quill 에디터 설정
 const quillModules = {
   toolbar: [
     ["bold", "italic", "underline", "strike"],
@@ -18,17 +22,46 @@ const quillModules = {
     ["link", "image"],
     ["clean"],
   ],
+  
+  handlers: {
+  image: function () {
+    const input = document.createElement("input");
+    input.setAttribute("type", "file");
+    input.setAttribute("accept", "image/*");
+    input.click();
+
+    input.onchange = async () => {
+      const file = input.files[0];
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "onyou_uploads");
+
+      try {
+        const res = await fetch(
+          "https://api.cloudinary.com/v1_1/dhvw6oqiy/image/upload",
+          { method: "POST", body: formData }
+        );
+        const data = await res.json();
+        const quill = this.quill;
+        const range = quill.getSelection(true);
+        quill.insertEmbed(range.index, "image", data.secure_url);
+      } catch (err) {
+        alert("이미지 업로드 실패");
+        console.error(err);
+      }
+    };
+  },
+},
+
   blotFormatter: {
-    // ✅ 이미지 드래그 & 리사이즈 활성화
+    // ✅ 이미지 드래그 / 리사이즈 / 정렬 가능
     overlay: {
       style: {
-        border: "1px dashed #007bff",
+        border: "2px dashed #007bff",
       },
     },
   },
 };
-
-
 
 // ✅ 관리자 상품 수정 페이지
 function AdminProductEdit() {
