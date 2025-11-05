@@ -309,11 +309,14 @@ export default function ProductDetail() {
               objectFit: "contain",
               cursor: isEditMode ? "crosshair" : "zoom-in",
             }}
-            onClick={() =>
-              !isEditMode &&
-              !isResizeMode &&
-              setSelectedIndex(product.images?.indexOf(mainImage) ?? 0)
-            }
+            onClick={() => {
+    if (!isEditMode && !isResizeMode) {
+      // ✅ product.images 중 실제 표시 가능한 Cloudinary 이미지만 필터링
+      const filteredImages = product.images?.filter((img) => img && img.startsWith("http")) || [];
+      const idx = filteredImages.indexOf(mainImage);
+      setSelectedIndex(idx >= 0 ? idx : 0); // ✅ 유효하지 않으면 0번부터 시작
+    }
+  }}
           />
 
           <div className="p-6">
@@ -510,21 +513,20 @@ export default function ProductDetail() {
       </div>
 
       {/* ✅ 이미지 모달 */}
-                  {/* ✅ 이미지 모달 */}
       {selectedIndex !== null && (
-        <ImageModal
-          images={product.images?.filter((img) => img && img.startsWith("http")) || []}
-          currentIndex={selectedIndex}
-          onClose={() => setSelectedIndex(null)}
-          onNavigate={(dir) =>
-            setSelectedIndex((p) =>
-              dir === "next"
-                ? (p + 1) % product.images.length
-                : (p - 1 + product.images.length) % product.images.length
-            )
-          }
-        />
-      )}
+  <ImageModal
+    images={product.images?.filter((img) => img && img.startsWith("http")) || []}
+    currentIndex={selectedIndex}
+    onClose={() => setSelectedIndex(null)}
+    onNavigate={(dir) =>
+      setSelectedIndex((p) => {
+        const filteredImages = product.images?.filter((img) => img && img.startsWith("http")) || [];
+        const total = filteredImages.length;
+        return dir === "next" ? (p + 1) % total : (p - 1 + total) % total;
+      })
+    }
+  />
+)}
     </div> /* ✅ ProductDetail 최상위 div 닫기 */
   );
 }
