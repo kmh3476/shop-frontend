@@ -10,9 +10,8 @@
       }
     }
   ],
-
-  "buildCommand": "npm install --legacy-peer-deps && npm run build",
-  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "bash vercel-build.sh",
+  "installCommand": "echo '⚙️ Using custom build script, skipping default install'",
   "outputDirectory": "dist",
 
   "rewrites": [
