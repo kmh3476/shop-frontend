@@ -3,19 +3,21 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
-// ✅ Quill 모듈 등록 (안전 + 중복 방지 + SSR 대응)
-import ReactQuill, { Quill } from "react-quill";
+// ✅ Quill 모듈 등록 (React-Quill v1.x 대응)
+import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+
+// Quill은 ReactQuill에서 직접 import되지 않음 → 별도 가져오기
+import Quill from "quill";
 
 // 모듈 import
 import BlotFormatter from "@enzedonline/quill-blot-formatter2";
 import ResizeModule from "@botom/quill-resize-module";
 
-// ✅ 안전한 등록 (오직 브라우저 환경에서만, 1회만 실행)
+// ✅ 안전한 등록 (브라우저 환경에서만 1회)
 if (typeof window !== "undefined") {
   if (!window.__QUILL_MODULES_REGISTERED__) {
     try {
-      // ✅ BlotFormatter 등록
       if (Quill && typeof BlotFormatter !== "undefined") {
         Quill.register("modules/blotFormatter", BlotFormatter);
         console.log("✅ BlotFormatter 등록 완료");
@@ -23,7 +25,6 @@ if (typeof window !== "undefined") {
         console.warn("⚠️ BlotFormatter undefined — import 확인 필요");
       }
 
-      // ✅ ResizeModule 등록
       if (Quill && typeof ResizeModule !== "undefined") {
         Quill.register("modules/resize", ResizeModule);
         console.log("✅ ResizeModule 등록 완료");
@@ -39,7 +40,7 @@ if (typeof window !== "undefined") {
   }
 }
 
-// ✅ Quill 모듈 설정
+// ✅ Quill 에디터 설정
 export const quillModules = {
   toolbar: {
     container: [
@@ -80,9 +81,13 @@ export const quillModules = {
       },
     },
   },
+
+  // ✅ BlotFormatter (이미지 드래그/정렬)
   blotFormatter: {
     overlay: { style: { border: "2px dashed #007bff" } },
   },
+
+  // ✅ ResizeModule (이미지 및 비디오 리사이즈)
   resize: {
     locale: {
       image: "이미지 크기 조정",
@@ -91,6 +96,7 @@ export const quillModules = {
     modules: ["Resize", "DisplaySize", "Toolbar"],
   },
 };
+
 
 
 
