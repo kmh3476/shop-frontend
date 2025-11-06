@@ -3,23 +3,20 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
-// ✅ Quill 모듈 등록 (ReactQuill 1.x 호환 버전)
+// ✅ 안전한 Quill 모듈 등록
 import ReactQuill, { Quill } from "react-quill";
 import "react-quill/dist/quill.snow.css";
-
 import BlotFormatter from "@enzedonline/quill-blot-formatter2";
 import ImageResize from "quill-image-resize-module-react";
 
-if (typeof window !== "undefined" && Quill) {
-  if (!window.__QUILL_MODULES__) {
-    try {
-      Quill.register("modules/blotFormatter", BlotFormatter);
-      Quill.register("modules/imageResize", ImageResize);
-      window.__QUILL_MODULES__ = true;
-      console.log("✅ Quill 모듈 등록 완료 (BlotFormatter + ImageResize)");
-    } catch (err) {
-      console.error("❌ Quill 모듈 등록 중 오류:", err);
-    }
+if (typeof window !== "undefined" && Quill && !Quill.__IS_CUSTOMIZED__) {
+  try {
+    Quill.register("modules/blotFormatter", BlotFormatter);
+    Quill.register("modules/imageResize", ImageResize);
+    Quill.__IS_CUSTOMIZED__ = true;
+    console.log("✅ Quill 모듈 등록 완료");
+  } catch (err) {
+    console.error("❌ Quill 모듈 등록 오류:", err);
   }
 }
 
@@ -34,10 +31,11 @@ export const quillModules = {
   ],
   blotFormatter: {},
   imageResize: {
-    parchment: Quill.import("parchment"),
+    displaySize: true,
     modules: ["Resize", "DisplaySize", "Toolbar"],
   },
 };
+
 
 // ✅ 관리자 상품 수정 페이지
 function AdminProductEdit() {
