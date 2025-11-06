@@ -15,6 +15,7 @@
         "@ant-design/pro-components": "^2.6.4",
         "@builder.io/react": "^8.2.8",
         "@builder.io/sdk": "^6.1.2",
+        "antd": "^5.28.0",
         "axios": "^1.7.7",
         "cors": "^2.8.5",
         "framer-motion": "^12.23.22",
