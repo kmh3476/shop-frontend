@@ -64,7 +64,7 @@ export default defineConfig(({ mode }) => {
       include: [
         "react-quill",
         "@enzedonline/quill-blot-formatter2",
-        "quill-image-resize-module-react", // ← 교체 완료
+        "quill-image-resize-module", // ← 교체 완료
       ],
     },
 

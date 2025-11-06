@@ -7,7 +7,7 @@ import noImage from "../assets/no-image.png";
 import ReactQuill, { Quill } from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import BlotFormatter from "@enzedonline/quill-blot-formatter2";
-import ImageResize from "quill-image-resize-module-react";
+import ImageResize from "quill-image-resize-module";
 
 if (typeof window !== "undefined" && Quill && !Quill.__IS_CUSTOMIZED__) {
   try {
