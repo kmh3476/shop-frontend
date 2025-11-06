@@ -3,102 +3,41 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
-// ✅ Quill 모듈 등록 (React-Quill v1.x 대응)
-import ReactQuill from "react-quill";
+// ✅ Quill 모듈 등록 (ReactQuill 1.x 호환 버전)
+import ReactQuill, { Quill } from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
-// Quill은 ReactQuill에서 직접 import되지 않음 → 별도 가져오기
-import Quill from "quill";
-
-// 모듈 import
 import BlotFormatter from "@enzedonline/quill-blot-formatter2";
-import ResizeModule from "@botom/quill-resize-module";
+import ImageResize from "quill-image-resize-module-react";
 
-// ✅ 안전한 등록 (브라우저 환경에서만 1회)
-if (typeof window !== "undefined") {
-  if (!window.__QUILL_MODULES_REGISTERED__) {
+if (typeof window !== "undefined" && Quill) {
+  if (!window.__QUILL_MODULES__) {
     try {
-      if (Quill && typeof BlotFormatter !== "undefined") {
-        Quill.register("modules/blotFormatter", BlotFormatter);
-        console.log("✅ BlotFormatter 등록 완료");
-      } else {
-        console.warn("⚠️ BlotFormatter undefined — import 확인 필요");
-      }
-
-      if (Quill && typeof ResizeModule !== "undefined") {
-        Quill.register("modules/resize", ResizeModule);
-        console.log("✅ ResizeModule 등록 완료");
-      } else {
-        console.warn("⚠️ ResizeModule undefined — import 확인 필요");
-      }
-
-      // 중복 방지 플래그
-      window.__QUILL_MODULES_REGISTERED__ = true;
+      Quill.register("modules/blotFormatter", BlotFormatter);
+      Quill.register("modules/imageResize", ImageResize);
+      window.__QUILL_MODULES__ = true;
+      console.log("✅ Quill 모듈 등록 완료 (BlotFormatter + ImageResize)");
     } catch (err) {
-      console.error("❌ Quill 모듈 등록 중 오류 발생:", err);
+      console.error("❌ Quill 모듈 등록 중 오류:", err);
     }
   }
 }
 
-// ✅ Quill 에디터 설정
 export const quillModules = {
-  toolbar: {
-    container: [
-      ["bold", "italic", "underline", "strike"],
-      [{ header: 1 }, { header: 2 }],
-      [{ list: "ordered" }, { list: "bullet" }],
-      [{ align: [] }],
-      ["link", "image"],
-      ["clean"],
-    ],
-    handlers: {
-      image: function () {
-        const input = document.createElement("input");
-        input.setAttribute("type", "file");
-        input.setAttribute("accept", "image/*");
-        input.click();
-
-        input.onchange = async () => {
-          const file = input.files[0];
-          const formData = new FormData();
-          formData.append("file", file);
-          formData.append("upload_preset", "onyou_uploads"); // ✅ Cloudinary preset
-
-          try {
-            const res = await fetch(
-              "https://api.cloudinary.com/v1_1/dhvw6oqiy/image/upload",
-              { method: "POST", body: formData }
-            );
-            const data = await res.json();
-            const quill = this.quill;
-            const range = quill.getSelection(true);
-            quill.insertEmbed(range.index, "image", data.secure_url);
-          } catch (err) {
-            console.error("❌ 이미지 업로드 실패:", err);
-            alert("이미지 업로드 실패");
-          }
-        };
-      },
-    },
-  },
-
-  // ✅ BlotFormatter (이미지 드래그/정렬)
-  blotFormatter: {
-    overlay: { style: { border: "2px dashed #007bff" } },
-  },
-
-  // ✅ ResizeModule (이미지 및 비디오 리사이즈)
-  resize: {
-    locale: {
-      image: "이미지 크기 조정",
-      video: "비디오 크기 조정",
-    },
+  toolbar: [
+    ["bold", "italic", "underline", "strike"],
+    [{ header: 1 }, { header: 2 }],
+    [{ list: "ordered" }, { list: "bullet" }],
+    [{ align: [] }],
+    ["link", "image"],
+    ["clean"],
+  ],
+  blotFormatter: {},
+  imageResize: {
+    parchment: Quill.import("parchment"),
     modules: ["Resize", "DisplaySize", "Toolbar"],
   },
 };
-
-
-
 
 // ✅ 관리자 상품 수정 페이지
 function AdminProductEdit() {
