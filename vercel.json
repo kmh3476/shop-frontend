@@ -10,7 +10,7 @@
       }
     }
   ],
-  "buildCommand": "bash vercel-build.sh",
+  "buildCommand": "npm install && npm run build",
   "installCommand": "echo '⚙️ Using custom build script, skipping default install'",
   "outputDirectory": "dist",
 
