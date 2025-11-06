@@ -9,13 +9,18 @@ import BlotFormatter from "@enzedonline/quill-blot-formatter2";
 import QuillImageResizer from "@mouseoverllc/quill-image-resizer";
 import "@mouseoverllc/quill-image-resizer/dist/style.css";
 
-// ✅ Quill 모듈 등록 (중복 방지)
-if (typeof window !== "undefined" && Quill) {
-  if (!Quill.imports["modules/blotFormatter"]) {
-    Quill.register("modules/blotFormatter", BlotFormatter);
-  }
-  if (!Quill.imports["modules/imageResizer"]) {
-    Quill.register("modules/imageResizer", QuillImageResizer);
+// ✅ Quill 모듈 등록 (중복 & SSR 보호)
+if (typeof window !== "undefined" && !window.QuillRegistered) {
+  try {
+    if (Quill && typeof BlotFormatter !== "undefined") {
+      Quill.register("modules/blotFormatter", BlotFormatter);
+    }
+    if (Quill && typeof QuillImageResizer !== "undefined") {
+      Quill.register("modules/imageResizer", QuillImageResizer);
+    }
+    window.QuillRegistered = true;
+  } catch (err) {
+    console.warn("⚠️ Quill 모듈 등록 실패:", err);
   }
 }
 
