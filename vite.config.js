@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
-    base: "./", // ✅ Vercel 정적 배포용 상대 경로 설정
+    base: "./",
 
     server: {
       host: "localhost",
@@ -17,7 +17,6 @@ export default defineConfig(({ mode }) => {
       historyApiFallback: true,
 
       fs: { strict: false },
-
       hmr: {
         overlay: true,
         protocol: "ws",
@@ -60,7 +59,7 @@ export default defineConfig(({ mode }) => {
       },
     },
 
-    // ✅ 의존성 스캔 강제 포함 (빌드 누락 방지)
+    // ✅ 빌드 시 반드시 포함할 의존성
     optimizeDeps: {
       include: [
         "react-quill",
@@ -74,7 +73,7 @@ export default defineConfig(({ mode }) => {
       assetsDir: "assets",
       chunkSizeWarningLimit: 1500,
       rollupOptions: {
-        external: [], // ✅ 모든 의존성을 내부 번들로 포함시킴
+        external: [], // 외부 모듈로 분리하지 않음
         output: {
           manualChunks: undefined,
         },
@@ -82,6 +81,14 @@ export default defineConfig(({ mode }) => {
       commonjsOptions: {
         include: [/node_modules/],
       },
+    },
+
+    // ✅ CJS 호환 보장
+    ssr: {
+      noExternal: [
+        "@botom/quill-resize-module",
+        "@enzedonline/quill-blot-formatter2",
+      ],
     },
 
     define: {
