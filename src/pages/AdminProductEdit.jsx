@@ -84,13 +84,14 @@ export const quillModules = {
     overlay: { style: { border: "2px dashed #007bff" } },
   },
   resize: {
-    // ✅ 이미지 및 비디오 리사이즈 옵션
     locale: {
       image: "이미지 크기 조정",
       video: "비디오 크기 조정",
     },
+    modules: ["Resize", "DisplaySize", "Toolbar"],
   },
 };
+
 
 
 // ✅ 관리자 상품 수정 페이지
