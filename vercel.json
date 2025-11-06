@@ -10,9 +10,11 @@
       }
     }
   ],
-  "buildCommand": "CI=false npm install --legacy-peer-deps && npm run build",
+
+  "buildCommand": "npm install --legacy-peer-deps && npm run build",
   "installCommand": "npm install --legacy-peer-deps",
   "outputDirectory": "dist",
+
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -23,6 +25,7 @@
       "destination": "/index.html"
     }
   ],
+
   "headers": [
     {
       "source": "/(.*)\\.(js|css|png|jpg|jpeg|gif|svg|ico|json|webp|woff2|woff|ttf|eot|map)$",
@@ -43,6 +46,7 @@
       ]
     }
   ],
+
   "env": {
     "VITE_API_BASE_URL": "https://shop-backend-1-dfsl.onrender.com",
     "VITE_STRAPI_URL": "http://localhost:1337",
