@@ -3,24 +3,40 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
+// ✅ Quill 모듈 등록 (안전 + 중복 방지 + SSR 대응)
 import ReactQuill, { Quill } from "react-quill";
 import "react-quill/dist/quill.snow.css";
+
+// 모듈 import
 import BlotFormatter from "@enzedonline/quill-blot-formatter2";
 import QuillImageResizer from "@mouseoverllc/quill-image-resizer";
 import "@mouseoverllc/quill-image-resizer/dist/style.css";
 
-// ✅ Quill 모듈 등록 (중복 & SSR 보호)
-if (typeof window !== "undefined" && !window.QuillRegistered) {
-  try {
-    if (Quill && typeof BlotFormatter !== "undefined") {
-      Quill.register("modules/blotFormatter", BlotFormatter);
+// ✅ 안전한 등록 (오직 브라우저 환경에서만, 1회만 실행)
+if (typeof window !== "undefined") {
+  if (!window.__QUILL_MODULES_REGISTERED__) {
+    try {
+      // BlotFormatter 등록
+      if (Quill && typeof BlotFormatter !== "undefined") {
+        Quill.register("modules/blotFormatter", BlotFormatter);
+        console.log("✅ BlotFormatter 등록 완료");
+      } else {
+        console.warn("⚠️ BlotFormatter undefined — import 확인 필요");
+      }
+
+      // ImageResizer 등록
+      if (Quill && typeof QuillImageResizer !== "undefined") {
+        Quill.register("modules/imageResizer", QuillImageResizer);
+        console.log("✅ ImageResizer 등록 완료");
+      } else {
+        console.warn("⚠️ QuillImageResizer undefined — import 확인 필요");
+      }
+
+      // 중복 방지 플래그
+      window.__QUILL_MODULES_REGISTERED__ = true;
+    } catch (err) {
+      console.error("❌ Quill 모듈 등록 중 오류 발생:", err);
     }
-    if (Quill && typeof QuillImageResizer !== "undefined") {
-      Quill.register("modules/imageResizer", QuillImageResizer);
-    }
-    window.QuillRegistered = true;
-  } catch (err) {
-    console.warn("⚠️ Quill 모듈 등록 실패:", err);
   }
 }
 
