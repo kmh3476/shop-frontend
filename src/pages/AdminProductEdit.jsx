@@ -9,14 +9,13 @@ import "react-quill/dist/quill.snow.css";
 
 // 모듈 import
 import BlotFormatter from "@enzedonline/quill-blot-formatter2";
-import QuillImageResizer from "@mouseoverllc/quill-image-resizer";
-import "@mouseoverllc/quill-image-resizer/dist/style.css";
+import ResizeModule from "@botom/quill-resize-module";
 
 // ✅ 안전한 등록 (오직 브라우저 환경에서만, 1회만 실행)
 if (typeof window !== "undefined") {
   if (!window.__QUILL_MODULES_REGISTERED__) {
     try {
-      // BlotFormatter 등록
+      // ✅ BlotFormatter 등록
       if (Quill && typeof BlotFormatter !== "undefined") {
         Quill.register("modules/blotFormatter", BlotFormatter);
         console.log("✅ BlotFormatter 등록 완료");
@@ -24,12 +23,12 @@ if (typeof window !== "undefined") {
         console.warn("⚠️ BlotFormatter undefined — import 확인 필요");
       }
 
-      // ImageResizer 등록
-      if (Quill && typeof QuillImageResizer !== "undefined") {
-        Quill.register("modules/imageResizer", QuillImageResizer);
-        console.log("✅ ImageResizer 등록 완료");
+      // ✅ ResizeModule 등록
+      if (Quill && typeof ResizeModule !== "undefined") {
+        Quill.register("modules/resize", ResizeModule);
+        console.log("✅ ResizeModule 등록 완료");
       } else {
-        console.warn("⚠️ QuillImageResizer undefined — import 확인 필요");
+        console.warn("⚠️ ResizeModule undefined — import 확인 필요");
       }
 
       // 중복 방지 플래그
@@ -41,7 +40,7 @@ if (typeof window !== "undefined") {
 }
 
 // ✅ Quill 모듈 설정
-const quillModules = {
+export const quillModules = {
   toolbar: {
     container: [
       ["bold", "italic", "underline", "strike"],
@@ -84,10 +83,15 @@ const quillModules = {
   blotFormatter: {
     overlay: { style: { border: "2px dashed #007bff" } },
   },
-  imageResizer: {
-    keepAspectRatio: true,
+  resize: {
+    // ✅ 이미지 및 비디오 리사이즈 옵션
+    locale: {
+      image: "이미지 크기 조정",
+      video: "비디오 크기 조정",
+    },
   },
 };
+
 
 // ✅ 관리자 상품 수정 페이지
 function AdminProductEdit() {
