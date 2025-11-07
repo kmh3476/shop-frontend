@@ -1,0 +1,15 @@
+{
+  "home": {
+    "welcome": "환영합니다!",
+    "description": "이곳은 온유 스토어입니다."
+  },
+  "nav": {
+    "home": "홈",
+    "products": "상품",
+    "cart": "장바구니",
+    "support": "고객센터"
+  },
+  "language": {
+    "select": "언어 선택"
+  }
+}
