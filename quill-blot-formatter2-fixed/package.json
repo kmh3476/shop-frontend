@@ -1,0 +1,23 @@
+{
+  "name": "quill-blot-formatter2-fixed",
+  "version": "1.0.0",
+  "description": "Fixed Quill blot formatter compatible with ReactQuill and Vite (no window.Quill dependency).",
+  "type": "module",
+  "main": "index.js",
+  "module": "index.js",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "default": "./index.js"
+    }
+  },
+  "keywords": [
+    "quill",
+    "blot",
+    "formatter",
+    "vite",
+    "esm",
+    "react-quill"
+  ],
+  "license": "MIT"
+}
