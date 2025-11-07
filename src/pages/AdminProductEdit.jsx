@@ -6,37 +6,33 @@ import noImage from "../assets/no-image.png";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
-let Quill;
-let ImageResize;
-let BlotFormatter;
+// ✅ Quill 동적 로딩 (Vite-safe)
+let Quill = null;
+let ImageResize = null;
+let BlotFormatter = null;
 
-if (typeof window !== "undefined" && !window.__QUILL_LOADED__) {
+if (typeof window !== "undefined") {
   (async () => {
     try {
-      // ✅ Vite 호환: CommonJS 대신 UMD 직접 로드
-      const quillImport = await import("quill/dist/quill.js");
-      Quill = quillImport.default || quillImport.Quill || window.Quill;
+      const quillModule = await import("quill");
+      const imageResizeModule = await import("quill-image-resize-module-fixed");
+      const blotFormatterModule = await import("@enzedonline/quill-blot-formatter2");
 
-      if (!Quill || typeof Quill.register !== "function") {
-        throw new Error("Quill is not properly imported or initialized.");
+      Quill = quillModule.default;
+      ImageResize = imageResizeModule.default;
+      BlotFormatter = blotFormatterModule.default;
+
+      if (!Quill.__IS_CUSTOMIZED__) {
+        Quill.register("modules/imageResize", ImageResize);
+        Quill.register("modules/blotFormatter", BlotFormatter);
+        Quill.__IS_CUSTOMIZED__ = true;
+        console.log("✅ Quill 모듈 등록 완료 (Vite-safe)");
       }
-
-      // ✅ Resize 모듈 불러오기
-      const { default: ImageResize } = await import("quill-image-resize-module-fixed");
-      const { default: BlotFormatter } = await import("@enzedonline/quill-blot-formatter2");
-
-      Quill.register("modules/imageResize", ImageResize);
-      Quill.register("modules/blotFormatter", BlotFormatter);
-
-      window.__QUILL_LOADED__ = true;
-      console.log("✅ Quill 모듈 등록 완료 (Vite-safe)");
     } catch (err) {
       console.error("❌ Quill 모듈 등록 실패:", err);
     }
   })();
 }
-
-
 
 // ✅ Quill 툴바 및 모듈 설정
 export const quillModules = {
