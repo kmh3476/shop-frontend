@@ -59,21 +59,33 @@ export default defineConfig(({ mode }) => {
       },
     },
 
-    // ✅ Vercel 빌드 시 반드시 포함할 의존성
     optimizeDeps: {
-      include: [
-        "react-quill",
-        "@enzedonline/quill-blot-formatter2",
-        "quill-image-resize-module", // ← 교체 완료
-      ],
-    },
+  include: [
+    "react-quill",
+    "@enzedonline/quill-blot-formatter2",
+  ],
+  exclude: [
+    "quill",
+    "quill-image-resize-module",
+  ],
+},
+ssr: {
+  noExternal: [
+    "react-quill",
+    "quill",
+    "quill-image-resize-module",
+    "@enzedonline/quill-blot-formatter2",
+  ],
+},
+
+
 
     build: {
       outDir: "dist",
       assetsDir: "assets",
       chunkSizeWarningLimit: 1500,
       rollupOptions: {
-        external: [], // 외부로 빼지 않음
+        external: [], // 외부 모듈 제외 안 함
         output: {
           manualChunks: undefined,
         },
@@ -81,14 +93,6 @@ export default defineConfig(({ mode }) => {
       commonjsOptions: {
         include: [/node_modules/],
       },
-    },
-
-    // ✅ SSR 및 CJS 호환 보장
-    ssr: {
-      noExternal: [
-        "quill-image-resize-module-react",
-        "@enzedonline/quill-blot-formatter2",
-      ],
     },
 
     define: {

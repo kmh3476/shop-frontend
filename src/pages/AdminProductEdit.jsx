@@ -3,23 +3,29 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
-// ✅ 안전한 Quill 모듈 등록
-import ReactQuill, { Quill } from "react-quill";
+import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import BlotFormatter from "@enzedonline/quill-blot-formatter2";
-import ImageResize from "quill-image-resize-module";
 
-if (typeof window !== "undefined" && Quill && !Quill.__IS_CUSTOMIZED__) {
-  try {
-    Quill.register("modules/blotFormatter", BlotFormatter);
-    Quill.register("modules/imageResize", ImageResize);
-    Quill.__IS_CUSTOMIZED__ = true;
-    console.log("✅ Quill 모듈 등록 완료");
-  } catch (err) {
-    console.error("❌ Quill 모듈 등록 오류:", err);
-  }
+// ✅ Quill 관련 모듈을 브라우저 런타임에서만 동적으로 불러오기
+if (typeof window !== "undefined" && !window.__QUILL_LOADED__) {
+  (async () => {
+    try {
+      const Quill = (await import("quill")).default;
+      const { default: ImageResize } = await import("quill-image-resize-module-react");
+      const { default: BlotFormatter } = await import("@enzedonline/quill-blot-formatter2");
+
+      Quill.register("modules/imageResize", ImageResize);
+      Quill.register("modules/blotFormatter", BlotFormatter);
+
+      window.__QUILL_LOADED__ = true;
+      console.log("✅ Quill 모듈 등록 완료");
+    } catch (error) {
+      console.error("❌ Quill 모듈 등록 실패:", error);
+    }
+  })();
 }
 
+// ✅ Quill 툴바 및 모듈 설정
 export const quillModules = {
   toolbar: [
     ["bold", "italic", "underline", "strike"],
@@ -35,6 +41,7 @@ export const quillModules = {
     modules: ["Resize", "DisplaySize", "Toolbar"],
   },
 };
+
 
 
 // ✅ 관리자 상품 수정 페이지
