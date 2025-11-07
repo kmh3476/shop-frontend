@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import noImage from "../assets/no-image.png"; // 기본 이미지
+import { useTranslation } from "react-i18next";
 
 function Cart() {
   const [cart, setCart] = useState(() => {

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -6,6 +7,7 @@ export default function ForgotPassword() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const handleForgot = async (e) => {
     e.preventDefault();

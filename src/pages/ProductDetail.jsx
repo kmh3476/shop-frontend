@@ -9,6 +9,7 @@ import EditableText from "../components/EditableText";
 import EditableImage from "../components/EditableImage";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { useTranslation } from "react-i18next";
 
 
 // ✅ 이미지 확대 모달

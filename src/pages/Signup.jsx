@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext"; // ✅ 추가
+import { useTranslation } from "react-i18next";
 
 export default function Signup() {
   const navigate = useNavigate();

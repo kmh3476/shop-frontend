@@ -10,6 +10,7 @@ function ResetPassword() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   // ✅ 환경 변수 기반 API URL (없으면 기본값 사용)
   const API_URL =
@@ -31,8 +32,6 @@ function ResetPassword() {
 
     try {
       setLoading(true);
-      
-      const { t } = useTranslation();
 
       const res = await fetch(`${API_URL}/api/auth/reset-password`, {
         method: "POST",

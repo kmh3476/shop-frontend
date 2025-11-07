@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 
 function ShopPage() {
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     fetchProducts();

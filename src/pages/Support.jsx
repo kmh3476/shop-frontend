@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useEditMode } from "../context/EditModeContext";
 import EditableText from "../components/EditableText";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 /* --------------------------------------------------------
  ✅ 이메일 유효성 검사

@@ -5,6 +5,7 @@ import { useEditMode } from "../context/EditModeContext";
 import { useAuth } from "../context/AuthContext";
 import EditableText from "../components/EditableText";
 import EditableImage from "../components/EditableImage";
+import { useTranslation } from "react-i18next";
 
 /** ✅ 공통 크기조절 훅 */
 const useResizableCard = (id, isResizeMode, defaultWidth = 230, defaultHeight = 360) => {

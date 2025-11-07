@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext"; // ✅ 추가
+import { useTranslation } from "react-i18next";
 
 export default function Login() {
   const [loginInput, setLoginInput] = useState("");
@@ -9,6 +10,7 @@ export default function Login() {
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const navigate = useNavigate();
   const { login } = useAuth(); // ✅ AuthContext에서 login 함수 가져오기
