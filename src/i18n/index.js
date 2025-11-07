@@ -14,7 +14,7 @@ const defaultResources = {
 // ✅ 백엔드에서 번역 데이터 불러오기 함수
 async function fetchLanguageResources() {
   try {
-    const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/language`);
+    const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/language`);
     const langs = res.data;
 
     const resources = { ko: { translation: {} }, en: { translation: {} }, th: { translation: {} } };
