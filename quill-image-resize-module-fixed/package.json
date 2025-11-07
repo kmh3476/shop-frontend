@@ -1,0 +1,23 @@
+{
+  "name": "quill-image-resize-module-fixed",
+  "version": "1.0.0",
+  "description": "A minimal, Vite/ESM-safe image resize module for Quill 1.3.x (ReactQuill compatible). No reliance on window.Quill.imports.",
+  "type": "module",
+  "main": "index.js",
+  "module": "index.js",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "default": "./index.js"
+    }
+  },
+  "keywords": [
+    "quill",
+    "image",
+    "resize",
+    "vite",
+    "esm",
+    "react-quill"
+  ],
+  "license": "MIT"
+}
