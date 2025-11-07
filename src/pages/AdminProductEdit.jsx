@@ -22,39 +22,36 @@ export const quillModules = {
   },
 };
 
-let Quill;
-let ImageResize;
-let BlotFormatter;
-
+// ✅ 안전한 Quill 등록 (Vite 대응 완전판)
 if (typeof window !== "undefined") {
   (async () => {
     try {
-      // 1️⃣ Quill 먼저 로드
       const quillModule = await import("quill");
-      Quill = quillModule.default;
+      const Quill = quillModule.default || quillModule;
+      window.Quill = Quill; // ⚡ 전역 등록 (필수)
 
-      // 2️⃣ 전역 주입 (ImageResize에서 참조하도록)
-      window.Quill = Quill;
+      // 🧩 모듈 등록은 Quill 준비 후 딜레이 실행
+      setTimeout(async () => {
+        try {
+          const ImageResizeModule = (await import("quill-image-resize-module-fixed")).default;
+          const BlotFormatter = (await import("@enzedonline/quill-blot-formatter2")).default;
 
-      // 3️⃣ Resize, Formatter 모듈 순서대로 import
-      const imageResizeModule = await import("quill-image-resize-module-fixed");
-      const blotFormatterModule = await import("@enzedonline/quill-blot-formatter2");
-
-      ImageResize = imageResizeModule.default;
-      BlotFormatter = blotFormatterModule.default;
-
-      // 4️⃣ 중복 등록 방지 + 안전 등록
-      if (!Quill.__IS_CUSTOMIZED__) {
-        Quill.register("modules/imageResize", ImageResize);
-        Quill.register("modules/blotFormatter", BlotFormatter);
-        Quill.__IS_CUSTOMIZED__ = true;
-        console.log("✅ Quill 모듈 등록 완료 (Vite-safe)");
-      }
+          if (!Quill.__IS_CUSTOMIZED__) {
+            Quill.register("modules/imageResize", ImageResizeModule);
+            Quill.register("modules/blotFormatter", BlotFormatter);
+            Quill.__IS_CUSTOMIZED__ = true;
+            console.log("✅ Quill 모듈 등록 완료 (Vite-safe)");
+          }
+        } catch (modErr) {
+          console.error("❌ Quill 모듈 내부 등록 실패:", modErr);
+        }
+      }, 50); // ⏱ 약간의 지연으로 import 시점 보장
     } catch (err) {
-      console.error("❌ Quill 모듈 등록 실패:", err);
+      console.error("❌ Quill 로드 실패:", err);
     }
   })();
 }
+
 
 // ✅ 관리자 상품 수정 페이지
 function AdminProductEdit() {
