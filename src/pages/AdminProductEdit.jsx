@@ -25,31 +25,30 @@ export const quillModules = {
 if (typeof window !== "undefined") {
   (async () => {
     try {
-      // 1️⃣ Quill import
       const quillModule = await import("quill");
       const Quill = quillModule.default || quillModule;
 
-      // 2️⃣ parchment 로딩 확인 (중요!)
-      const parchmentReady = () =>
-        new Promise((resolve) => {
-          const check = () => {
-            try {
-              if (Quill.import && Quill.import("parchment")) return resolve();
-            } catch {}
-            setTimeout(check, 20);
-          };
-          check();
-        });
-      await parchmentReady();
+      // parchment 로드될 때까지 기다림
+      await new Promise((resolve) => {
+        const check = () => {
+          try {
+            const p = Quill.import("parchment");
+            if (p) return resolve();
+          } catch {}
+          setTimeout(check, 30);
+        };
+        check();
+      });
 
-      // 3️⃣ quill-image-resize-module-fixed, blot-formatter 로드
-      const [{ default: ImageResize }, { default: BlotFormatter }] =
-        await Promise.all([
-          import("/quill-image-resize-module-fixed/index.js"),
-          import("@enzedonline/quill-blot-formatter2"),
-        ]);
+      // ✅ quill-image-resize-module-fixed는 로컬에서 import
+      const imageResizeModule = await import("/quill-image-resize-module-fixed/index.js");
+      const ImageResize = imageResizeModule.default;
 
-      // 4️⃣ 중복 방지 후 등록
+      // ✅ blot formatter를 "lazy" import로 지연 로드
+      const blotFormatterModule = await import("@enzedonline/quill-blot-formatter2/dist/BlotFormatter.js");
+      const BlotFormatter = blotFormatterModule.default;
+
+      // ✅ 중복 등록 방지
       if (!Quill.__IS_CUSTOMIZED__) {
         Quill.register("modules/imageResize", ImageResize);
         Quill.register("modules/blotFormatter", BlotFormatter);
@@ -61,6 +60,7 @@ if (typeof window !== "undefined") {
     }
   })();
 }
+
 
 
 
