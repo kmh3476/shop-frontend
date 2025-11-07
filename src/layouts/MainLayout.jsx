@@ -514,7 +514,6 @@ function MainLayout() {
       <section
         className="flex flex-col items-center justify-center py-[15vh] px-6 text-center bg-gray-100 font-['Pretendard']"
         style={{
-          backgroundImage: "url('/texture.jpg')",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
