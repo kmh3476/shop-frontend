@@ -1,0 +1,15 @@
+{
+  "home": {
+    "welcome": "ยินดีต้อนรับ!",
+    "description": "นี่คือร้าน Onyou"
+  },
+  "nav": {
+    "home": "หน้าแรก",
+    "products": "สินค้า",
+    "cart": "ตะกร้า",
+    "support": "ศูนย์ช่วยเหลือ"
+  },
+  "language": {
+    "select": "เลือกภาษา"
+  }
+}

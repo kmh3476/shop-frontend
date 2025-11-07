@@ -1,0 +1,15 @@
+{
+  "home": {
+    "welcome": "Welcome!",
+    "description": "This is the Onyou Store."
+  },
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "cart": "Cart",
+    "support": "Support"
+  },
+  "language": {
+    "select": "Select Language"
+  }
+}
