@@ -73,7 +73,7 @@ ssr: {
   noExternal: [
     "react-quill",
     "quill",
-    "quill-image-resize-module",
+    "quill-image-resize-module-fixed",
     "@enzedonline/quill-blot-formatter2",
   ],
 },
