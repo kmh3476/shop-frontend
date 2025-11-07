@@ -22,35 +22,51 @@ export const quillModules = {
   },
 };
 
-// ✅ 안전한 Quill 등록 (Vite 대응 완전판)
+// ✅ Quill 모듈 안전 로더 (완전판)
 if (typeof window !== "undefined") {
   (async () => {
     try {
+      // 1️⃣ Quill 먼저 로드
       const quillModule = await import("quill");
       const Quill = quillModule.default || quillModule;
-      window.Quill = Quill; // ⚡ 전역 등록 (필수)
 
-      // 🧩 모듈 등록은 Quill 준비 후 딜레이 실행
-      setTimeout(async () => {
-        try {
-          const ImageResizeModule = (await import("quill-image-resize-module-fixed")).default;
-          const BlotFormatter = (await import("@enzedonline/quill-blot-formatter2")).default;
+      // 2️⃣ 전역 주입 (ImageResize 내부에서 참조함)
+      window.Quill = Quill;
 
-          if (!Quill.__IS_CUSTOMIZED__) {
-            Quill.register("modules/imageResize", ImageResizeModule);
-            Quill.register("modules/blotFormatter", BlotFormatter);
-            Quill.__IS_CUSTOMIZED__ = true;
-            console.log("✅ Quill 모듈 등록 완료 (Vite-safe)");
-          }
-        } catch (modErr) {
-          console.error("❌ Quill 모듈 내부 등록 실패:", modErr);
-        }
-      }, 50); // ⏱ 약간의 지연으로 import 시점 보장
+      // 3️⃣ Quill 준비될 때까지 대기 (import 전에 내부 구조 확인)
+      const waitForReady = () =>
+        new Promise((resolve, reject) => {
+          const check = () => {
+            if (Quill.imports && Quill.import("parchment")) resolve();
+            else setTimeout(check, 20);
+          };
+          check();
+        });
+
+      await waitForReady();
+
+      // 4️⃣ 그 다음에 모듈 import
+      const [ImageResizeModule, BlotFormatter] = await Promise.all([
+        import("/quill-image-resize-module-fixed/index.js"),
+        import("@enzedonline/quill-blot-formatter2"),
+      ]);
+
+      const ImageResize = ImageResizeModule.default;
+      const BlotFormatterDefault = BlotFormatter.default;
+
+      // 5️⃣ 중복 방지 후 등록
+      if (!Quill.__IS_CUSTOMIZED__) {
+        Quill.register("modules/imageResize", ImageResize);
+        Quill.register("modules/blotFormatter", BlotFormatterDefault);
+        Quill.__IS_CUSTOMIZED__ = true;
+        console.log("✅ Quill 모듈 등록 완료 (Vite-safe)");
+      }
     } catch (err) {
-      console.error("❌ Quill 로드 실패:", err);
+      console.error("❌ Quill 모듈 등록 실패:", err);
     }
   })();
 }
+
 
 
 // ✅ 관리자 상품 수정 페이지
