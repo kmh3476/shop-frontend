@@ -25,6 +25,7 @@
         "quill": "1.3.7",
         "quill-blot-formatter": "^1.0.5",
         "quill-image-resize-module-fixed": "file:./quill-image-resize-module-fixed",
+        "quill-blot-formatter2-fixed": "file:./quill-blot-formatter2-fixed",
         "quill-resize-module": "^2.0.8",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",

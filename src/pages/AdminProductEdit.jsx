@@ -45,7 +45,7 @@ if (typeof window !== "undefined") {
       const ImageResize = imageResizeModule.default;
 
       // ✅ blot formatter를 "lazy" import로 지연 로드
-      const blotFormatterModule = await import("@enzedonline/quill-blot-formatter2/dist/BlotFormatter.js");
+      const blotFormatterModule = await import("/quill-blot-formatter2-fixed/index.js");
       const BlotFormatter = blotFormatterModule.default;
 
       // ✅ 중복 등록 방지
