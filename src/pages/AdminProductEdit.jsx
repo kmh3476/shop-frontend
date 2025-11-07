@@ -22,42 +22,37 @@ export const quillModules = {
   },
 };
 
-// ✅ Quill 모듈 안전 로더 (완전판)
 if (typeof window !== "undefined") {
   (async () => {
     try {
-      // 1️⃣ Quill 먼저 로드
+      // 1️⃣ Quill import
       const quillModule = await import("quill");
       const Quill = quillModule.default || quillModule;
 
-      // 2️⃣ 전역 주입 (ImageResize 내부에서 참조함)
-      window.Quill = Quill;
-
-      // 3️⃣ Quill 준비될 때까지 대기 (import 전에 내부 구조 확인)
-      const waitForReady = () =>
-        new Promise((resolve, reject) => {
+      // 2️⃣ parchment 로딩 확인 (중요!)
+      const parchmentReady = () =>
+        new Promise((resolve) => {
           const check = () => {
-            if (Quill.imports && Quill.import("parchment")) resolve();
-            else setTimeout(check, 20);
+            try {
+              if (Quill.import && Quill.import("parchment")) return resolve();
+            } catch {}
+            setTimeout(check, 20);
           };
           check();
         });
+      await parchmentReady();
 
-      await waitForReady();
+      // 3️⃣ quill-image-resize-module-fixed, blot-formatter 로드
+      const [{ default: ImageResize }, { default: BlotFormatter }] =
+        await Promise.all([
+          import("/quill-image-resize-module-fixed/index.js"),
+          import("@enzedonline/quill-blot-formatter2"),
+        ]);
 
-      // 4️⃣ 그 다음에 모듈 import
-      const [ImageResizeModule, BlotFormatter] = await Promise.all([
-        import("/quill-image-resize-module-fixed/index.js"),
-        import("@enzedonline/quill-blot-formatter2"),
-      ]);
-
-      const ImageResize = ImageResizeModule.default;
-      const BlotFormatterDefault = BlotFormatter.default;
-
-      // 5️⃣ 중복 방지 후 등록
+      // 4️⃣ 중복 방지 후 등록
       if (!Quill.__IS_CUSTOMIZED__) {
         Quill.register("modules/imageResize", ImageResize);
-        Quill.register("modules/blotFormatter", BlotFormatterDefault);
+        Quill.register("modules/blotFormatter", BlotFormatter);
         Quill.__IS_CUSTOMIZED__ = true;
         console.log("✅ Quill 모듈 등록 완료 (Vite-safe)");
       }
@@ -66,6 +61,7 @@ if (typeof window !== "undefined") {
     }
   })();
 }
+
 
 
 
