@@ -6,22 +6,28 @@ import noImage from "../assets/no-image.png";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
-// ✅ Quill 동적 로딩 (Vite-safe)
-let Quill = null;
-let ImageResize = null;
-let BlotFormatter = null;
+let Quill;
+let ImageResize;
+let BlotFormatter;
 
 if (typeof window !== "undefined") {
   (async () => {
     try {
+      // 1️⃣ Quill 먼저 로드
       const quillModule = await import("quill");
+      Quill = quillModule.default;
+
+      // 2️⃣ 전역 주입 (ImageResize에서 참조하도록)
+      window.Quill = Quill;
+
+      // 3️⃣ Resize, Formatter 모듈 순서대로 import
       const imageResizeModule = await import("quill-image-resize-module-fixed");
       const blotFormatterModule = await import("@enzedonline/quill-blot-formatter2");
 
-      Quill = quillModule.default;
       ImageResize = imageResizeModule.default;
       BlotFormatter = blotFormatterModule.default;
 
+      // 4️⃣ 중복 등록 방지 + 안전 등록
       if (!Quill.__IS_CUSTOMIZED__) {
         Quill.register("modules/imageResize", ImageResize);
         Quill.register("modules/blotFormatter", BlotFormatter);
@@ -33,25 +39,6 @@ if (typeof window !== "undefined") {
     }
   })();
 }
-
-// ✅ Quill 툴바 및 모듈 설정
-export const quillModules = {
-  toolbar: [
-    ["bold", "italic", "underline", "strike"],
-    [{ header: 1 }, { header: 2 }],
-    [{ list: "ordered" }, { list: "bullet" }],
-    [{ align: [] }],
-    ["link", "image"],
-    ["clean"],
-  ],
-  blotFormatter: {},
-  imageResize: {
-    displaySize: true,
-    modules: ["Resize", "DisplaySize", "Toolbar"],
-  },
-};
-
-
 
 // ✅ 관리자 상품 수정 페이지
 function AdminProductEdit() {
