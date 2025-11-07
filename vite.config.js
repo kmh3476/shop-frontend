@@ -8,14 +8,13 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
-    base: "./",
+    base: "./", // ✅ 상대경로 — Vercel 정적 배포 시 필수
 
     server: {
       host: "localhost",
       port: 5173,
       open: true,
-      historyApiFallback: true,
-
+      historyApiFallback: true, // SPA 라우팅
       fs: { strict: false },
       hmr: {
         overlay: true,
@@ -23,7 +22,6 @@ export default defineConfig(({ mode }) => {
         host: "localhost",
         clientPort: 5173,
       },
-
       cors: {
         origin: [
           "http://localhost:5173",
@@ -34,7 +32,6 @@ export default defineConfig(({ mode }) => {
         allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true,
       },
-
       proxy: {
         "/api": {
           target:
@@ -59,33 +56,27 @@ export default defineConfig(({ mode }) => {
       },
     },
 
+    // ✅ React-Quill / Quill 관련 안정 구성
     optimizeDeps: {
-  include: [
-    "react-quill",
-    "@enzedonline/quill-blot-formatter2",
-  ],
-  exclude: [
-    "quill",
-    "quill-image-resize-module",
-  ],
-},
-ssr: {
-  noExternal: [
-    "react-quill",
-    "quill",
-    "quill-image-resize-module-fixed",
-    "@enzedonline/quill-blot-formatter2",
-  ],
-},
+      include: ["react-quill", "@enzedonline/quill-blot-formatter2"],
+      exclude: ["quill", "quill-image-resize-module", "quill-image-resize-module-fixed"],
+    },
 
-
+    ssr: {
+      noExternal: [
+        "react-quill",
+        "quill",
+        "quill-image-resize-module-fixed",
+        "@enzedonline/quill-blot-formatter2",
+      ],
+    },
 
     build: {
       outDir: "dist",
       assetsDir: "assets",
       chunkSizeWarningLimit: 1500,
       rollupOptions: {
-        external: [], // 외부 모듈 제외 안 함
+        external: [],
         output: {
           manualChunks: undefined,
         },
@@ -93,6 +84,8 @@ ssr: {
       commonjsOptions: {
         include: [/node_modules/],
       },
+      // ✅ HTML fallback 지원 (MIME 오류 방지)
+      emptyOutDir: true,
     },
 
     define: {

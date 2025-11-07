@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
+
   "builds": [
     {
       "src": "package.json",
@@ -10,14 +11,20 @@
       }
     }
   ],
-  "buildCommand": "npm install && npm run build",
-  "installCommand": "echo '⚙️ Using custom build script, skipping default install'",
+
+  "buildCommand": "npm install --legacy-peer-deps && npm run build",
+  "installCommand": "echo '⚙️ Custom install handled in buildCommand'",
+
   "outputDirectory": "dist",
 
   "rewrites": [
     {
       "source": "/api/(.*)",
       "destination": "https://shop-backend-1-dfsl.onrender.com/api/$1"
+    },
+    {
+      "source": "/cms/(.*)",
+      "destination": "http://localhost:1337/$1"
     },
     {
       "source": "/(.*)",
@@ -58,5 +65,8 @@
     "CI": "false",
     "NPM_FLAGS": "--legacy-peer-deps",
     "NODE_ENV": "production"
-  }
+  },
+
+  "cleanUrls": true,
+  "trailingSlash": false
 }
