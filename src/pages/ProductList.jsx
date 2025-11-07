@@ -79,6 +79,7 @@ const useResizableCard = (id, isResizeMode, defaultWidth = 230, defaultHeight = 
 /** ✅ 개별 상품 카드 컴포넌트 */
 function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate }) {
   const { size, cardRef, startResize } = useResizableCard(`product-${product._id}`, isResizeMode);
+  const { t } = useTranslation();
 
   return (
     <div

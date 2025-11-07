@@ -32,6 +32,9 @@ import { SiteSettingsProvider } from "./context/SiteSettingsContext";
 import { EditModeProvider } from "./context/EditModeContext";
 import AdminToolbar from "./components/AdminToolbar"; // ✅ 전역 관리자 툴바
 import Page from "./pages/Page"; // 유지용
+import "./i18n";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "./components/LanguageSelector";
 
 /* -------------------- ✅ 로그인 페이지 -------------------- */
 function Login() {
@@ -378,6 +381,7 @@ function Navigation() {
 /* -------------------- ✅ 라우팅 -------------------- */
 function InnerApp() {
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const logEntry = {
@@ -394,6 +398,10 @@ function InnerApp() {
   return (
     <SiteSettingsProvider>
       <Router>
+
+         {/* ✅ 언어 선택 (전역 노출) */}
+        <LanguageSelector />
+        
         {/* ✅ 전역 관리자 툴바 */}
         <AdminToolbar />
 

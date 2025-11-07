@@ -31,6 +31,8 @@ function ResetPassword() {
 
     try {
       setLoading(true);
+      
+      const { t } = useTranslation();
 
       const res = await fetch(`${API_URL}/api/auth/reset-password`, {
         method: "POST",

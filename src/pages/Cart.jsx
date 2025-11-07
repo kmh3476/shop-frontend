@@ -8,6 +8,7 @@ function Cart() {
     return saved ? JSON.parse(saved) : [];
   });
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // ✅ localStorage 동기화
   useEffect(() => {

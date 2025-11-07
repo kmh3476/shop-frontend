@@ -114,6 +114,7 @@ export default function Support() {
     { width: 800, height: 520 },
     isResizeMode
   );
+  const { t } = useTranslation();
 
   /* --------------------------------------------------------
    ✅ 문의글 불러오기 (상품문의 포함, 공지만 제외)

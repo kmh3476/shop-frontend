@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext"; // ✅ 추가
 export default function Signup() {
   const navigate = useNavigate();
   const { login } = useAuth(); // ✅ 추가: 회원가입 후 자동 로그인용
+  const { t } = useTranslation();
 
   const [form, setForm] = useState({
     userId: "",

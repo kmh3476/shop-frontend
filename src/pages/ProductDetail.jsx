@@ -15,6 +15,7 @@ import "react-quill/dist/quill.snow.css";
 function ImageModal({ images, currentIndex, onClose, onNavigate }) {
   if (!images || images.length === 0) return null;
   const imageUrl = images[currentIndex];
+  const { t } = useTranslation();
 
   const handleKey = useCallback(
     (e) => {
