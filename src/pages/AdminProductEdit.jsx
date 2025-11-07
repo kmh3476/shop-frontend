@@ -6,6 +6,22 @@ import noImage from "../assets/no-image.png";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
+export const quillModules = {
+  toolbar: [
+    ["bold", "italic", "underline", "strike"],
+    [{ header: 1 }, { header: 2 }],
+    [{ list: "ordered" }, { list: "bullet" }],
+    [{ align: [] }],
+    ["link", "image"],
+    ["clean"],
+  ],
+  blotFormatter: {},
+  imageResize: {
+    displaySize: true,
+    modules: ["Resize", "DisplaySize", "Toolbar"],
+  },
+};
+
 let Quill;
 let ImageResize;
 let BlotFormatter;
