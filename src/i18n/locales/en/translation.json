@@ -1,15 +1,52 @@
 {
-  "home": {
-    "welcome": "Welcome!",
-    "description": "This is the Onyou Store."
+  "auth": {
+    "loginTitle": "Login",
+    "missingCredentials": "Please enter your ID or email and password.",
+    "loginFailed": "Login failed.",
+    "loginSuccess": "Login successful!",
+    "invalidResponse": "Invalid login response.",
+    "inputIdOrEmail": "Enter your ID or email",
+    "inputPassword": "Enter your password",
+    "findId": "Find ID",
+    "findPassword": "Find Password",
+    "noAccount": "Don't have an account?",
+    "signup": "Sign Up"
   },
+
+  "button": {
+    "login": "Login",
+    "logout": "Logout",
+    "signup": "Sign Up",
+    "loggingIn": "Logging in...",
+    "goHome": "Go to Home"
+  },
+
   "nav": {
-    "home": "Home",
+    "greeting": "",
+    "adminHome": "Admin Home",
+    "adminSupport": "Support Management",
     "products": "Products",
     "cart": "Cart",
-    "support": "Support"
+    "support": "Customer Support"
   },
-  "language": {
-    "select": "Select Language"
+
+  "error": {
+    "accessDeniedTitle": "Access Denied",
+    "accessDeniedMessage": "Only administrators can access this page.",
+    "pageNotFound": "Page not found."
+  },
+
+  "message": {
+    "loading": "Loading...",
+    "loginRequired": "Login required.",
+    "unknownError": "An unknown error occurred."
+  },
+
+  "common": {
+    "home": "Home",
+    "admin": "Admin",
+    "user": "User",
+    "email": "Email",
+    "password": "Password"
   }
 }

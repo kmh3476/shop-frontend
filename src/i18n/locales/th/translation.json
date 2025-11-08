@@ -1,15 +1,52 @@
 {
-  "home": {
-    "welcome": "ยินดีต้อนรับ!",
-    "description": "นี่คือร้าน Onyou"
+  "auth": {
+    "loginTitle": "เข้าสู่ระบบ",
+    "missingCredentials": "กรุณากรอกอีเมลหรือรหัสผู้ใช้และรหัสผ่าน",
+    "loginFailed": "เข้าสู่ระบบล้มเหลว",
+    "loginSuccess": "เข้าสู่ระบบสำเร็จ!",
+    "invalidResponse": "การตอบกลับการเข้าสู่ระบบไม่ถูกต้อง",
+    "inputIdOrEmail": "กรอกอีเมลหรือรหัสผู้ใช้",
+    "inputPassword": "กรอกรหัสผ่านของคุณ",
+    "findId": "ค้นหารหัสผู้ใช้",
+    "findPassword": "กู้คืนรหัสผ่าน",
+    "noAccount": "ยังไม่มีบัญชีใช่ไหม?",
+    "signup": "สมัครสมาชิก"
   },
+
+  "button": {
+    "login": "เข้าสู่ระบบ",
+    "logout": "ออกจากระบบ",
+    "signup": "สมัครสมาชิก",
+    "loggingIn": "กำลังเข้าสู่ระบบ...",
+    "goHome": "กลับไปหน้าแรก"
+  },
+
   "nav": {
-    "home": "หน้าแรก",
+    "greeting": "",
+    "adminHome": "หน้าผู้ดูแลระบบ",
+    "adminSupport": "จัดการศูนย์ช่วยเหลือ",
     "products": "สินค้า",
-    "cart": "ตะกร้า",
+    "cart": "ตะกร้าสินค้า",
     "support": "ศูนย์ช่วยเหลือ"
   },
-  "language": {
-    "select": "เลือกภาษา"
+
+  "error": {
+    "accessDeniedTitle": "ปฏิเสธการเข้าถึง",
+    "accessDeniedMessage": "หน้านี้สำหรับผู้ดูแลระบบเท่านั้น",
+    "pageNotFound": "ไม่พบหน้านี้"
+  },
+
+  "message": {
+    "loading": "กำลังโหลด...",
+    "loginRequired": "จำเป็นต้องเข้าสู่ระบบ",
+    "unknownError": "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ"
+  },
+
+  "common": {
+    "home": "หน้าแรก",
+    "admin": "ผู้ดูแลระบบ",
+    "user": "ผู้ใช้",
+    "email": "อีเมล",
+    "password": "รหัสผ่าน"
   }
 }

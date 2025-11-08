@@ -1,15 +1,52 @@
 {
-  "home": {
-    "welcome": "환영합니다!",
-    "description": "이곳은 온유 스토어입니다."
+  "auth": {
+    "loginTitle": "로그인",
+    "missingCredentials": "아이디 또는 이메일과 비밀번호를 입력해주세요.",
+    "loginFailed": "로그인에 실패했습니다.",
+    "loginSuccess": "로그인 성공!",
+    "invalidResponse": "로그인 응답이 올바르지 않습니다.",
+    "inputIdOrEmail": "아이디 또는 이메일을 입력하세요",
+    "inputPassword": "비밀번호를 입력하세요",
+    "findId": "아이디 찾기",
+    "findPassword": "비밀번호 찾기",
+    "noAccount": "계정이 없으신가요?",
+    "signup": "회원가입"
   },
+
+  "button": {
+    "login": "로그인",
+    "logout": "로그아웃",
+    "signup": "회원가입",
+    "loggingIn": "로그인 중...",
+    "goHome": "홈으로 이동"
+  },
+
   "nav": {
-    "home": "홈",
+    "greeting": "님",
+    "adminHome": "관리자 홈",
+    "adminSupport": "고객센터 관리",
     "products": "상품",
     "cart": "장바구니",
     "support": "고객센터"
   },
-  "language": {
-    "select": "언어 선택"
+
+  "error": {
+    "accessDeniedTitle": "접근 불가",
+    "accessDeniedMessage": "관리자만 접근할 수 있는 페이지입니다.",
+    "pageNotFound": "페이지를 찾을 수 없습니다."
+  },
+
+  "message": {
+    "loading": "로딩 중...",
+    "loginRequired": "로그인이 필요합니다.",
+    "unknownError": "알 수 없는 오류가 발생했습니다."
+  },
+
+  "common": {
+    "home": "홈",
+    "admin": "관리자",
+    "user": "사용자",
+    "email": "이메일",
+    "password": "비밀번호"
   }
 }
