@@ -15,7 +15,7 @@ export default function ForgotPassword() {
     setMessage("");
 
     if (!email || !userId)
-      return setError("이메일과 아이디를 모두 입력해주세요.");
+      return setError(t("forgot.missingInputs"));
 
     try {
       setLoading(true);
@@ -33,12 +33,12 @@ export default function ForgotPassword() {
 
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.message || "비밀번호 재설정 요청 실패");
+      if (!res.ok) throw new Error(data.message || t("forgot.failed"));
 
       // ✅ 성공 시 메시지
-      setMessage("비밀번호 재설정 링크가 이메일로 전송되었습니다. 메일함을 확인해주세요!");
+      setMessage(t("forgot.successMessage"));
     } catch (err) {
-      setError(err.message || "서버 오류가 발생했습니다.");
+      setError(err.message || t("forgot.serverError"));
     } finally {
       setLoading(false);
     }
@@ -48,19 +48,19 @@ export default function ForgotPassword() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 font-['Pretendard']">
       <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold text-center mb-6">
-          비밀번호 재설정
+          {t("forgot.title")}
         </h2>
         <form onSubmit={handleForgot} className="flex flex-col gap-4">
           <input
             type="text"
-            placeholder="아이디를 입력하세요"
+            placeholder={t("forgot.inputId")}
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
             className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-gray-600"
           />
           <input
             type="email"
-            placeholder="이메일을 입력하세요"
+            placeholder={t("forgot.inputEmail")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-gray-600"
@@ -74,7 +74,7 @@ export default function ForgotPassword() {
                 : "bg-black hover:bg-gray-800"
             }`}
           >
-            {loading ? "처리 중..." : "비밀번호 재설정 링크 받기"}
+            {loading ? t("forgot.loading") : t("forgot.submit")}
           </button>
         </form>
 

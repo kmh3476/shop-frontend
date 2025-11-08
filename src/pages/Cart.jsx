@@ -52,7 +52,7 @@ function Cart() {
 
   // ✅ 전체 삭제
   const clearCart = () => {
-    if (window.confirm("장바구니를 모두 비우시겠습니까?")) {
+    if (window.confirm(t("cart.confirmClear"))) {
       setCart([]);
     }
   };
@@ -66,15 +66,15 @@ function Cart() {
   // ✅ 상품 클릭 시 상세 페이지 이동
   const goToDetail = (item) => {
     if (item._id) navigate(`/products/${item._id}`); // ✅ 경로 수정됨
-    else alert("상품 상세 정보를 찾을 수 없습니다.");
+    else alert(t("cart.noProductInfo"));
   };
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>🛒 장바구니</h1>
+      <h1>🛒 {t("cart.title")}</h1>
 
       {cart.length === 0 ? (
-        <p>장바구니가 비어 있습니다.</p>
+        <p>{t("cart.empty")}</p>
       ) : (
         <div>
           <ul style={{ listStyle: "none", padding: 0 }}>
@@ -112,7 +112,8 @@ function Cart() {
                   onClick={() => goToDetail(item)}
                 >
                   <strong>{item.name}</strong> -{" "}
-                  {Number(item.price).toLocaleString()}원
+                  {Number(item.price).toLocaleString()}
+                  {t("cart.currency")}
                   <br />
                   {item.description && (
                     <small style={{ color: "#555" }}>{item.description}</small>
@@ -120,7 +121,9 @@ function Cart() {
                 </div>
 
                 {/* ✅ 수량 조절 */}
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
                   <button
                     onClick={() => decreaseQty(index)}
                     style={{
@@ -149,7 +152,6 @@ function Cart() {
                     +
                   </button>
                 </div>
-
                 {/* ✅ 개별 삭제 */}
                 <button
                   onClick={() => removeFromCart(index)}
@@ -162,7 +164,7 @@ function Cart() {
                     cursor: "pointer",
                   }}
                 >
-                  제거
+                  {t("cart.remove")}
                 </button>
               </li>
             ))}
@@ -177,7 +179,10 @@ function Cart() {
               alignItems: "center",
             }}
           >
-            <h3>총 금액: {totalPrice.toLocaleString()}원</h3>
+            <h3>
+              {t("cart.total")}: {totalPrice.toLocaleString()}
+              {t("cart.currency")}
+            </h3>
             <button
               onClick={clearCart}
               style={{
@@ -189,7 +194,7 @@ function Cart() {
                 cursor: "pointer",
               }}
             >
-              🧹 전체 비우기
+              🧹 {t("cart.clearAll")}
             </button>
           </div>
         </div>

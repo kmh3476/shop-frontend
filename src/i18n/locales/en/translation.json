@@ -48,5 +48,54 @@
     "user": "User",
     "email": "Email",
     "password": "Password"
+  },
+
+  "cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty.",
+    "confirmClear": "Are you sure you want to clear your cart?",
+    "noProductInfo": "Product details not found.",
+    "remove": "Remove",
+    "total": "Total",
+    "currency": "₩",
+    "clearAll": "Clear All"
+  },
+
+  "forgot": {
+  "title": "Reset Password",
+  "inputId": "Enter your ID",
+  "inputEmail": "Enter your email",
+  "missingInputs": "Please enter both your email and user ID.",
+  "failed": "Password reset request failed.",
+  "successMessage": "A password reset link has been sent to your email. Please check your inbox!",
+  "serverError": "A server error has occurred.",
+  "loading": "Processing...",
+  "submit": "Get password reset link"
+  },
+
+  "login": {
+    "title": "Login",
+    "home": "Home",
+    "subtitle": "Sign in to enjoy more benefits.",
+    "idOrEmail": "Username or Email",
+    "placeholderIdOrEmail": "Enter your username or email",
+    "password": "Password",
+    "placeholderPassword": "Enter your password",
+    "hidePw": "Hide",
+    "showPw": "Show",
+    "remember": "Keep me logged in",
+    "signup": "Sign Up",
+    "loading": "Logging in...",
+    "submit": "Login",
+    "or": "or",
+    "kakao": "Kakao",
+    "naver": "Naver",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "missingIdOrEmail": "Please enter your username or email.",
+    "missingPassword": "Please enter your password.",
+    "noToken": "No token received. Please check server response.",
+    "success": "✅ Login successful!",
+    "failed": "Login failed. Please try again."
   }
 }

@@ -48,5 +48,54 @@
     "user": "사용자",
     "email": "이메일",
     "password": "비밀번호"
+  },
+
+  "cart": {
+    "title": "장바구니",
+    "empty": "장바구니가 비어 있습니다.",
+    "confirmClear": "장바구니를 모두 비우시겠습니까?",
+    "noProductInfo": "상품 상세 정보를 찾을 수 없습니다.",
+    "remove": "제거",
+    "total": "총 금액",
+    "currency": "원",
+    "clearAll": "전체 비우기"
+  },
+
+  "forgot": {
+    "title": "비밀번호 재설정",
+    "inputId": "아이디를 입력하세요",
+    "inputEmail": "이메일을 입력하세요",
+    "missingInputs": "이메일과 아이디를 모두 입력해주세요.",
+    "failed": "비밀번호 재설정 요청 실패",
+    "successMessage": "비밀번호 재설정 링크가 이메일로 전송되었습니다. 메일함을 확인해주세요!",
+    "serverError": "서버 오류가 발생했습니다.",
+    "loading": "처리 중...",
+    "submit": "비밀번호 재설정 링크 받기"
+  },
+
+  "login": {
+    "title": "로그인",
+    "home": "홈으로",
+    "subtitle": "로그인하시면 더 많은 혜택을 받을 수 있습니다.",
+    "idOrEmail": "아이디 또는 이메일",
+    "placeholderIdOrEmail": "아이디 또는 이메일을 입력하세요",
+    "password": "비밀번호",
+    "placeholderPassword": "비밀번호를 입력하세요",
+    "hidePw": "숨기기",
+    "showPw": "보기",
+    "remember": "로그인 유지",
+    "signup": "회원가입",
+    "loading": "로그인 중...",
+    "submit": "로그인",
+    "or": "또는",
+    "kakao": "카카오",
+    "naver": "네이버",
+    "terms": "이용약관",
+    "privacy": "개인정보처리방침",
+    "missingIdOrEmail": "아이디 또는 이메일을 입력해주세요.",
+    "missingPassword": "비밀번호를 입력해주세요.",
+    "noToken": "토큰이 없습니다. 서버 응답을 확인하세요.",
+    "success": "✅ 로그인 성공!",
+    "failed": "로그인 실패. 다시 시도해주세요."
   }
 }

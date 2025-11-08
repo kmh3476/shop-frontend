@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useAuth } from "../context/AuthContext"; // ✅ 추가
+import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
 
 export default function Login() {
@@ -13,7 +13,7 @@ export default function Login() {
   const { t } = useTranslation();
 
   const navigate = useNavigate();
-  const { login } = useAuth(); // ✅ AuthContext에서 login 함수 가져오기
+  const { login } = useAuth();
 
   const API = "https://shop-backend-1-dfsl.onrender.com/api/auth/login";
 
@@ -24,35 +24,34 @@ export default function Login() {
 
     if (!loginInput.trim()) {
       setLoading(false);
-      return setError("아이디 또는 이메일을 입력해주세요.");
+      return setError(t("login.missingIdOrEmail"));
     }
     if (!password.trim()) {
       setLoading(false);
-      return setError("비밀번호를 입력해주세요.");
+      return setError(t("login.missingPassword"));
     }
 
     try {
-      // ✅ 이메일 형식이면 email, 아니면 userId로 전송
       const isEmail = /\S+@\S+\.\S+/.test(loginInput);
       const payload = isEmail
         ? { email: loginInput, password }
         : { userId: loginInput, password };
 
-      // ✅ 백엔드 요청
       const res = await axios.post(API, payload);
 
       if (!res.data?.token) {
-        throw new Error("토큰이 없습니다. 서버 응답을 확인하세요.");
+        throw new Error(t("login.noToken"));
       }
 
-      // ✅ 전역 로그인 상태 저장 (AuthContext)
       login(res.data.user, res.data.token, res.data.refreshToken);
 
-      alert("✅ 로그인 성공!");
-      navigate("/"); // 필요에 따라 "/products"로 변경 가능
+      alert(t("login.success"));
+      navigate("/");
     } catch (err) {
       console.error("로그인 오류:", err);
-      setError(err.response?.data?.message || "로그인 실패. 다시 시도해주세요.");
+      setError(
+        err.response?.data?.message || t("login.failed")
+      );
     } finally {
       setLoading(false);
     }
@@ -64,13 +63,15 @@ export default function Login() {
         {/* 헤더 */}
         <div className="px-6 py-5 bg-black text-white">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-extrabold tracking-tight">로그인</h1>
+            <h1 className="text-2xl font-extrabold tracking-tight">
+              {t("login.title")}
+            </h1>
             <Link to="/" className="text-sm opacity-80 hover:opacity-100">
-              홈으로
+              {t("login.home")}
             </Link>
           </div>
           <p className="mt-2 text-sm text-gray-200">
-            로그인하시면 더 많은 혜택을 받을 수 있습니다.
+            {t("login.subtitle")}
           </p>
         </div>
 
@@ -84,26 +85,26 @@ export default function Login() {
 
           {/* 아이디/이메일 */}
           <label className="block text-sm font-medium text-gray-700">
-            아이디 또는 이메일
+            {t("login.idOrEmail")}
           </label>
           <input
             value={loginInput}
             onChange={(e) => setLoginInput(e.target.value)}
             type="text"
-            placeholder="아이디 또는 이메일을 입력하세요"
+            placeholder={t("login.placeholderIdOrEmail")}
             className="mt-1 mb-4 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
           />
 
           {/* 비밀번호 */}
           <label className="block text-sm font-medium text-gray-700">
-            비밀번호
+            {t("login.password")}
           </label>
           <div className="relative mt-1 mb-4">
             <input
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               type={showPw ? "text" : "password"}
-              placeholder="비밀번호를 입력하세요"
+              placeholder={t("login.placeholderPassword")}
               className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
             />
             <button
@@ -111,7 +112,7 @@ export default function Login() {
               onClick={() => setShowPw((s) => !s)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-600"
             >
-              {showPw ? "숨기기" : "보기"}
+              {showPw ? t("login.hidePw") : t("login.showPw")}
             </button>
           </div>
 
@@ -122,13 +123,15 @@ export default function Login() {
                 type="checkbox"
                 className="form-checkbox h-4 w-4 text-indigo-600"
               />
-              <span className="ml-2 text-sm text-gray-600">로그인 유지</span>
+              <span className="ml-2 text-sm text-gray-600">
+                {t("login.remember")}
+              </span>
             </label>
             <Link
               to="/signup"
               className="text-sm text-indigo-600 hover:underline"
             >
-              회원가입
+              {t("login.signup")}
             </Link>
           </div>
 
@@ -142,24 +145,26 @@ export default function Login() {
                 : "bg-indigo-900 text-white hover:bg-indigo-800"
             }`}
           >
-            {loading ? "로그인 중..." : "로그인"}
+            {loading ? t("login.loading") : t("login.submit")}
           </button>
 
           {/* 소셜 로그인 */}
           <div className="mt-5">
-            <div className="text-center text-sm text-gray-400">또는</div>
+            <div className="text-center text-sm text-gray-400">
+              {t("login.or")}
+            </div>
             <div className="mt-4 flex gap-3">
               <button
                 type="button"
                 className="w-1/2 py-2 rounded-lg border flex items-center justify-center gap-2"
               >
-                <span className="text-sm">카카오</span>
+                <span className="text-sm">{t("login.kakao")}</span>
               </button>
               <button
                 type="button"
                 className="w-1/2 py-2 rounded-lg border flex items-center justify-center gap-2"
               >
-                <span className="text-sm">네이버</span>
+                <span className="text-sm">{t("login.naver")}</span>
               </button>
             </div>
           </div>
@@ -168,10 +173,10 @@ export default function Login() {
         {/* 푸터 */}
         <div className="px-6 py-4 text-xs text-center text-gray-500 bg-gray-50">
           <Link to="/terms" className="hover:underline mr-4">
-            이용약관
+            {t("login.terms")}
           </Link>
           <Link to="/privacy" className="hover:underline">
-            개인정보처리방침
+            {t("login.privacy")}
           </Link>
         </div>
       </div>
