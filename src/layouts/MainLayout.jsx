@@ -480,11 +480,7 @@ const FeaturedSwiper = () => {
     transition={{ duration: 0.8, ease: "easeOut" }}
     viewport={{ once: true }}
   >
-    <EditableText
-      id="featured-section-title"
-      defaultText={t("main.featuredSection")} // ✅ 번역 키 (translation.json 안의 main.featuredSection)
-      apiUrl={`${import.meta.env.VITE_API_URL}/api/texts`} // ✅ 환경 변수로 통일
-    />
+    <EditableText id="featured-section-title" defaultText={t("main.featuredSection")} />
   </motion.h2>
 
   <div className="w-full max-w-[1200px]">
