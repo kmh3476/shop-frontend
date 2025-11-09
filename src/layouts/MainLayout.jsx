@@ -349,7 +349,12 @@ function MainLayout() {
           transition={{ duration: 0.8, ease: 'easeOut' }}
           viewport={{ once: true }}
         >
-          <EditableText id={id} defaultText={t(`main.${id}`) || title} />
+         <EditableText
+  id={id}
+  defaultText={title}
+  apiUrl={`${import.meta.env.VITE_API_URL}/api/texts`}
+/>
+
         </motion.h2>
 
         <Swiper
@@ -381,9 +386,7 @@ function MainLayout() {
   };
   /** ✅ 추천상품 전용 Swiper */
   const FeaturedSwiper = () => {
-    const featured = allProducts.filter(
-      (p) => p.categoryPage?.label === t("main.featuredLabel")
-    );
+    const featured = allProducts.filter((p) => p.categoryKey === "featured");
 
     return (
       <Swiper
@@ -469,24 +472,26 @@ function MainLayout() {
       ></section>
 
       {/* ✅ 추천상품 섹션 */}
-      <section className="flex flex-col items-center justify-center py-[10vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
-        <motion.h2
-          className="text-5xl md:text-6xl font-extrabold mb-12 drop-shadow-sm tracking-tight text-gray-600"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          viewport={{ once: true }}
-        >
-          <EditableText
-            id="featured-section-title"
-            defaultText={t("main.featuredSection")}
-            apiUrl="http://localhost:1337/api/texts"
-          />
-        </motion.h2>
-        <div className="w-full max-w-[1200px]">
-          <FeaturedSwiper />
-        </div>
-      </section>
+<section className="flex flex-col items-center justify-center py-[10vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
+  <motion.h2
+    className="text-5xl md:text-6xl font-extrabold mb-12 drop-shadow-sm tracking-tight text-gray-600"
+    initial={{ opacity: 0, y: 40 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.8, ease: "easeOut" }}
+    viewport={{ once: true }}
+  >
+    <EditableText
+      id="featured-section-title"
+      defaultText={t("main.featuredSection")} // ✅ 번역 키 (translation.json 안의 main.featuredSection)
+      apiUrl={`${import.meta.env.VITE_API_URL}/api/texts`} // ✅ 환경 변수로 통일
+    />
+  </motion.h2>
+
+  <div className="w-full max-w-[1200px]">
+    <FeaturedSwiper />
+  </div>
+</section>
+
 
       {/* ✅ 상품 섹션 */}
       <SlideSection
@@ -515,12 +520,12 @@ function MainLayout() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <EditableText
-            id="brand-title"
-            defaultText={t("main.brandStoryTitle")}
-            apiUrl="http://localhost:1337/api/texts"
-          />
-        </motion.h2>
+         <EditableText
+      id="brand-title" // ✅ 여기가 타이틀 ID
+      defaultText={t("main.brandStoryTitle")} // ✅ 번역 키
+      apiUrl={`${import.meta.env.VITE_API_URL}/api/texts`}
+    />
+</motion.h2>
 
         <motion.p
           className="max-w-[700px] text-gray-700 leading-relaxed text-lg md:text-xl font-light"
@@ -528,12 +533,12 @@ function MainLayout() {
           whileInView={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.8 }}
         >
-          <EditableText
-            id="brand-description"
-            defaultText={t("main.brandStoryDesc")}  
-            apiUrl="http://localhost:1337/api/texts"
-          />
-        </motion.p>
+           <EditableText
+    id="brand-description"
+    defaultText={t("main.brandStoryDesc")}
+    apiUrl={`${import.meta.env.VITE_API_URL}/api/texts`}
+  />
+</motion.p>
       </section>
 
       {/* ✅ 푸터 */}
