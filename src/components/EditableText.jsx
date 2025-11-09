@@ -1,31 +1,31 @@
 // 📁 src/components/EditableText.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useEditMode } from "../context/EditModeContext";
+import { useTranslation } from "react-i18next";
 
 /**
  * ✅ 사용법:
  * <EditableText 
  *    id="hero-title" 
- *    defaultText="기본 문구" 
+ *    defaultText={t("main.heroTitle")} 
  *    filePath="src/components/HeroSection.jsx"
  *    componentName="HeroSection"
  * />
  * 
- * CMS 연결 없이, 브라우저 내에서만 텍스트 편집 가능.
- * 이제 filePath와 componentName이 로컬스토리지에 함께 저장됨.
+ * 🌍 다국어 완벽 지원 (언어 변경 시 자동 갱신)
+ * CMS 없이 로컬스토리지 기반 저장
  */
 export default function EditableText({ id, defaultText, filePath, componentName }) {
-  const { isEditMode, saveEditLog } = useEditMode(); // ✅ saveEditLog 추가
+  const { isEditMode, saveEditLog } = useEditMode();
+  const { i18n } = useTranslation(); // ✅ 다국어 감지용
 
   const [text, setText] = useState(() => {
-    // 로컬 저장된 값이 있으면 불러오기
     const savedData = localStorage.getItem(`editable-text-${id}`);
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
         return parsed.text || defaultText;
       } catch {
-        // 예전 버전(문자열 형태) 호환 처리
         return savedData || defaultText;
       }
     }
@@ -35,14 +35,22 @@ export default function EditableText({ id, defaultText, filePath, componentName 
   const [isEditing, setIsEditing] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  // ✅ CMS 요청 제거 — 로컬스토리지 기반 저장
+  // ✅ 언어 변경 시 자동으로 번역 기본값 반영
+  useEffect(() => {
+    const savedData = localStorage.getItem(`editable-text-${id}`);
+    if (!savedData || isEditMode) {
+      // 로컬에 저장된 값이 없거나 편집 중이면 번역값으로 갱신
+      setText(defaultText);
+    }
+  }, [i18n.language, defaultText, id, isEditMode]);
+
+  // ✅ 로컬스토리지 저장
   const handleBlur = (e) => {
     let newText = e.target.innerText.trim();
 
     if (newText !== text) {
       setText(newText);
 
-      // 새로운 저장 형식 (텍스트 + 메타데이터)
       const saveData = {
         text: newText,
         filePath: filePath || "unknown",
@@ -54,7 +62,6 @@ export default function EditableText({ id, defaultText, filePath, componentName 
         localStorage.setItem(`editable-text-${id}`, JSON.stringify(saveData));
         console.log(`✅ 로컬에 저장됨: ${id}`, saveData);
 
-        // ✅ 글로벌 editLogs에도 기록 추가
         if (saveEditLog) {
           saveEditLog({
             text: newText,
@@ -63,7 +70,6 @@ export default function EditableText({ id, defaultText, filePath, componentName 
             updatedAt: new Date().toISOString(),
           });
         }
-
       } catch (err) {
         console.error("❌ 로컬스토리지 저장 실패:", err);
       }
@@ -75,14 +81,12 @@ export default function EditableText({ id, defaultText, filePath, componentName 
     setIsEditing(false);
   };
 
-  // ✅ 붙여넣기 시 HTML 태그 제거
   const handlePaste = (e) => {
     e.preventDefault();
     const plainText = e.clipboardData.getData("text/plain");
     document.execCommand("insertText", false, plainText);
   };
 
-  // ✅ Enter(줄바꿈) 막기 - 텍스트만 단일 줄 유지
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
