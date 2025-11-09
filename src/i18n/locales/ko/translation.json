@@ -97,5 +97,70 @@
     "noToken": "토큰이 없습니다. 서버 응답을 확인하세요.",
     "success": "✅ 로그인 성공!",
     "failed": "로그인 실패. 다시 시도해주세요."
+  },
+
+  "product": {
+    "loading": "불러오는 중...",
+    "notFound": "상품을 찾을 수 없습니다.",
+    "designModeOn": "🖊 디자인모드 ON",
+    "designModeOff": "✏ 디자인모드 OFF",
+    "resizeOn": "📐 크기조절 ON",
+    "resizeOff": "📏 크기조절 OFF",
+    "backToList": "← 상품 목록으로 돌아가기",
+    "noDescription": "상품 설명이 없습니다.",
+    "currency": "원",
+    "addToCart": "장바구니에 추가",
+
+    "tab": {
+      "detail": "상세정보",
+      "size": "사이즈 & 구매안내",
+      "review": "상품후기",
+      "inquiry": "상품문의"
+    },
+
+    "detailInfo": "📋 상품 상세정보",
+    "sizeGuide": "📏 사이즈 & 구매안내",
+    "sizeDefault": "{{note1}}\n{{note2}}\n{{note3}}",
+
+    "review": {
+      "title": "상품 후기",
+      "none": "아직 등록된 후기가 없습니다.",
+      "writeTitle": "리뷰 작성하기",
+      "namePlaceholder": "이름",
+      "commentPlaceholder": "리뷰 내용을 입력해주세요.",
+      "submit": "등록",
+      "missingFields": "이름과 내용을 입력해주세요.",
+      "submitFail": "리뷰 등록 실패"
+    },
+
+    "inquiry": {
+      "title": "상품 문의",
+      "none": "아직 등록된 문의가 없습니다.",
+      "writeTitle": "상품 문의하기",
+      "namePlaceholder": "이름",
+      "questionPlaceholder": "문의 내용을 입력해주세요.",
+      "submit": "등록",
+      "missingFields": "이름과 문의 내용을 입력해주세요.",
+      "submitFail": "문의 등록 실패",
+      "all": "상품 문의 전체보기"
+    }
+  },
+
+  "productList": {
+    "title": "상품 목록",
+    "subtitle": "지금 바로 쇼핑을 시작해보세요!",
+    "addToCart": "장바구니 담기",
+    "currency": "원",
+    "noDescription": "상품 설명이 없습니다.",
+    "all": "전체 보기",
+
+    "adminOnlyDesign": "⚠ 관리자만 디자인 모드를 사용할 수 있습니다.",
+    "adminOnlyResize": "⚠ 관리자만 크기 조절 모드를 사용할 수 있습니다.",
+    "designOn": "🖊 디자인 모드 ON",
+    "designOff": "✏ 디자인 모드 OFF",
+    "resizeOn": "📐 크기 조절 ON",
+    "resizeOff": "📏 크기 조절 OFF",
+
+    "fetchFail": "서버 연결 실패: 백엔드가 켜져 있는지 확인하세요!"
   }
 }

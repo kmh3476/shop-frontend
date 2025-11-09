@@ -136,14 +136,16 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
       <p className="text-gray-500 text-sm mt-1 line-clamp-2 text-center">
         <EditableText
           id={`product-desc-${product._id}`}
-          defaultText={product.description || "상품 설명이 없습니다."}
+          defaultText={product.description || t("productList.noDescription")}
           filePath="src/pages/ProductList.jsx"
           componentName="ProductCard"
         />
       </p>
 
       {/* ✅ 가격 */}
-      <p className="mt-3 font-bold text-blue-600">{product.price?.toLocaleString()}원</p>
+      <p className="mt-3 font-bold text-blue-600">
+        {product.price?.toLocaleString()}{t("productList.currency")}
+      </p>
 
       {/* ✅ 장바구니 버튼 */}
       <button
@@ -159,12 +161,11 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
             : "bg-blue-500 hover:bg-blue-600"
         }`}
       >
-        장바구니 담기
+        {t("productList.addToCart")}
       </button>
     </div>
   );
 }
-
 /** ✅ 전체 상품 리스트 페이지 */
 function ProductList() {
   const [products, setProducts] = useState([]);
@@ -179,15 +180,16 @@ function ProductList() {
   const { isEditMode, setIsEditMode, isResizeMode, setIsResizeMode } = useEditMode();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   /** ✅ 관리자 모드 토글 */
   const toggleEditMode = () => {
-    if (!user?.isAdmin) return alert("⚠ 관리자만 디자인 모드를 사용할 수 있습니다.");
+    if (!user?.isAdmin) return alert(t("productList.adminOnlyDesign"));
     setIsEditMode(!isEditMode);
   };
 
   const toggleResizeMode = () => {
-    if (!user?.isAdmin) return alert("⚠ 관리자만 크기 조절 모드를 사용할 수 있습니다.");
+    if (!user?.isAdmin) return alert(t("productList.adminOnlyResize"));
     setIsResizeMode(!isResizeMode);
   };
 
@@ -217,7 +219,7 @@ function ProductList() {
       setFilteredProducts(res.data);
     } catch (err) {
       console.error("❌ 상품 불러오기 실패:", err.message, err);
-      alert("서버 연결 실패: 백엔드가 켜져 있는지 확인하세요!");
+      alert(t("productList.fetchFail"));
     }
   };
 
@@ -260,7 +262,7 @@ function ProductList() {
               isEditMode ? "bg-green-600" : "bg-gray-800"
             }`}
           >
-            {isEditMode ? "🖊 디자인 모드 ON" : "✏ 디자인 모드 OFF"}
+            {isEditMode ? t("productList.designOn") : t("productList.designOff")}
           </button>
           <button
             onClick={toggleResizeMode}
@@ -268,7 +270,7 @@ function ProductList() {
               isResizeMode ? "bg-blue-600" : "bg-gray-700"
             }`}
           >
-            {isResizeMode ? "📐 크기 조절 ON" : "📏 크기 조절 OFF"}
+            {isResizeMode ? t("productList.resizeOn") : t("productList.resizeOff")}
           </button>
         </div>
       )}
@@ -278,7 +280,7 @@ function ProductList() {
         <h1 className="text-3xl font-bold text-gray-700">
           <EditableText
             id="productlist-title"
-            defaultText="상품 목록"
+            defaultText={t("productList.title")}
             filePath="src/pages/ProductList.jsx"
             componentName="HeaderTitle"
           />
@@ -286,7 +288,7 @@ function ProductList() {
         <p className="text-gray-500 mt-2">
           <EditableText
             id="productlist-subtitle"
-            defaultText="지금 바로 쇼핑을 시작해보세요!"
+            defaultText={t("productList.subtitle")}
             filePath="src/pages/ProductList.jsx"
             componentName="HeaderSubtitle"
           />
@@ -304,7 +306,7 @@ function ProductList() {
           }`}
           disabled={isEditMode || isResizeMode}
         >
-          전체 보기
+          {t("productList.all")}
         </button>
 
         {pages.map((p) => (
@@ -324,20 +326,21 @@ function ProductList() {
       </div>
 
       {/* 상품 목록 */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 
-                    gap-x-12 gap-y-14 w-full max-w-[1300px] mx-auto px-4">
-  {filteredProducts.map((p) => (
-    <ProductCard
-      key={p._id}
-      product={p}
-      isEditMode={isEditMode}
-      isResizeMode={isResizeMode}
-      addToCart={addToCart}
-      navigate={navigate}
-    />
-  ))}
-</section>
-
+      <section
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 
+                    gap-x-12 gap-y-14 w-full max-w-[1300px] mx-auto px-4"
+      >
+        {filteredProducts.map((p) => (
+          <ProductCard
+            key={p._id}
+            product={p}
+            isEditMode={isEditMode}
+            isResizeMode={isResizeMode}
+            addToCart={addToCart}
+            navigate={navigate}
+          />
+        ))}
+      </section>
 
       {/* 푸터 */}
       <footer className="mt-16 text-gray-400 text-sm border-t pt-4 w-full text-center">

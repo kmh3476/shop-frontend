@@ -97,5 +97,70 @@
     "noToken": "No token received. Please check server response.",
     "success": "✅ Login successful!",
     "failed": "Login failed. Please try again."
+  },
+
+  "product": {
+    "loading": "Loading...",
+    "notFound": "Product not found.",
+    "designModeOn": "🖊 Design Mode ON",
+    "designModeOff": "✏ Design Mode OFF",
+    "resizeOn": "📐 Resize Mode ON",
+    "resizeOff": "📏 Resize Mode OFF",
+    "backToList": "← Back to Product List",
+    "noDescription": "No product description available.",
+    "currency": "KRW",
+    "addToCart": "Add to Cart",
+
+    "tab": {
+      "detail": "Details",
+      "size": "Size & Info",
+      "review": "Reviews",
+      "inquiry": "Inquiries"
+    },
+
+    "detailInfo": "📋 Product Details",
+    "sizeGuide": "📏 Size & Purchase Guide",
+    "sizeDefault": "{{note1}}\n{{note2}}\n{{note3}}",
+
+    "review": {
+      "title": "Product Reviews",
+      "none": "No reviews yet.",
+      "writeTitle": "Write a Review",
+      "namePlaceholder": "Name",
+      "commentPlaceholder": "Write your review here...",
+      "submit": "Submit",
+      "missingFields": "Please enter your name and review content.",
+      "submitFail": "Failed to submit review."
+    },
+
+    "inquiry": {
+      "title": "Product Inquiry",
+      "none": "No inquiries yet.",
+      "writeTitle": "Ask a Question",
+      "namePlaceholder": "Name",
+      "questionPlaceholder": "Write your question here...",
+      "submit": "Submit",
+      "missingFields": "Please enter your name and question.",
+      "submitFail": "Failed to submit inquiry.",
+      "all": "View All Inquiries"
+    }
+  },
+
+  "productList": {
+    "title": "Product List",
+    "subtitle": "Start shopping now!",
+    "addToCart": "Add to Cart",
+    "currency": "KRW",
+    "noDescription": "No product description available.",
+    "all": "View All",
+
+    "adminOnlyDesign": "⚠ Only administrators can use Design Mode.",
+    "adminOnlyResize": "⚠ Only administrators can use Resize Mode.",
+    "designOn": "🖊 Design Mode ON",
+    "designOff": "✏ Design Mode OFF",
+    "resizeOn": "📐 Resize Mode ON",
+    "resizeOff": "📏 Resize Mode OFF",
+
+    "fetchFail": "Failed to connect to the server. Please make sure the backend is running!"
   }
 }

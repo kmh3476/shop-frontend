@@ -11,8 +11,6 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useTranslation } from "react-i18next";
 
-
-// ✅ 이미지 확대 모달
 function ImageModal({ images, currentIndex, onClose, onNavigate }) {
   if (!images || images.length === 0) return null;
   const imageUrl = images[currentIndex];
@@ -43,7 +41,7 @@ function ImageModal({ images, currentIndex, onClose, onNavigate }) {
       >
         <img
           src={imageUrl || noImage}
-          alt="Product"
+          alt={t("product.altImage")}
           className="rounded-lg shadow-2xl transition-transform duration-300 cursor-zoom-out"
           style={{ maxWidth: "90vw", maxHeight: "85vh", objectFit: "contain" }}
           onError={(e) => (e.currentTarget.src = noImage)}
@@ -135,6 +133,7 @@ function useResizableBox(id, defaultSize = { width: 900, height: 400 }, active) 
 
   return { ref, size, startResize };
 }
+
 export default function ProductDetail() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
@@ -148,6 +147,7 @@ export default function ProductDetail() {
   const [inquiryInput, setInquiryInput] = useState({ name: "", question: "" });
   const { user } = useAuth();
   const { isEditMode, setIsEditMode, isResizeMode, setIsResizeMode } = useEditMode();
+  const { t } = useTranslation();
 
   const refs = {
     detail: useRef(null),
@@ -163,11 +163,11 @@ export default function ProductDetail() {
 
   // ✅ 관리자 모드 토글
   const toggleEdit = () => {
-    if (!user?.isAdmin) return alert("관리자만 접근 가능합니다.");
+    if (!user?.isAdmin) return alert(t("product.adminOnly"));
     setIsEditMode(!isEditMode);
   };
   const toggleResize = () => {
-    if (!user?.isAdmin) return alert("관리자만 접근 가능합니다.");
+    if (!user?.isAdmin) return alert(t("product.adminOnly"));
     setIsResizeMode(!isResizeMode);
   };
 
@@ -181,13 +181,9 @@ export default function ProductDetail() {
           api.get(`/api/inquiries/${id}`),
         ]);
         const product = p.data;
-
-        // ✅ blob 제거 및 Cloudinary 이미지만 유지
         const imgs = product.mainImage
           ? [product.mainImage, ...(product.images || []).filter((img) => img && img !== product.mainImage)]
           : (product.images || []).filter((img) => img && img.startsWith("http"));
-
-        // ✅ 중복 제거
         const uniqueImgs = [...new Set(imgs.filter((img) => img && img.startsWith("http")))];
 
         setProduct({
@@ -199,42 +195,40 @@ export default function ProductDetail() {
           images: uniqueImgs,
         });
 
-        // ✅ 대표이미지 우선 표시
         setMainImage(product.mainImage || uniqueImgs[0]);
-
         setReviews(r.data || []);
         setInquiries(q.data || []);
       } catch (err) {
-        console.error("❌ 상품 불러오기 실패:", err);
+        console.error("❌", t("product.loadFail"), err);
       } finally {
         setLoading(false);
       }
     };
     load();
   }, [id]);
-
   // ✅ 후기 등록
   const addReview = async () => {
-    if (!reviewInput.name || !reviewInput.comment) return alert("이름과 내용을 입력해주세요.");
+    if (!reviewInput.name || !reviewInput.comment)
+      return alert(t("product.review.missingFields"));
     try {
       const res = await api.post(`/api/reviews`, { productId: id, ...reviewInput });
       setReviews((p) => [res.data, ...p]);
       setReviewInput({ name: "", rating: 5, comment: "" });
     } catch {
-      alert("리뷰 등록 실패");
+      alert(t("product.review.submitFail"));
     }
   };
 
   // ✅ 문의 등록
   const addInquiry = async () => {
     if (!inquiryInput.name || !inquiryInput.question)
-      return alert("이름과 문의 내용을 입력해주세요.");
+      return alert(t("product.inquiry.missingFields"));
     try {
       const res = await api.post(`/api/inquiries`, { productId: id, ...inquiryInput });
       setInquiries((p) => [res.data, ...p]);
       setInquiryInput({ name: "", question: "" });
     } catch {
-      alert("문의 등록 실패");
+      alert(t("product.inquiry.submitFail"));
     }
   };
 
@@ -256,8 +250,9 @@ export default function ProductDetail() {
 
   const scrollTo = (r) => r.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  if (loading) return <p className="text-center mt-10 text-gray-600">불러오는 중...</p>;
-  if (!product) return <p className="text-center mt-10 text-red-500">상품을 찾을 수 없습니다.</p>;
+  if (loading) return <p className="text-center mt-10 text-gray-600">{t("product.loading")}</p>;
+  if (!product)
+    return <p className="text-center mt-10 text-red-500">{t("product.notFound")}</p>;
 
   return (
     <div className="bg-gray-50 min-h-screen pb-20">
@@ -270,7 +265,7 @@ export default function ProductDetail() {
               isEditMode ? "bg-green-600" : "bg-gray-700"
             }`}
           >
-            {isEditMode ? "🖊 디자인모드 ON" : "✏ 디자인모드 OFF"}
+            {isEditMode ? t("product.designModeOn") : t("product.designModeOff")}
           </button>
           <button
             onClick={toggleResize}
@@ -278,7 +273,7 @@ export default function ProductDetail() {
               isResizeMode ? "bg-blue-600" : "bg-gray-700"
             }`}
           >
-            {isResizeMode ? "📐 크기조절 ON" : "📏 크기조절 OFF"}
+            {isResizeMode ? t("product.resizeOn") : t("product.resizeOff")}
           </button>
         </div>
       )}
@@ -290,7 +285,7 @@ export default function ProductDetail() {
             isEditMode || isResizeMode ? "pointer-events-none opacity-50" : ""
           }`}
         >
-          ← 상품 목록으로 돌아가기
+          ← {t("product.backToList")}
         </Link>
 
         {/* ✅ 상품 상단 */}
@@ -304,82 +299,79 @@ export default function ProductDetail() {
           }}
           className="bg-white shadow-md rounded-lg overflow-hidden mb-8"
         >
-          {/* ✅ 상품 이미지 영역 (화살표 + 썸네일 포함) */}
-<div className="flex flex-col items-center relative select-none">
-  {/* ✅ 대표 이미지 */}
-  {/* ✅ 상품 대표 이미지 (꽉 차게 확대) */}
-<div className="relative w-full flex justify-center items-center bg-white rounded-lg overflow-hidden" style={{ minHeight: "800px" }}>
-  <img
-    src={mainImage || noImage}
-    alt={product.name}
-    className="w-auto h-auto max-w-none max-h-none object-scale-down transition-transform duration-300"
-    style={{
-      width: "100%",
-      height: "auto",
-      objectFit: "cover",
-    }}
-  />
+          {/* ✅ 상품 이미지 영역 */}
+          <div className="flex flex-col items-center relative select-none">
+            <div
+              className="relative w-full flex justify-center items-center bg-white rounded-lg overflow-hidden"
+              style={{ minHeight: "800px" }}
+            >
+              <img
+                src={mainImage || noImage}
+                alt={product.name}
+                className="w-auto h-auto max-w-none max-h-none object-scale-down transition-transform duration-300"
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  objectFit: "cover",
+                }}
+              />
 
-    {/* ✅ 왼쪽 화살표 */}
-    {product.images?.length > 1 && (
-      <>
-        <button
-          className="absolute left-3 text-3xl text-white bg-black/40 hover:bg-black/60 rounded-full p-2 transition"
-          onClick={(e) => {
-            e.stopPropagation();
-            const filteredImages =
-              product.images?.filter((img) => img && img.startsWith("http")) || [];
-            const currentIdx = filteredImages.indexOf(mainImage);
-            const prevIdx =
-              currentIdx <= 0 ? filteredImages.length - 1 : currentIdx - 1;
-            setMainImage(filteredImages[prevIdx]);
-          }}
-        >
-          ←
-        </button>
+              {product.images?.length > 1 && (
+                <>
+                  <button
+                    className="absolute left-3 text-3xl text-white bg-black/40 hover:bg-black/60 rounded-full p-2 transition"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const filteredImages =
+                        product.images?.filter((img) => img && img.startsWith("http")) || [];
+                      const currentIdx = filteredImages.indexOf(mainImage);
+                      const prevIdx =
+                        currentIdx <= 0 ? filteredImages.length - 1 : currentIdx - 1;
+                      setMainImage(filteredImages[prevIdx]);
+                    }}
+                  >
+                    ←
+                  </button>
 
-        {/* ✅ 오른쪽 화살표 */}
-        <button
-          className="absolute right-3 text-3xl text-white bg-black/40 hover:bg-black/60 rounded-full p-2 transition"
-          onClick={(e) => {
-            e.stopPropagation();
-            const filteredImages =
-              product.images?.filter((img) => img && img.startsWith("http")) || [];
-            const currentIdx = filteredImages.indexOf(mainImage);
-            const nextIdx =
-              currentIdx >= filteredImages.length - 1 ? 0 : currentIdx + 1;
-            setMainImage(filteredImages[nextIdx]);
-          }}
-        >
-          →
-        </button>
-      </>
-    )}
-  </div>
+                  <button
+                    className="absolute right-3 text-3xl text-white bg-black/40 hover:bg-black/60 rounded-full p-2 transition"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const filteredImages =
+                        product.images?.filter((img) => img && img.startsWith("http")) || [];
+                      const currentIdx = filteredImages.indexOf(mainImage);
+                      const nextIdx =
+                        currentIdx >= filteredImages.length - 1 ? 0 : currentIdx + 1;
+                      setMainImage(filteredImages[nextIdx]);
+                    }}
+                  >
+                    →
+                  </button>
+                </>
+              )}
+            </div>
 
-  {/* ✅ 썸네일 리스트 */}
-  {product.images?.length > 1 && (
-    <div className="flex gap-2 mt-4 overflow-x-auto justify-center w-full px-2">
-      {product.images
-        .filter((img) => img && img.startsWith("http"))
-        .map((img, idx) => (
-          <img
-            key={idx}
-            src={img}
-            alt={`thumb-${idx}`}
-            onClick={() => setMainImage(img)}
-            className={`w-20 h-20 object-cover rounded-lg cursor-pointer transition-all ${
-              img === mainImage
-                ? "ring-4 ring-blue-500 scale-105"
-                : "opacity-80 hover:opacity-100"
-            }`}
-          />
-        ))}
-    </div>
-  )}
-</div>
-
-
+            {/* ✅ 썸네일 리스트 */}
+            {product.images?.length > 1 && (
+              <div className="flex gap-2 mt-4 overflow-x-auto justify-center w-full px-2">
+                {product.images
+                  .filter((img) => img && img.startsWith("http"))
+                  .map((img, idx) => (
+                    <img
+                      key={idx}
+                      src={img}
+                      alt={`thumb-${idx}`}
+                      onClick={() => setMainImage(img)}
+                      className={`w-20 h-20 object-cover rounded-lg cursor-pointer transition-all ${
+                        img === mainImage
+                          ? "ring-4 ring-blue-500 scale-105"
+                          : "opacity-80 hover:opacity-100"
+                      }`}
+                    />
+                  ))}
+              </div>
+            )}
+          </div>
 
           <div className="p-6">
             <h2 className="text-2xl font-semibold mb-2">
@@ -393,31 +385,31 @@ export default function ProductDetail() {
             <p className="text-gray-600 mb-4 whitespace-pre-line">
               <EditableText
                 id={`detail-desc-${id}`}
-                defaultText={product.description || "상품 설명이 없습니다."}
+                defaultText={product.description || t("product.noDescription")}
                 onSave={(t) => localStorage.setItem(`detail-desc-${id}`, t)}
               />
             </p>
 
             <p className="text-xl font-bold text-blue-600 mb-6">
-              {product.price?.toLocaleString()}원
+              {product.price?.toLocaleString()}
+              {t("product.currency")}
             </p>
 
             <button
               disabled={isEditMode || isResizeMode}
               className="px-5 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition disabled:opacity-60"
             >
-              🛒 장바구니에 추가
+              🛒 {t("product.addToCart")}
             </button>
           </div>
         </div>
-
         {/* ✅ 탭 메뉴 */}
         <div className="sticky top-0 bg-white border-b z-40 flex justify-around py-3 shadow-sm">
           {Object.entries({
-            detail: "상세정보",
-            size: "사이즈 & 구매안내",
-            review: "상품후기",
-            inquiry: "상품문의",
+            detail: t("product.tab.detail"),
+            size: t("product.tab.size"),
+            review: t("product.tab.review"),
+            inquiry: t("product.tab.inquiry"),
           }).map(([key, label]) => (
             <button
               key={key}
@@ -437,39 +429,21 @@ export default function ProductDetail() {
         <div className="bg-white p-6 mt-2 rounded-lg shadow-sm space-y-16">
           {/* 상세정보 */}
           <section
-  ref={refs.detail}
-  onMouseDown={detailBox.startResize}
-  style={{
-    width: detailBox.size.width,
-    minHeight: detailBox.size.height,
-    cursor: isResizeMode ? "se-resize" : "default",
-  }}
-  className="p-4 border border-gray-200 rounded-md"
->
-  <h2 className="text-lg font-semibold mb-2">📋 상품 상세정보</h2>
-  <div
-    className="prose max-w-none"
-    dangerouslySetInnerHTML={{ __html: product.detailText || "" }}
-  />
-</section>
-
-<section
-  ref={refs.size}
-  onMouseDown={sizeBox.startResize}
-  style={{
-    width: sizeBox.size.width,
-    minHeight: sizeBox.size.height,
-    cursor: isResizeMode ? "se-resize" : "default",
-  }}
-  className="p-4 border border-gray-200 rounded-md"
->
-  <h2 className="text-lg font-semibold mb-2">📏 사이즈 & 구매안내</h2>
-  <div
-    className="prose max-w-none"
-    dangerouslySetInnerHTML={{ __html: product.sizeText || "" }}
-  />
-</section>
-
+            ref={refs.detail}
+            onMouseDown={detailBox.startResize}
+            style={{
+              width: detailBox.size.width,
+              minHeight: detailBox.size.height,
+              cursor: isResizeMode ? "se-resize" : "default",
+            }}
+            className="p-4 border border-gray-200 rounded-md"
+          >
+            <h2 className="text-lg font-semibold mb-2">📋 {t("product.detailInfo")}</h2>
+            <div
+              className="prose max-w-none"
+              dangerouslySetInnerHTML={{ __html: product.detailText || "" }}
+            />
+          </section>
 
           {/* 사이즈 안내 */}
           <section
@@ -482,12 +456,16 @@ export default function ProductDetail() {
             }}
             className="p-4 border border-gray-200 rounded-md"
           >
-            <h2 className="text-lg font-semibold mb-2">📏 사이즈 & 구매안내</h2>
+            <h2 className="text-lg font-semibold mb-2">📏 {t("product.sizeGuide")}</h2>
             <EditableText
               id={`size-info-${id}`}
               defaultText={
                 product.sizeText ||
-                "- 사이즈는 측정 방법에 따라 ±1~3cm 오차가 있을 수 있습니다.\n- 모니터 환경에 따라 색상이 다르게 보일 수 있습니다.\n- 교환 및 반품 정책을 꼭 확인해주세요."
+                t("product.sizeDefault", {
+                  note1: "- 사이즈는 측정 방법에 따라 ±1~3cm 오차가 있을 수 있습니다.",
+                  note2: "- 모니터 환경에 따라 색상이 다르게 보일 수 있습니다.",
+                  note3: "- 교환 및 반품 정책을 꼭 확인해주세요.",
+                })
               }
               onSave={(t) => localStorage.setItem(`size-info-${id}`, t)}
             />
@@ -495,9 +473,9 @@ export default function ProductDetail() {
 
           {/* 후기 섹션 */}
           <section ref={refs.review}>
-            <h2 className="text-lg font-semibold mb-4">⭐ 상품 후기</h2>
+            <h2 className="text-lg font-semibold mb-4">⭐ {t("product.review.title")}</h2>
             {reviews.length === 0 ? (
-              <p>아직 등록된 후기가 없습니다.</p>
+              <p>{t("product.review.none")}</p>
             ) : (
               reviews.map((r, i) => (
                 <div key={i} className="border p-3 rounded bg-gray-50 text-sm">
@@ -509,16 +487,20 @@ export default function ProductDetail() {
               ))
             )}
             <div className="mt-5 border-t pt-4">
-              <h3 className="font-semibold mb-2">리뷰 작성하기</h3>
+              <h3 className="font-semibold mb-2">{t("product.review.writeTitle")}</h3>
               <input
-                placeholder="이름"
+                placeholder={t("product.review.namePlaceholder")}
                 className="border px-2 py-1 mr-2 rounded"
                 value={reviewInput.name}
-                onChange={(e) => setReviewInput({ ...reviewInput, name: e.target.value })}
+                onChange={(e) =>
+                  setReviewInput({ ...reviewInput, name: e.target.value })
+                }
               />
               <select
                 value={reviewInput.rating}
-                onChange={(e) => setReviewInput({ ...reviewInput, rating: e.target.value })}
+                onChange={(e) =>
+                  setReviewInput({ ...reviewInput, rating: e.target.value })
+                }
                 className="border px-2 py-1 mr-2 rounded"
               >
                 {[5, 4, 3, 2, 1].map((n) => (
@@ -528,34 +510,35 @@ export default function ProductDetail() {
               <textarea
                 className="w-full border p-2 rounded mt-2"
                 rows="3"
-                placeholder="리뷰 내용을 입력해주세요."
+                placeholder={t("product.review.commentPlaceholder")}
                 value={reviewInput.comment}
-                onChange={(e) => setReviewInput({ ...reviewInput, comment: e.target.value })}
+                onChange={(e) =>
+                  setReviewInput({ ...reviewInput, comment: e.target.value })
+                }
               />
               <button
                 onClick={addReview}
                 className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
-                등록
+                {t("product.review.submit")}
               </button>
             </div>
 
             {/* ✅ 상품 문의 전체보기 버튼 */}
             <div className="mt-6 text-center">
               <Link
-                to={`/product-support?productId=${id}`} // ✅ 현재 상품 ID 전달
+                to={`/product-support?productId=${id}`}
                 className="text-blue-600 hover:underline text-sm"
               >
-                상품 문의 전체보기
+                {t("product.inquiry.all")}
               </Link>
             </div>
           </section>
-
           {/* 문의 섹션 */}
           <section ref={refs.inquiry}>
-            <h2 className="text-lg font-semibold mb-4">💬 상품 문의</h2>
+            <h2 className="text-lg font-semibold mb-4">💬 {t("product.inquiry.title")}</h2>
             {inquiries.length === 0 ? (
-              <p>아직 등록된 문의가 없습니다.</p>
+              <p>{t("product.inquiry.none")}</p>
             ) : (
               inquiries.map((q, i) => (
                 <div key={i} className="border p-3 rounded bg-gray-50 text-sm">
@@ -566,25 +549,29 @@ export default function ProductDetail() {
             )}
 
             <div className="mt-5 border-t pt-4">
-              <h3 className="font-semibold mb-2">상품 문의하기</h3>
+              <h3 className="font-semibold mb-2">{t("product.inquiry.writeTitle")}</h3>
               <input
-                placeholder="이름"
+                placeholder={t("product.inquiry.namePlaceholder")}
                 className="border px-2 py-1 mr-2 rounded"
                 value={inquiryInput.name}
-                onChange={(e) => setInquiryInput({ ...inquiryInput, name: e.target.value })}
+                onChange={(e) =>
+                  setInquiryInput({ ...inquiryInput, name: e.target.value })
+                }
               />
               <textarea
                 className="w-full border p-2 rounded mt-2"
                 rows="3"
-                placeholder="문의 내용을 입력해주세요."
+                placeholder={t("product.inquiry.questionPlaceholder")}
                 value={inquiryInput.question}
-                onChange={(e) => setInquiryInput({ ...inquiryInput, question: e.target.value })}
+                onChange={(e) =>
+                  setInquiryInput({ ...inquiryInput, question: e.target.value })
+                }
               />
               <button
                 onClick={addInquiry}
                 className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
-                등록
+                {t("product.inquiry.submit")}
               </button>
             </div>
           </section>
@@ -593,19 +580,22 @@ export default function ProductDetail() {
 
       {/* ✅ 이미지 모달 */}
       {selectedIndex !== null && (
-  <ImageModal
-    images={product.images?.filter((img) => img && img.startsWith("http")) || []}
-    currentIndex={selectedIndex}
-    onClose={() => setSelectedIndex(null)}
-    onNavigate={(dir) =>
-      setSelectedIndex((p) => {
-        const filteredImages = product.images?.filter((img) => img && img.startsWith("http")) || [];
-        const total = filteredImages.length;
-        return dir === "next" ? (p + 1) % total : (p - 1 + total) % total;
-      })
-    }
-  />
-)}
+        <ImageModal
+          images={product.images?.filter((img) => img && img.startsWith("http")) || []}
+          currentIndex={selectedIndex}
+          onClose={() => setSelectedIndex(null)}
+          onNavigate={(dir) =>
+            setSelectedIndex((p) => {
+              const filteredImages =
+                product.images?.filter((img) => img && img.startsWith("http")) || [];
+              const total = filteredImages.length;
+              return dir === "next"
+                ? (p + 1) % total
+                : (p - 1 + total) % total;
+            })
+          }
+        />
+      )}
     </div> /* ✅ ProductDetail 최상위 div 닫기 */
   );
 }
