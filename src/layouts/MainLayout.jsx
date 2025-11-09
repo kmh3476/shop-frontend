@@ -492,17 +492,17 @@ function MainLayout() {
       <SlideSection
         id="top-section"
         title={t("main.topSection")}
-        filter={(p) => p.categoryPage?.label === t("main.topLabel")}
+        filter={(p) => p.categoryKey === "top"}
       />
       <SlideSection
         id="bottom-section"
         title={t("main.bottomSection")}
-        filter={(p) => p.categoryPage?.label === t("main.bottomLabel")}
+        filter={(p) => p.categoryKey === "bottom"}
       />
       <SlideSection
         id="coordi-section"
         title={t("main.coordiSection")}
-        filter={(p) => p.categoryPage?.label === t("main.coordiLabel")}
+        filter={(p) => p.categoryKey === "coordi"}
       />
 
       {/* ✅ 브랜드 스토리 */}
@@ -530,7 +530,7 @@ function MainLayout() {
         >
           <EditableText
             id="brand-description"
-            defaultText={t("main.brandStoryDesc")}
+            defaultText={t("main.brandStoryDesc")}  
             apiUrl="http://localhost:1337/api/texts"
           />
         </motion.p>

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Input, Table, Space, message, Upload } from "antd";
+import { Button, Input, Table, Space, message, Upload, Switch } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 
+/** ✅ 관리자용 페이지 설정 (PageSetting CRUD + 다국어 확장) */
 const AdminPageSetting = () => {
   const [pages, setPages] = useState([]);
   const [newPage, setNewPage] = useState({
@@ -10,26 +11,25 @@ const AdminPageSetting = () => {
     label: "",
     order: 0,
     image: "",
+    categoryKey: "default", // ✅ 추가
+    isActive: true, // ✅ 추가
+    description: "", // ✅ 추가
+    i18nLabels: { ko: "", en: "", th: "" }, // ✅ 추가
   });
   const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false); // ✅ 추가: 중복 refresh 방지
+  const [refreshing, setRefreshing] = useState(false);
 
-  /** ✅ 환경설정 URL */
   const apiUrl =
     import.meta.env.VITE_API_URL || "https://shop-backend-1-dfsl.onrender.com";
 
-  /** ✅ axios 인스턴스 생성 */
-  const api = axios.create({
-    baseURL: apiUrl,
-  });
+  const api = axios.create({ baseURL: apiUrl });
 
-  /** ✅ 토큰 저장 및 불러오기 */
   const getToken = () =>
     localStorage.getItem("token") || sessionStorage.getItem("token");
   const getRefreshToken = () =>
     localStorage.getItem("refreshToken") || sessionStorage.getItem("refreshToken");
 
-  /** ✅ axios 인터셉터: 요청마다 access token 자동 첨부 */
+  /** ✅ 인터셉터 */
   useEffect(() => {
     const reqInterceptor = api.interceptors.request.use((config) => {
       const token = getToken();
@@ -37,7 +37,6 @@ const AdminPageSetting = () => {
       return config;
     });
 
-    /** ✅ 응답 인터셉터: 토큰 만료 감지 시 자동 갱신 */
     const resInterceptor = api.interceptors.response.use(
       (res) => res,
       async (err) => {
@@ -47,15 +46,13 @@ const AdminPageSetting = () => {
           !original._retry &&
           getRefreshToken()
         ) {
-          // ✅ accessToken 만료 시 protect() 로그가 중복 안 찍히도록 잠시 요청 대기
-if (original.url.includes("/api/pages")) {
-  console.warn("⏳ 토큰 만료 감지, 자동 재발급 시도 중...");
-}
+          if (original.url.includes("/api/pages")) {
+            console.warn("⏳ 토큰 만료 감지, 자동 재발급 시도 중...");
+          }
           original._retry = true;
           try {
             if (refreshing) {
-              // ✅ 이미 갱신 중이면 약간 대기 후 재시도
-              await new Promise((resolve) => setTimeout(resolve, 1000));
+              await new Promise((r) => setTimeout(r, 1000));
               const token = getToken();
               if (token) {
                 original.headers.Authorization = `Bearer ${token}`;
@@ -73,18 +70,14 @@ if (original.url.includes("/api/pages")) {
               localStorage.setItem("token", newAccess);
               original.headers.Authorization = `Bearer ${newAccess}`;
               console.log("🔁 Access token 재발급 완료 → 요청 재시도");
-              return api(original); // ✅ 원래 요청 재시도
-            } else {
-              throw new Error("갱신된 access token이 없습니다.");
-            }
+              return api(original);
+            } else throw new Error("갱신된 access token이 없습니다.");
           } catch (refreshErr) {
             console.error("❌ 토큰 갱신 실패:", refreshErr);
             message.error("세션이 만료되었습니다. 다시 로그인해주세요.");
             localStorage.removeItem("token");
             localStorage.removeItem("refreshToken");
-            setTimeout(() => {
-              window.location.href = "/admin-login";
-            }, 1000);
+            setTimeout(() => (window.location.href = "/admin-login"), 1000);
           } finally {
             setRefreshing(false);
           }
@@ -110,17 +103,15 @@ if (original.url.includes("/api/pages")) {
       message.error("페이지 목록을 불러오지 못했습니다.");
     }
   };
-
   useEffect(() => {
     fetchPages();
   }, []);
 
-  /** ✅ Cloudinary 이미지 업로드 */
+  /** ✅ Cloudinary 업로드 */
   const handleImageUpload = async ({ file }) => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_PRESET);
-
     try {
       const res = await axios.post(
         `https://api.cloudinary.com/v1_1/${
@@ -129,7 +120,7 @@ if (original.url.includes("/api/pages")) {
         formData
       );
       const imageUrl = res.data.secure_url;
-      setNewPage((prev) => ({ ...prev, image: imageUrl }));
+      setNewPage((p) => ({ ...p, image: imageUrl }));
       message.success("탭 이미지 업로드 완료");
     } catch (err) {
       console.error("❌ Cloudinary 업로드 실패:", err);
@@ -143,12 +134,20 @@ if (original.url.includes("/api/pages")) {
       message.warning("이름(name)과 표시명(label)을 모두 입력해주세요.");
       return;
     }
-
     try {
       setLoading(true);
       await api.post("/api/pages", newPage);
       message.success("새 페이지가 추가되었습니다.");
-      setNewPage({ name: "", label: "", order: 0, image: "" });
+      setNewPage({
+        name: "",
+        label: "",
+        order: 0,
+        image: "",
+        categoryKey: "default",
+        isActive: true,
+        description: "",
+        i18nLabels: { ko: "", en: "", th: "" },
+      });
       fetchPages();
     } catch (err) {
       console.error("❌ 새 페이지 추가 실패:", err);
@@ -175,23 +174,16 @@ if (original.url.includes("/api/pages")) {
     }
   };
 
-  /** ✅ 순서 변경 (up/down) */
-  const movePage = async (id, direction) => {
+  /** ✅ 순서 변경 */
+  const movePage = async (id, dir) => {
     const index = pages.findIndex((p) => p._id === id);
     if (index === -1) return;
-
     const newPages = [...pages];
-    if (direction === "up" && index > 0) {
-      [newPages[index - 1], newPages[index]] = [
-        newPages[index],
-        newPages[index - 1],
-      ];
-    } else if (direction === "down" && index < newPages.length - 1) {
-      [newPages[index + 1], newPages[index]] = [
-        newPages[index],
-        newPages[index + 1],
-      ];
-    } else return;
+    if (dir === "up" && index > 0)
+      [newPages[index - 1], newPages[index]] = [newPages[index], newPages[index - 1]];
+    else if (dir === "down" && index < newPages.length - 1)
+      [newPages[index + 1], newPages[index]] = [newPages[index], newPages[index + 1]];
+    else return;
 
     const updated = newPages.map((p, i) => ({ ...p, order: i + 1 }));
     setPages(updated);
@@ -207,7 +199,7 @@ if (original.url.includes("/api/pages")) {
     }
   };
 
-  /** ✅ 테이블 컬럼 정의 */
+  /** ✅ 테이블 컬럼 */
   const columns = [
     {
       title: "이미지",
@@ -231,6 +223,20 @@ if (original.url.includes("/api/pages")) {
     },
     { title: "Name", dataIndex: "name" },
     { title: "Label", dataIndex: "label" },
+    { title: "Key", dataIndex: "categoryKey" }, // ✅ 추가
+    {
+      title: "활성",
+      dataIndex: "isActive",
+      render: (_, record) => (
+        <Switch
+          checked={record.isActive}
+          onChange={async (checked) => {
+            await api.put(`/api/pages/${record._id}`, { isActive: checked });
+            fetchPages();
+          }}
+        />
+      ),
+    },
     {
       title: "Order",
       dataIndex: "order",
@@ -260,7 +266,7 @@ if (original.url.includes("/api/pages")) {
   ];
 
   return (
-    <div className="p-6 max-w-5xl mx-auto bg-white rounded-xl shadow">
+    <div className="p-6 max-w-6xl mx-auto bg-white rounded-xl shadow">
       <h2 className="text-2xl font-bold mb-4">🗂 페이지(탭) 설정</h2>
 
       <Space direction="horizontal" wrap>
@@ -268,13 +274,21 @@ if (original.url.includes("/api/pages")) {
           placeholder="이름(name)"
           value={newPage.name}
           onChange={(e) => setNewPage({ ...newPage, name: e.target.value })}
-          style={{ width: 180 }}
+          style={{ width: 160 }}
         />
         <Input
           placeholder="표시명(label)"
           value={newPage.label}
           onChange={(e) => setNewPage({ ...newPage, label: e.target.value })}
-          style={{ width: 180 }}
+          style={{ width: 160 }}
+        />
+        <Input
+          placeholder="Category Key (예: featured, top, bottom, coordi)"
+          value={newPage.categoryKey}
+          onChange={(e) =>
+            setNewPage({ ...newPage, categoryKey: e.target.value })
+          }
+          style={{ width: 220 }}
         />
         <Input
           type="number"
@@ -296,6 +310,40 @@ if (original.url.includes("/api/pages")) {
           ➕ 추가
         </Button>
       </Space>
+
+      {/* ✅ 추가: 다국어 입력 */}
+      <div className="mt-4 grid grid-cols-3 gap-3">
+        <Input
+          placeholder="🇰🇷 한국어 라벨"
+          value={newPage.i18nLabels.ko}
+          onChange={(e) =>
+            setNewPage({
+              ...newPage,
+              i18nLabels: { ...newPage.i18nLabels, ko: e.target.value },
+            })
+          }
+        />
+        <Input
+          placeholder="🇺🇸 English Label"
+          value={newPage.i18nLabels.en}
+          onChange={(e) =>
+            setNewPage({
+              ...newPage,
+              i18nLabels: { ...newPage.i18nLabels, en: e.target.value },
+            })
+          }
+        />
+        <Input
+          placeholder="🇹🇭 Thai Label"
+          value={newPage.i18nLabels.th}
+          onChange={(e) =>
+            setNewPage({
+              ...newPage,
+              i18nLabels: { ...newPage.i18nLabels, th: e.target.value },
+            })
+          }
+        />
+      </div>
 
       {newPage.image && (
         <img
