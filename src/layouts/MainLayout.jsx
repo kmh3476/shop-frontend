@@ -384,42 +384,42 @@ function MainLayout() {
       </section>
     );
   };
-  /** ✅ 추천상품 전용 Swiper */
-  const FeaturedSwiper = () => {
-    const featured = allProducts.filter((p) => p.categoryKey === "featured");
+ /** ✅ 추천상품 전용 Swiper */
+const FeaturedSwiper = () => {
+  const featured = allProducts.filter((p) => p.categoryKey === "featured");
 
-    return (
-      <Swiper
-        modules={[Autoplay, Navigation, Pagination]}
-        spaceBetween={10}
-        slidesPerView={2.8}
-        navigation={!isEditMode && !isResizeMode}
-        pagination={!isEditMode && !isResizeMode ? { clickable: true } : false}
-        autoplay={
-          isResizeMode || isEditMode
-            ? false
-            : { delay: 4500, disableOnInteraction: false }
-        }
-        allowTouchMove={!isEditMode && !isResizeMode}
-        simulateTouch={!isEditMode && !isResizeMode}
-        draggable={!isEditMode && !isResizeMode}
-        loop={featured.length > 1}
-        className="pb-12 swiper-horizontal swiper-backface-hidden"
-      >
-        {featured.length > 0 ? (
-          featured.map((product) => (
-            <SwiperSlide key={product._id || product.name}>
-              <FeaturedCard product={product} />
-            </SwiperSlide>
-          ))
-        ) : (
-          <p className="text-gray-500 text-center w-full py-10">
-            {t("main.noFeatured")}
-          </p>
-        )}
-      </Swiper>
-    );
-  };
+  return (
+    <Swiper
+      modules={[Autoplay, Navigation, Pagination]}
+      spaceBetween={10}
+      slidesPerView={2.8}
+      navigation={!isEditMode && !isResizeMode}
+      pagination={!isEditMode && !isResizeMode ? { clickable: true } : false}
+      autoplay={
+        isResizeMode || isEditMode
+          ? false
+          : { delay: 4500, disableOnInteraction: false }
+      }
+      allowTouchMove={!isEditMode && !isResizeMode}
+      simulateTouch={!isEditMode && !isResizeMode}
+      draggable={!isEditMode && !isResizeMode}
+      loop={featured.length > 1}
+      className="pb-12 swiper-horizontal swiper-backface-hidden"
+    >
+      {featured.length > 0 ? (
+        featured.map((product) => (
+          <SwiperSlide key={product._id || product.name}>
+            <FeaturedCard product={product} />
+          </SwiperSlide>
+        ))
+      ) : (
+        <p className="text-gray-500 text-center w-full py-10">
+          {t("main.noFeatured")}
+        </p>
+      )}
+    </Swiper>
+  );
+};
 
   /** ✅ blob URL 정리 */
   useEffect(() => {
