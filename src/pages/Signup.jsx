@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"; // ✅ 추가
+import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
 
 export default function Signup() {
   const navigate = useNavigate();
-  const { login } = useAuth(); // ✅ 추가: 회원가입 후 자동 로그인용
+  const { login } = useAuth();
   const { t } = useTranslation();
 
   const [form, setForm] = useState({
@@ -20,8 +20,6 @@ export default function Signup() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
-
-  // ✅ 추가된 상태들
   const [emailVerified, setEmailVerified] = useState(false);
   const [emailCode, setEmailCode] = useState("");
   const [checkingId, setCheckingId] = useState(false);
@@ -29,7 +27,6 @@ export default function Signup() {
   const [codeSent, setCodeSent] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
 
-  // ✅ API 주소
   const API = "https://shop-backend-1-dfsl.onrender.com/api/auth";
 
   function onChange(e) {
@@ -42,7 +39,9 @@ export default function Signup() {
     const field = type === "id" ? "userId" : "nickname";
     const value = form[field];
     if (!value)
-      return alert(`${type === "id" ? "아이디" : "닉네임"}를 입력해주세요.`);
+      return alert(
+        t(type === "id" ? "signup.enterId" : "signup.enterNickname")
+      );
 
     type === "id" ? setCheckingId(true) : setCheckingNick(true);
 
@@ -52,17 +51,20 @@ export default function Signup() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ [field]: value }),
       });
-
       const data = await res.json();
 
       if (data.exists) {
-        alert(`이미 사용 중인 ${type === "id" ? "아이디" : "닉네임"}입니다.`);
+        alert(
+          t(type === "id" ? "signup.idExists" : "signup.nicknameExists")
+        );
       } else {
-        alert(`사용 가능한 ${type === "id" ? "아이디" : "닉네임"}입니다.`);
+        alert(
+          t(type === "id" ? "signup.idAvailable" : "signup.nicknameAvailable")
+        );
       }
     } catch (err) {
       console.error("중복 확인 오류:", err);
-      alert("서버 오류가 발생했습니다.");
+      alert(t("signup.serverError"));
     } finally {
       type === "id" ? setCheckingId(false) : setCheckingNick(false);
     }
@@ -70,7 +72,7 @@ export default function Signup() {
 
   /* -------------------- ✅ 이메일 인증 코드 전송 -------------------- */
   async function sendEmailCode() {
-    if (!form.email) return alert("이메일을 입력해주세요.");
+    if (!form.email) return alert(t("signup.enterEmail"));
 
     setSendingEmail(true);
     try {
@@ -81,10 +83,9 @@ export default function Signup() {
       });
 
       const data = await res.json();
+      if (!res.ok) throw new Error(data.message || t("signup.emailSendFail"));
 
-      if (!res.ok) throw new Error(data.message || "이메일 전송 실패");
-
-      alert("이메일로 인증 코드가 전송되었습니다!");
+      alert(t("signup.emailSent"));
       setCodeSent(true);
     } catch (err) {
       console.error("이메일 전송 오류:", err);
@@ -96,7 +97,7 @@ export default function Signup() {
 
   /* -------------------- ✅ 이메일 인증 코드 검증 -------------------- */
   async function verifyEmailCode() {
-    if (!emailCode.trim()) return alert("인증 코드를 입력해주세요.");
+    if (!emailCode.trim()) return alert(t("signup.enterCode"));
 
     try {
       const res = await fetch(`${API}/verify-email-code`, {
@@ -104,12 +105,11 @@ export default function Signup() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email, code: emailCode }),
       });
-
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.message || "인증 실패");
+      if (!res.ok) throw new Error(data.message || t("signup.verifyFail"));
 
-      alert("✅ 이메일 인증이 완료되었습니다!");
+      alert(t("signup.emailVerified"));
       setEmailVerified(true);
     } catch (err) {
       console.error("이메일 인증 오류:", err);
@@ -123,16 +123,16 @@ export default function Signup() {
     setError("");
     setSuccessMsg("");
 
-    if (!form.userId.trim()) return setError("아이디를 입력해주세요.");
-    if (!form.nickname.trim()) return setError("닉네임을 입력해주세요.");
+    if (!form.userId.trim()) return setError(t("signup.enterId"));
+    if (!form.nickname.trim()) return setError(t("signup.enterNickname"));
     if (!form.email || !/\S+@\S+\.\S+/.test(form.email))
-      return setError("유효한 이메일을 입력해주세요.");
-    if (!emailVerified) return setError("이메일 인증을 완료해주세요.");
+      return setError(t("signup.validEmail"));
+    if (!emailVerified) return setError(t("signup.needEmailVerify"));
     if (form.password.length < 6)
-      return setError("비밀번호는 6자 이상이어야 합니다.");
+      return setError(t("signup.shortPassword"));
     if (form.password !== form.confirm)
-      return setError("비밀번호가 일치하지 않습니다.");
-    if (!agree) return setError("이용약관에 동의해주세요.");
+      return setError(t("signup.passwordNotMatch"));
+    if (!agree) return setError(t("signup.agreeTerms"));
 
     try {
       setLoading(true);
@@ -150,18 +150,16 @@ export default function Signup() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "회원가입 실패");
+      if (!res.ok) throw new Error(data.message || t("signup.failed"));
 
-      // ✅ 회원가입 성공 후 자동 로그인 실행
       if (data.token && data.refreshToken && data.user) {
         login(data.user, data.token, data.refreshToken);
-        alert("✅ 회원가입 및 자동 로그인 성공!");
+        alert(t("signup.autoLoginSuccess"));
         navigate("/");
         return;
       }
 
-      // ✅ 일반 회원가입 성공 시
-      setSuccessMsg("회원가입이 완료되었습니다!");
+      setSuccessMsg(t("signup.success"));
       setTimeout(() => navigate("/login"), 3000);
     } catch (err) {
       console.error("회원가입 오류:", err);
@@ -170,24 +168,25 @@ export default function Signup() {
       setLoading(false);
     }
   }
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-start justify-center py-8 px-4 sm:px-6">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg overflow-hidden">
-        {/* 헤더 */}
         <div className="px-6 py-5 bg-black text-white">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-extrabold tracking-tight">회원가입</h1>
+            <h1 className="text-2xl font-extrabold tracking-tight">
+              {t("signup.title")}
+            </h1>
             <Link to="/" className="text-sm opacity-80 hover:opacity-100">
-              닫기
+              {t("signup.close")}
             </Link>
           </div>
           <p className="mt-2 text-sm text-gray-200">
-            간단한 가입으로 쇼핑을 시작하세요.
+            {t("signup.subtitle")}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 py-8">
-          {/* 오류 / 성공 메시지 */}
           {error && (
             <div className="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded">
               {error}
@@ -203,13 +202,13 @@ export default function Signup() {
           <div className="flex gap-2 items-end">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700">
-                아이디
+                {t("signup.id")}
               </label>
               <input
                 name="userId"
                 value={form.userId}
                 onChange={onChange}
-                placeholder="아이디 입력"
+                placeholder={t("signup.enterId")}
                 className="mt-1 mb-2 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
               />
             </div>
@@ -219,7 +218,7 @@ export default function Signup() {
               disabled={checkingId}
               className="h-[42px] bg-gray-800 text-white px-3 py-2 rounded-lg text-sm"
             >
-              {checkingId ? "확인중..." : "중복확인"}
+              {checkingId ? t("signup.checking") : t("signup.checkDuplicate")}
             </button>
           </div>
 
@@ -227,13 +226,13 @@ export default function Signup() {
           <div className="flex gap-2 items-end mt-3">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700">
-                닉네임
+                {t("signup.nickname")}
               </label>
               <input
                 name="nickname"
                 value={form.nickname}
                 onChange={onChange}
-                placeholder="닉네임 입력"
+                placeholder={t("signup.enterNickname")}
                 className="mt-1 mb-2 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
               />
             </div>
@@ -243,7 +242,7 @@ export default function Signup() {
               disabled={checkingNick}
               className="h-[42px] bg-gray-800 text-white px-3 py-2 rounded-lg text-sm"
             >
-              {checkingNick ? "확인중..." : "중복확인"}
+              {checkingNick ? t("signup.checking") : t("signup.checkDuplicate")}
             </button>
           </div>
 
@@ -251,7 +250,7 @@ export default function Signup() {
           <div className="flex gap-2 items-end mt-3">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700">
-                이메일
+                {t("signup.email")}
               </label>
               <input
                 name="email"
@@ -273,15 +272,19 @@ export default function Signup() {
                   : "bg-indigo-700 hover:bg-indigo-800"
               } text-white px-3 py-2 rounded-lg text-sm`}
             >
-              {emailVerified ? "인증완료" : sendingEmail ? "전송중..." : "인증요청"}
+              {emailVerified
+                ? t("signup.verified")
+                : sendingEmail
+                ? t("signup.sending")
+                : t("signup.requestVerify")}
             </button>
           </div>
 
-          {/* 인증 코드 입력 */}
+          {/* 인증 코드 */}
           {codeSent && !emailVerified && (
             <div className="flex gap-2 mt-2">
               <input
-                placeholder="인증코드 입력"
+                placeholder={t("signup.enterCode")}
                 value={emailCode}
                 onChange={(e) => setEmailCode(e.target.value)}
                 className="flex-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
@@ -291,37 +294,37 @@ export default function Signup() {
                 onClick={verifyEmailCode}
                 className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm"
               >
-                인증확인
+                {t("signup.verify")}
               </button>
             </div>
           )}
 
           {/* 비밀번호 */}
           <label className="block text-sm font-medium text-gray-700 mt-4">
-            비밀번호
+            {t("signup.password")}
           </label>
           <input
             name="password"
             type="password"
             value={form.password}
             onChange={onChange}
-            placeholder="6자 이상 입력"
+            placeholder={t("signup.passwordPlaceholder")}
             className="mt-1 mb-4 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
 
           <label className="block text-sm font-medium text-gray-700">
-            비밀번호 확인
+            {t("signup.confirmPassword")}
           </label>
           <input
             name="confirm"
             type="password"
             value={form.confirm}
             onChange={onChange}
-            placeholder="비밀번호 재입력"
+            placeholder={t("signup.reenterPassword")}
             className="mt-1 mb-4 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
 
-          {/* 이용약관 */}
+          {/* 약관 */}
           <label className="inline-flex items-start gap-2 mt-2">
             <input
               type="checkbox"
@@ -330,18 +333,18 @@ export default function Signup() {
               className="mt-1 form-checkbox h-4 w-4 text-indigo-600"
             />
             <div className="text-sm text-gray-600 leading-tight">
-              <span>이용약관 및 개인정보처리방침에 동의합니다.</span>
+              <span>{t("signup.agreeText")}</span>
               <br />
               <Link
                 to="/terms"
                 className="text-indigo-600 hover:underline text-xs"
               >
-                자세히 보기
+                {t("signup.viewDetails")}
               </Link>
             </div>
           </label>
 
-          {/* 제출 버튼 */}
+          {/* 버튼 */}
           <button
             type="submit"
             disabled={loading}
@@ -349,14 +352,14 @@ export default function Signup() {
               loading ? "bg-indigo-400" : "bg-indigo-900 hover:bg-indigo-800"
             } text-white py-3 rounded-lg font-semibold transition`}
           >
-            {loading ? "가입 중..." : "회원가입"}
+            {loading ? t("signup.signingUp") : t("signup.submit")}
           </button>
 
-          {/* 하단 안내 */}
+          {/* 안내 */}
           <div className="mt-4 text-center text-sm text-gray-500">
-            이미 계정이 있으신가요?{" "}
+            {t("signup.alreadyHave")}{" "}
             <Link to="/login" className="text-indigo-600 hover:underline">
-              로그인
+              {t("signup.login")}
             </Link>
           </div>
         </form>

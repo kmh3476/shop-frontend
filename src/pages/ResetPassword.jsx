@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 function ResetPassword() {
   const { token } = useParams(); // URL에서 토큰 추출
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { t } = useTranslation();
 
   // ✅ 환경 변수 기반 API URL (없으면 기본값 사용)
   const API_URL =
@@ -24,11 +25,11 @@ function ResetPassword() {
 
     // ✅ 기본 검증
     if (!password || !confirmPassword)
-      return setError("비밀번호를 모두 입력해주세요.");
+      return setError(t("resetPassword.fillAllFields"));
     if (password.length < 6)
-      return setError("비밀번호는 최소 6자 이상이어야 합니다.");
+      return setError(t("resetPassword.minLength"));
     if (password !== confirmPassword)
-      return setError("비밀번호가 일치하지 않습니다.");
+      return setError(t("resetPassword.notMatch"));
 
     try {
       setLoading(true);
@@ -41,13 +42,13 @@ function ResetPassword() {
 
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.message || "비밀번호 변경 실패");
+      if (!res.ok) throw new Error(data.message || t("resetPassword.failed"));
 
-      setMessage("✅ 비밀번호가 성공적으로 변경되었습니다!");
+      setMessage(t("resetPassword.success"));
       setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
       console.error("비밀번호 재설정 오류:", err);
-      setError(err.message || "서버 오류가 발생했습니다.");
+      setError(err.message || t("resetPassword.serverError"));
     } finally {
       setLoading(false);
     }
@@ -56,7 +57,9 @@ function ResetPassword() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-900 font-['Pretendard'] px-6">
       <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md">
-        <h2 className="text-3xl font-bold mb-6 text-center">비밀번호 재설정</h2>
+        <h2 className="text-3xl font-bold mb-6 text-center">
+          {t("resetPassword.title")}
+        </h2>
 
         {/* ✅ 메시지 출력 */}
         {message && (
@@ -73,14 +76,14 @@ function ResetPassword() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
             type="password"
-            placeholder="새 비밀번호 (6자 이상)"
+            placeholder={t("resetPassword.newPassword")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-gray-600"
           />
           <input
             type="password"
-            placeholder="비밀번호 확인"
+            placeholder={t("resetPassword.confirmPassword")}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-gray-600"
@@ -94,7 +97,7 @@ function ResetPassword() {
                 : "bg-black hover:bg-gray-800"
             }`}
           >
-            {loading ? "변경 중..." : "비밀번호 변경"}
+            {loading ? t("resetPassword.loading") : t("resetPassword.submit")}
           </button>
         </form>
       </div>

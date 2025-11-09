@@ -14,7 +14,6 @@ function ShopPage() {
   // 🔹 상품 불러오기
   const fetchProducts = async () => {
     try {
-      // 배포 시에는 서버 주소를 환경변수로 교체 (ex: process.env.REACT_APP_API_URL)
       const res = await axios.get("http://localhost:4000/products");
       setProducts(res.data);
     } catch (err) {
@@ -50,10 +49,12 @@ function ShopPage() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1 style={{ textAlign: "center" }}>🛍️ 쇼핑몰</h1>
+      <h1 style={{ textAlign: "center" }}>{t("shopPage.title")}</h1>
 
       {/* 상품 목록 */}
-      <h2 style={{ marginTop: "20px", textAlign: "center" }}>추천 상품</h2>
+      <h2 style={{ marginTop: "20px", textAlign: "center" }}>
+        {t("shopPage.recommended")}
+      </h2>
       <div
         style={{
           display: "flex",
@@ -77,7 +78,7 @@ function ShopPage() {
             onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
             onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
           >
-            {/* ✅ 이미지 표시 (imageUrl 또는 image 둘 다 대응) */}
+            {/* ✅ 이미지 표시 */}
             <img
               src={p.image || p.imageUrl || "https://via.placeholder.com/230x200?text=No+Image"}
               alt={p.name}
@@ -91,7 +92,7 @@ function ShopPage() {
 
             <h3 style={{ marginTop: "10px", fontWeight: "bold" }}>{p.name}</h3>
             <p style={{ color: "#666", fontSize: "14px", minHeight: "40px" }}>
-              {p.description}
+              {p.description || t("shopPage.noDescription")}
             </p>
             <p
               style={{
@@ -100,7 +101,8 @@ function ShopPage() {
                 marginBottom: "10px",
               }}
             >
-              {p.price.toLocaleString()}원
+              {p.price.toLocaleString()}
+              {t("shopPage.currency")}
             </p>
 
             <button
@@ -115,22 +117,24 @@ function ShopPage() {
                 width: "100%",
               }}
             >
-              장바구니 담기
+              {t("shopPage.addToCart")}
             </button>
           </div>
         ))}
       </div>
 
       {/* 장바구니 */}
-      <h2 style={{ marginTop: "40px" }}>🛒 장바구니</h2>
+      <h2 style={{ marginTop: "40px" }}>{t("shopPage.cartTitle")}</h2>
       {cart.length === 0 ? (
-        <p>장바구니가 비어있습니다.</p>
+        <p>{t("shopPage.emptyCart")}</p>
       ) : (
         <ul>
           {cart.map((item) => (
             <li key={item._id}>
-              {item.name} ({item.quantity}개) -{" "}
-              {(item.price * item.quantity).toLocaleString()}원
+              {item.name} ({item.quantity}
+              {t("shopPage.count")}) -{" "}
+              {(item.price * item.quantity).toLocaleString()}
+              {t("shopPage.currency")}
               <button
                 onClick={() => removeFromCart(item._id)}
                 style={{
@@ -141,7 +145,7 @@ function ShopPage() {
                   cursor: "pointer",
                 }}
               >
-                삭제
+                {t("shopPage.remove")}
               </button>
             </li>
           ))}
@@ -149,7 +153,8 @@ function ShopPage() {
       )}
 
       <h3 style={{ marginTop: "20px" }}>
-        총합: {getTotal().toLocaleString()}원
+        {t("shopPage.total")} {getTotal().toLocaleString()}
+        {t("shopPage.currency")}
       </h3>
     </div>
   );

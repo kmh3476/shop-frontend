@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useEditMode } from "../context/EditModeContext";
 import EditableText from "../components/EditableText";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 /* --------------------------------------------------------
  ✅ 리사이즈 가능한 박스 훅
@@ -77,6 +78,7 @@ export default function ProductSupport() {
     isPrivate: false,
   });
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -114,40 +116,32 @@ export default function ProductSupport() {
   }, []);
 
   async function fetchPosts() {
-  try {
-    const res = await API.get(`${API_URL}/all`);
-    let filtered = res.data;
+    try {
+      const res = await API.get(`${API_URL}/all`);
+      let filtered = res.data.filter(
+        (p) =>
+          p.productId === "product-page" ||
+          (p.productId && typeof p.productId === "string" && p.productId.trim() !== "") ||
+          (p.productId && typeof p.productId === "object")
+      );
 
-    // ✅ 상품 문의 + 상품 공지 전부 표시
-    filtered = res.data.filter(
-      (p) =>
-        // 상품 공지 (관리자가 등록한 product-page)
-        p.productId === "product-page" ||
-        // 일반 상품문의 (productId가 문자열인 경우)
-        (p.productId && typeof p.productId === "string" && p.productId.trim() !== "") ||
-        // 실제 상품 상세에서 쓴 문의 (ObjectId로 저장된 경우)
-        (p.productId && typeof p.productId === "object")
-    );
+      // ✅ 공지 → 최신순 정렬
+      filtered.sort((a, b) => {
+        if (a.isNotice && !b.isNotice) return -1;
+        if (!a.isNotice && b.isNotice) return 1;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
 
-    // ✅ 최신순 정렬
-    // ✅ 공지(isNotice) 먼저 → 나머지는 최신순
-filtered.sort((a, b) => {
-  if (a.isNotice && !b.isNotice) return -1;   // 공지를 위로
-  if (!a.isNotice && b.isNotice) return 1;    // 공지 아닌 건 아래로
-  return new Date(b.createdAt) - new Date(a.createdAt); // 나머지는 최신순
-});
-
-
-    console.log("✅ 상품 문의 목록 로드 완료:", filtered.length);
-    setPosts(filtered);
-  } catch (err) {
-    console.error("❌ 상품 문의 불러오기 실패:", err);
+      console.log("✅ 상품 문의 목록 로드 완료:", filtered.length);
+      setPosts(filtered);
+    } catch (err) {
+      console.error("❌ 상품 문의 불러오기 실패:", err);
+    }
   }
-}
 
   /* ✅ 이메일 마스킹 */
   const displayEmail = (email) => {
-    if (!email) return "익명";
+    if (!email) return t("productSupport.anonymous");
     const [id] = email.split("@");
     return id.slice(0, 2) + "****";
   };
@@ -158,14 +152,14 @@ filtered.sort((a, b) => {
     e.preventDefault();
 
     if (!user) {
-      if (window.confirm("로그인이 필요합니다. 로그인 페이지로 이동할까요?")) {
+      if (window.confirm(t("productSupport.needLogin"))) {
         navigate("/login");
       }
       return;
     }
 
     if (!newPost.question.trim() || !newPost.answer.trim()) {
-      return alert("제목과 내용을 모두 입력해주세요.");
+      return alert(t("productSupport.needAllFields"));
     }
 
     try {
@@ -175,20 +169,20 @@ filtered.sort((a, b) => {
         question: newPost.question,
         answer: newPost.answer,
         isPrivate: newPost.isPrivate,
-        productId: "product-page", // ✅ 상품문의 전용 식별자
+        productId: "product-page"
       });
-      alert("✅ 상품 문의가 등록되었습니다!");
+      alert(t("productSupport.submitSuccess"));
       setNewPost({
         email: user.email || "",
         question: "",
         answer: "",
-        isPrivate: false,
+        isPrivate: false
       });
       setShowForm(false);
       fetchPosts();
     } catch (err) {
       console.error("❌ 문의 등록 실패:", err);
-      alert("문의 등록 중 오류가 발생했습니다.");
+      alert(t("productSupport.submitError"));
     } finally {
       setLoading(false);
     }
@@ -199,21 +193,21 @@ filtered.sort((a, b) => {
   -------------------------------------------------------- */
   async function handleNoticeSubmit() {
     if (!user?.isAdmin) return;
-    const title = prompt("공지 제목을 입력하세요:");
-    const content = prompt("공지 내용을 입력하세요:");
+    const title = prompt(t("productSupport.noticeTitlePrompt"));
+    const content = prompt(t("productSupport.noticeContentPrompt"));
     if (!title || !content) return;
 
     try {
       await API.post(`${API_URL}/notice`, {
         question: title,
         answer: content,
-        productId: "product-page", // ✅ 상품문의 공지 구분
+        productId: "product-page"
       });
-      alert("✅ 상품 문의 공지가 등록되었습니다.");
+      alert(t("productSupport.noticeSuccess"));
       fetchPosts();
     } catch (err) {
       console.error("❌ 상품문의 공지 등록 실패:", err);
-      alert("공지 등록 중 오류가 발생했습니다.");
+      alert(t("productSupport.noticeError"));
     }
   }
 
@@ -223,15 +217,15 @@ filtered.sort((a, b) => {
   const closeDetail = () => setSelectedPost(null);
 
   async function handleDelete(id) {
-    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+    if (!window.confirm(t("productSupport.deleteConfirm"))) return;
     try {
       await API.delete(`${API_URL}/${id}`);
-      alert("삭제되었습니다.");
+      alert(t("productSupport.deleted"));
       setSelectedPost(null);
       fetchPosts();
     } catch (err) {
       console.error("삭제 실패:", err);
-      alert("삭제 중 오류가 발생했습니다.");
+      alert(t("productSupport.deleteError"));
     }
   }
 
@@ -249,7 +243,7 @@ filtered.sort((a, b) => {
               isEditMode ? "bg-green-600" : "bg-gray-700"
             }`}
           >
-            {isEditMode ? "🖊 디자인모드 ON" : "✏ 디자인모드 OFF"}
+            {isEditMode ? t("productSupport.designOn") : t("productSupport.designOff")}
           </button>
           <button
             onClick={() => setIsResizeMode((p) => !p)}
@@ -257,13 +251,13 @@ filtered.sort((a, b) => {
               isResizeMode ? "bg-blue-600" : "bg-gray-700"
             }`}
           >
-            {isResizeMode ? "📐 크기조절 ON" : "📏 크기조절 OFF"}
+            {isResizeMode ? t("productSupport.resizeOn") : t("productSupport.resizeOff")}
           </button>
           <button
             onClick={handleNoticeSubmit}
             className="px-4 py-2 rounded bg-yellow-500 text-white font-semibold hover:bg-yellow-600"
           >
-            📢 공지 등록
+            📢 {t("productSupport.addNotice")}
           </button>
         </div>
       )}
@@ -279,7 +273,7 @@ filtered.sort((a, b) => {
                 : "text-gray-600 hover:text-black"
             }`}
           >
-            사용자 문의
+            {t("productSupport.userSupport")}
           </button>
           <button
             onClick={() => navigate("/product-support")}
@@ -289,13 +283,13 @@ filtered.sort((a, b) => {
                 : "text-gray-600 hover:text-black"
             }`}
           >
-            상품 문의
+            {t("productSupport.productSupport")}
           </button>
         </div>
       </div>
 
       <h1 className="text-4xl font-extrabold text-center mb-14">
-        <EditableText id="support-title" defaultText="상품 문의" />
+        <EditableText id="support-title" defaultText={t("productSupport.title")} />
       </h1>
 
       {/* ✅ 문의 작성 버튼 */}
@@ -304,7 +298,7 @@ filtered.sort((a, b) => {
           <button
             onClick={() => {
               if (!user) {
-                if (window.confirm("로그인이 필요합니다. 로그인 페이지로 이동할까요?")) {
+                if (window.confirm(t("productSupport.needLogin"))) {
                   navigate("/login");
                 }
                 return;
@@ -313,7 +307,7 @@ filtered.sort((a, b) => {
             }}
             className="bg-black text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-all"
           >
-            ✉ 문의 작성하기
+            ✉ {t("productSupport.writeInquiry")}
           </button>
         </div>
       )}
@@ -329,24 +323,24 @@ filtered.sort((a, b) => {
           }}
           className="max-w-3xl mx-auto mb-16 bg-gray-50 rounded-2xl p-8 shadow"
         >
-          <h2 className="text-2xl font-bold mb-6">상품 문의 작성</h2>
+          <h2 className="text-2xl font-bold mb-6">{t("productSupport.writeFormTitle")}</h2>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <input
               type="email"
-              placeholder="답변 받을 이메일"
+              placeholder={t("productSupport.emailPlaceholder")}
               value={newPost.email}
               onChange={(e) => setNewPost({ ...newPost, email: e.target.value })}
               className="border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black"
             />
             <input
               type="text"
-              placeholder="제목을 입력하세요"
+              placeholder={t("productSupport.subjectPlaceholder")}
               value={newPost.question}
               onChange={(e) => setNewPost({ ...newPost, question: e.target.value })}
               className="border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-black"
             />
             <textarea
-              placeholder="문의 내용을 입력하세요"
+              placeholder={t("productSupport.contentPlaceholder")}
               rows="4"
               value={newPost.answer}
               onChange={(e) => setNewPost({ ...newPost, answer: e.target.value })}
@@ -358,7 +352,7 @@ filtered.sort((a, b) => {
                 checked={newPost.isPrivate}
                 onChange={(e) => setNewPost({ ...newPost, isPrivate: e.target.checked })}
               />
-              비공개 문의로 등록하기
+              {t("productSupport.privateOption")}
             </label>
             <div className="flex gap-4">
               <button
@@ -368,14 +362,14 @@ filtered.sort((a, b) => {
                   loading ? "opacity-70 cursor-not-allowed" : ""
                 }`}
               >
-                {loading ? "등록 중..." : "문의 등록"}
+                {loading ? t("productSupport.submitting") : t("productSupport.submit")}
               </button>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
                 className="flex-1 bg-gray-300 text-black py-3 rounded-lg hover:bg-gray-400"
               >
-                취소
+                {t("productSupport.cancel")}
               </button>
             </div>
           </form>
@@ -394,15 +388,15 @@ filtered.sort((a, b) => {
           }}
           className="max-w-6xl mx-auto bg-white p-4 rounded shadow"
         >
-          <h2 className="text-3xl font-bold mb-6">상품 문의 목록</h2>
+          <h2 className="text-3xl font-bold mb-6">{t("productSupport.listTitle")}</h2>
           <table className="w-full border-collapse border-t border-gray-300">
             <thead className="bg-gray-100">
               <tr className="text-left">
-                <th className="p-3 text-center w-[8%]">번호</th>
-                <th className="p-3 w-[20%]">작성자</th>
-                <th className="p-3 w-[25%]">제목</th>
-                <th className="p-3 w-[35%]">내용</th>
-                <th className="p-3 text-center w-[12%]">상태</th>
+                <th className="p-3 text-center w-[8%]">{t("productSupport.number")}</th>
+                <th className="p-3 w-[20%]">{t("productSupport.author")}</th>
+                <th className="p-3 w-[25%]">{t("productSupport.subject")}</th>
+                <th className="p-3 w-[35%]">{t("productSupport.content")}</th>
+                <th className="p-3 text-center w-[12%]">{t("productSupport.status")}</th>
               </tr>
             </thead>
             <tbody>
@@ -416,20 +410,18 @@ filtered.sort((a, b) => {
                 >
                   <td className="p-3 text-center">{i + 1}</td>
                   <td className="p-3 text-sm">
-                    {p.isNotice ? "관리자" : displayEmail(p.email)}
+                    {p.isNotice ? t("productSupport.admin") : displayEmail(p.email)}
                   </td>
                   <td className="p-3 font-semibold text-gray-800">
                     {p.isNotice && (
-                      <span className="text-blue-600 font-bold">[공지]</span>
+                      <span className="text-blue-600 font-bold">[{t("productSupport.notice")}]</span>
                     )}{" "}
                     {p.question}
-                    {p.isPrivate && (
-                      <span className="ml-1 text-gray-500 text-xs">🔒</span>
-                    )}
+                    {p.isPrivate && <span className="ml-1 text-gray-500 text-xs">🔒</span>}
                   </td>
                   <td className="p-3 text-gray-700 text-sm">
                     {p.isPrivate ? (
-                      <span className="italic text-gray-400">🔒 비공개 문의</span>
+                      <span className="italic text-gray-400">🔒 {t("productSupport.privateLabel")}</span>
                     ) : p.answer?.length > 40 ? (
                       p.answer.slice(0, 40) + "..."
                     ) : (
@@ -438,11 +430,11 @@ filtered.sort((a, b) => {
                   </td>
                   <td className="p-3 text-center">
                     {p.reply ? (
-                      <span className="text-green-600 font-medium">답변 완료</span>
+                      <span className="text-green-600 font-medium">{t("productSupport.answered")}</span>
                     ) : p.isNotice ? (
-                      <span className="text-blue-600 font-medium">공지</span>
+                      <span className="text-blue-600 font-medium">{t("productSupport.notice")}</span>
                     ) : (
-                      <span className="text-gray-500">처리 중</span>
+                      <span className="text-gray-500">{t("productSupport.pending")}</span>
                     )}
                   </td>
                 </tr>
@@ -451,7 +443,7 @@ filtered.sort((a, b) => {
               {posts.length === 0 && (
                 <tr>
                   <td colSpan="5" className="text-center text-gray-500 py-6 bg-gray-50">
-                    등록된 상품 문의가 없습니다.
+                    {t("productSupport.noPosts")}
                   </td>
                 </tr>
               )}
@@ -476,15 +468,13 @@ filtered.sort((a, b) => {
             onClick={closeDetail}
             className="absolute top-4 right-4 bg-gray-300 text-black px-3 py-1 rounded hover:bg-gray-400"
           >
-            닫기
+            {t("productSupport.close")}
           </button>
 
           <h2 className="text-2xl font-bold mb-4">{selectedPost.question}</h2>
           <p className="text-gray-600 text-sm mb-6">
-            작성자:{" "}
-            {selectedPost.isNotice
-              ? "관리자"
-              : displayEmail(selectedPost.email)}{" "}
+            {t("productSupport.authorLabel")}:{" "}
+            {selectedPost.isNotice ? t("productSupport.admin") : displayEmail(selectedPost.email)}{" "}
             | {new Date(selectedPost.createdAt).toLocaleDateString()}
           </p>
 
@@ -494,21 +484,20 @@ filtered.sort((a, b) => {
 
           {selectedPost.reply ? (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <h3 className="font-semibold text-green-700 mb-2">관리자 답변</h3>
+              <h3 className="font-semibold text-green-700 mb-2">{t("productSupport.adminReply")}</h3>
               <p className="text-gray-800 whitespace-pre-wrap">{selectedPost.reply}</p>
             </div>
           ) : (
-            <div className="text-gray-500 italic">아직 답변이 등록되지 않았습니다.</div>
+            <div className="text-gray-500 italic">{t("productSupport.noReplyYet")}</div>
           )}
 
-          {/* ✅ 삭제 버튼 (작성자 or 관리자만) */}
           {(user?.isAdmin ||
             (user?.email && selectedPost.email && user.email === selectedPost.email)) && (
             <button
               onClick={() => handleDelete(selectedPost._id)}
               className="mt-6 bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded"
             >
-              삭제
+              {t("productSupport.delete")}
             </button>
           )}
         </div>

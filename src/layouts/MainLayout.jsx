@@ -12,12 +12,14 @@ import { useAuth } from "../context/AuthContext";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useTranslation } from "react-i18next"; // ✅ 추가
 
 function MainLayout() {
   const { isEditMode, setIsEditMode, isResizeMode, setIsResizeMode } =
     useEditMode();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation(); // ✅ 추가
 
   /** ✅ 상품 데이터 상태 */
   const [allProducts, setAllProducts] = useState([]);
@@ -45,7 +47,7 @@ function MainLayout() {
   /** ✅ 관리자 전용 토글 */
   const toggleEditMode = () => {
     if (!user?.isAdmin) {
-      alert("⚠ 관리자만 디자인 모드를 사용할 수 있습니다.");
+      alert(t("main.adminOnlyDesign")); // ✅ 번역 적용
       return;
     }
     setIsEditMode(!isEditMode);
@@ -53,7 +55,7 @@ function MainLayout() {
 
   const toggleResizeMode = () => {
     if (!user?.isAdmin) {
-      alert("⚠ 관리자만 크기 조절 모드를 사용할 수 있습니다.");
+      alert(t("main.adminOnlyResize")); // ✅ 번역 적용
       return;
     }
     setIsResizeMode(!isResizeMode);
@@ -116,7 +118,6 @@ function MainLayout() {
       };
     }, [isResizeMode, id]);
 
-    /** ✅ 오른쪽 클릭으로 크기조절 시작 */
     const startResize = (e) => {
       if (!isResizeMode) return;
       if (e.button !== 2) return;
@@ -135,7 +136,6 @@ function MainLayout() {
       document.body.style.cursor = "se-resize";
     };
 
-    /** ✅ 우클릭 메뉴 차단 */
     useEffect(() => {
       const el = cardRef.current;
       if (!el) return;
@@ -148,6 +148,7 @@ function MainLayout() {
 
     return { size, cardRef, startResize };
   };
+
   /** ✅ 장바구니 추가 (localStorage 기반) */
   const handleAddToCartGlobal = (product, e) => {
     e.stopPropagation();
@@ -162,13 +163,12 @@ function MainLayout() {
       }
 
       localStorage.setItem("cart", JSON.stringify(saved));
-      alert(`'${product.name}'이(가) 장바구니에 추가되었습니다.`);
+      alert(t("main.addedToCart", { name: product.name })); // ✅ 번역 적용
     } catch (err) {
       console.error("❌ 장바구니 추가 실패:", err);
-      alert("장바구니 추가 중 오류가 발생했습니다.");
+      alert(t("main.addToCartError")); // ✅ 번역 적용
     }
   };
-
   /** ✅ 추천 상품 카드 */
   const FeaturedCard = ({ product }) => {
     const { size, cardRef, startResize } = useResizableCard(
@@ -179,7 +179,6 @@ function MainLayout() {
     const scale = size.width / 360;
     const isLocked = isEditMode;
 
-    /** ✅ 카드 클릭 → 상세 페이지 이동 */
     const handleCardClick = () => {
       if (!isResizeMode && !isEditMode) {
         navigate(`/products/${product._id}`);
@@ -230,11 +229,10 @@ function MainLayout() {
               {product.name}
             </h3>
             <p className="text-base text-gray-500 mb-4 leading-relaxed">
-              {product.description || "감각적인 디자인으로 완성된 이번 시즌 베스트."}
+              {product.description || t("main.defaultDescription")}
             </p>
           </div>
 
-          {/* ✅ 장바구니 아이콘 버튼 */}
           <div className="flex justify-end">
             <button
               onClick={(e) => handleAddToCartGlobal(product, e)}
@@ -263,7 +261,6 @@ function MainLayout() {
     const scale = size.width / 300;
     const isLocked = isEditMode;
 
-    /** ✅ 카드 클릭 → 상세 페이지 이동 */
     const handleCardClick = () => {
       if (!isResizeMode && !isEditMode) {
         navigate(`/products/${product._id}`);
@@ -313,11 +310,12 @@ function MainLayout() {
               {product.name}
             </h3>
             <p className="text-sm text-gray-500">
-              {product.price ? `${product.price.toLocaleString()}원` : "#데일리룩"}
+              {product.price
+                ? `${product.price.toLocaleString()}${t("main.won")}`
+                : t("main.defaultTag")}
             </p>
           </div>
 
-          {/* ✅ 장바구니 아이콘 */}
           <div className="flex justify-end mt-2">
             <button
               onClick={(e) => handleAddToCartGlobal(product, e)}
@@ -335,6 +333,7 @@ function MainLayout() {
       </motion.div>
     );
   };
+
   /** ✅ 공용 상품 슬라이드 섹션 */
   const SlideSection = ({ title, id, filter }) => {
     const filteredProducts = allProducts.filter((p) =>
@@ -347,14 +346,10 @@ function MainLayout() {
           className="text-4xl md:text-5xl font-extrabold mb-10 drop-shadow-sm tracking-tight text-gray-900"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
           viewport={{ once: true }}
         >
-          <EditableText
-            id={id}
-            defaultText={title}
-            apiUrl="http://localhost:1337/api/texts"
-          />
+          <EditableText id={id} defaultText={t(`main.${id}`) || title} />
         </motion.h2>
 
         <Swiper
@@ -366,7 +361,7 @@ function MainLayout() {
           allowTouchMove={!isEditMode && !isResizeMode}
           simulateTouch={!isEditMode && !isResizeMode}
           draggable={!isEditMode && !isResizeMode}
-          loop={filteredProducts.length > 1} // ✅ 수정됨: 상품이 1개 이하일 때 loop 비활성화
+          loop={filteredProducts.length > 1}
           className="pb-12 swiper-backface-hidden"
         >
           {filteredProducts.length > 0 ? (
@@ -377,18 +372,17 @@ function MainLayout() {
             ))
           ) : (
             <p className="text-gray-500 text-center w-full py-10">
-              상품이 없습니다.
+              {t("main.noProducts")}
             </p>
           )}
         </Swiper>
       </section>
     );
   };
-
   /** ✅ 추천상품 전용 Swiper */
   const FeaturedSwiper = () => {
     const featured = allProducts.filter(
-      (p) => p.categoryPage?.label === "추천상품"
+      (p) => p.categoryPage?.label === t("main.featuredLabel")
     );
 
     return (
@@ -406,7 +400,7 @@ function MainLayout() {
         allowTouchMove={!isEditMode && !isResizeMode}
         simulateTouch={!isEditMode && !isResizeMode}
         draggable={!isEditMode && !isResizeMode}
-        loop={featured.length > 1} // ✅ 수정됨: 추천상품이 1개 이하일 때 loop 비활성화
+        loop={featured.length > 1}
         className="pb-12 swiper-horizontal swiper-backface-hidden"
       >
         {featured.length > 0 ? (
@@ -417,14 +411,14 @@ function MainLayout() {
           ))
         ) : (
           <p className="text-gray-500 text-center w-full py-10">
-            추천 상품이 없습니다.
+            {t("main.noFeatured")}
           </p>
         )}
       </Swiper>
     );
   };
 
-  /** ✅ blob URL 정리 (이미지 미리보기 에러 방지용 추가) */
+  /** ✅ blob URL 정리 */
   useEffect(() => {
     return () => {
       allProducts.forEach((p) => {
@@ -438,6 +432,7 @@ function MainLayout() {
       });
     };
   }, [allProducts]);
+
   /** ✅ 메인 구조 */
   return (
     <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden font-['Pretendard']">
@@ -450,7 +445,7 @@ function MainLayout() {
               isEditMode ? "bg-green-600" : "bg-gray-800"
             }`}
           >
-            {isEditMode ? "🖊 디자인 모드 ON" : "✏ 디자인 모드 OFF"}
+            {isEditMode ? t("main.designOn") : t("main.designOff")}
           </button>
           <button
             onClick={toggleResizeMode}
@@ -458,7 +453,7 @@ function MainLayout() {
               isResizeMode ? "bg-blue-600" : "bg-gray-700"
             }`}
           >
-            {isResizeMode ? "📐 크기 조절 ON" : "📏 크기 조절 OFF"}
+            {isResizeMode ? t("main.resizeOn") : t("main.resizeOff")}
           </button>
         </div>
       )}
@@ -484,7 +479,7 @@ function MainLayout() {
         >
           <EditableText
             id="featured-section-title"
-            defaultText="추천 상품"
+            defaultText={t("main.featuredSection")}
             apiUrl="http://localhost:1337/api/texts"
           />
         </motion.h2>
@@ -493,30 +488,26 @@ function MainLayout() {
         </div>
       </section>
 
-      {/* ✅ 상품 섹션 - 상의 / 하의 / 코디 추천 */}
+      {/* ✅ 상품 섹션 */}
       <SlideSection
         id="top-section"
-        title="상의"
-        filter={(p) => p.categoryPage?.label === "상의"}
+        title={t("main.topSection")}
+        filter={(p) => p.categoryPage?.label === t("main.topLabel")}
       />
       <SlideSection
         id="bottom-section"
-        title="하의"
-        filter={(p) => p.categoryPage?.label === "하의"}
+        title={t("main.bottomSection")}
+        filter={(p) => p.categoryPage?.label === t("main.bottomLabel")}
       />
       <SlideSection
         id="coordi-section"
-        title="코디 추천"
-        filter={(p) => p.categoryPage?.label === "코디 추천"}
+        title={t("main.coordiSection")}
+        filter={(p) => p.categoryPage?.label === t("main.coordiLabel")}
       />
 
       {/* ✅ 브랜드 스토리 */}
       <section
         className="flex flex-col items-center justify-center py-[15vh] px-6 text-center bg-gray-100 font-['Pretendard']"
-        style={{
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
       >
         <motion.h2
           className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight"
@@ -526,7 +517,7 @@ function MainLayout() {
         >
           <EditableText
             id="brand-title"
-            defaultText="브랜드 스토리"
+            defaultText={t("main.brandStoryTitle")}
             apiUrl="http://localhost:1337/api/texts"
           />
         </motion.h2>
@@ -539,8 +530,7 @@ function MainLayout() {
         >
           <EditableText
             id="brand-description"
-            defaultText={`ONYOU는 심플하지만 감각적인 디자인을 통해 일상 속의 편안함을 추구합니다.
-자연, 색감, 질감에서 영감을 받아 제작된 제품들은 당신의 일상을 새롭게 만듭니다.`}
+            defaultText={t("main.brandStoryDesc")}
             apiUrl="http://localhost:1337/api/texts"
           />
         </motion.p>
@@ -548,7 +538,7 @@ function MainLayout() {
 
       {/* ✅ 푸터 */}
       <footer className="py-6 text-black text-sm border-t border-gray-300 w-full text-center bg-white font-light tracking-tight">
-        © 2025 ONYOU — All rights reserved.
+        © 2025 ONYOU — {t("main.footer")}
       </footer>
     </div>
   );
