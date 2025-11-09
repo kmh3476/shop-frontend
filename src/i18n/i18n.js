@@ -9,8 +9,8 @@ i18n
   .use(Backend)
   .use(initReactI18next)
   .init({
-    lng: "ko",
-    fallbackLng: "en",
+    lng: "th",
+    fallbackLng: "th",
     debug: true,
     backend: {
       loadPath: `${API_URL}/api/language/{{lng}}`, // ✅ 백엔드에서 언어 JSON 제공
