@@ -73,7 +73,7 @@ function ImageModal({ images = [], startIndex = 0, onClose }) {
 }
 
 function Admin() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 const currentLang = i18n.language || "en";
   const navigate = useNavigate();
 
