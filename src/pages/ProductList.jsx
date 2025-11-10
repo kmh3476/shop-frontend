@@ -180,6 +180,7 @@ function ProductList() {
   const { isEditMode, setIsEditMode, isResizeMode, setIsResizeMode } = useEditMode();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { i18n } = useTranslation();
   const { t } = useTranslation();
 
   /** ✅ 관리자 모드 토글 */
