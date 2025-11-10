@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
-import AdminProductForm from "./AdminProductForm"; // ✅ 상품 등록 컴포넌트 연결 추가
+import AdminProductForm from "./AdminProductForm";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -74,35 +74,40 @@ function ImageModal({ images = [], startIndex = 0, onClose }) {
 
 function Admin() {
   const { t, i18n } = useTranslation();
-const currentLang = i18n.language || "en";
+  const currentLang = i18n.language || "en";
   const navigate = useNavigate();
+
+  // ✅ selectedPage를 form보다 위로 이동 (순서 오류 수정)
+  const [selectedPage, setSelectedPage] = useState(null);
 
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [form, setForm] = useState({
+    i18nNames: { ko: "", en: "", th: "" },
     name: "",
     price: "",
     description: "",
+    detailText: "",
+    sizeText: "",
     images: [],
     mainImage: "",
-    categoryPage: "",
+    categoryPage: "", // ✅ selectedPage 참조 제거
   });
+
   const [pages, setPages] = useState([]);
   const [newPage, setNewPage] = useState({
     name: "",
-    label: "",
     order: 0,
     image: "",
-  }); // ✅ 탭 이미지 필드 추가
+    i18nLabels: { ko: "", en: "", th: "" },
+  });
   const [editingId, setEditingId] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [modalImages, setModalImages] = useState([]);
   const [modalIndex, setModalIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState("all"); // ✅ 현재 선택된 탭
+  const [activeTab, setActiveTab] = useState("all");
   const [showProductForm, setShowProductForm] = useState(false);
-  const [selectedPage, setSelectedPage] = useState(null);
-  const [editPage, setEditPage] = useState(null); // ✅ 현재 수정 중인 탭 정보
-
+  const [editPage, setEditPage] = useState(null);
 
   useEffect(() => {
     fetchProducts();
@@ -128,7 +133,6 @@ const currentLang = i18n.language || "en";
     }
   };
 
-  // ✅ 탭 목록 불러오기
   const fetchPages = async () => {
     try {
       const res = await api.get("/api/pages", { headers: getAuthHeader() });
@@ -139,7 +143,6 @@ const currentLang = i18n.language || "en";
     }
   };
 
-  // ✅ 탭 클릭 시 필터링 + 선택 페이지 설정
   const handleTabClick = (tabId) => {
     setActiveTab(tabId);
     setShowProductForm(false);
@@ -158,10 +161,10 @@ const currentLang = i18n.language || "en";
       setSelectedPage(tabId);
     }
   };
-  // ✅ 새 탭 추가 (탭 이미지 업로드 포함)
+  // ✅ 새 탭 추가
   const addPage = async () => {
-    if (!newPage.name || !newPage.label) {
-      alert("탭 이름(name)과 표시명(label)을 입력해주세요!");
+    if (!newPage.name || !newPage.i18nLabels?.ko) {
+      alert("탭 이름(name)과 한국어 표시명(ko)은 필수입니다!");
       return;
     }
 
@@ -169,13 +172,20 @@ const currentLang = i18n.language || "en";
       await api.post(
         "/api/pages",
         {
-          ...newPage,
+          name: newPage.name,
           order: newPage.order || pages.length + 1,
+          image: newPage.image,
+          i18nLabels: newPage.i18nLabels,
         },
         { headers: { "Content-Type": "application/json", ...getAuthHeader() } }
       );
       alert("✅ 새 탭이 추가되었습니다!");
-      setNewPage({ name: "", label: "", order: 0, image: "" });
+      setNewPage({
+        name: "",
+        order: 0,
+        image: "",
+        i18nLabels: { ko: "", en: "", th: "" },
+      });
       fetchPages();
     } catch (err) {
       console.error("❌ 탭 추가 실패:", err);
@@ -183,75 +193,21 @@ const currentLang = i18n.language || "en";
     }
   };
 
-  // ✅ 탭 이미지 업로드 (Cloudinary)
-  const handlePageImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // ✅ 탭 수정 저장
+  const updatePage = async () => {
+    if (!editPage || !editPage._id) return alert("수정할 탭이 없습니다.");
     try {
-      const formData = new FormData();
-      formData.append("image", file);
-      const res = await api.post("/api/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data", ...getAuthHeader() },
+      await api.put(`/api/pages/${editPage._id}`, editPage, {
+        headers: { "Content-Type": "application/json", ...getAuthHeader() },
       });
-      if (res.data?.imageUrl) {
-        setNewPage({ ...newPage, image: res.data.imageUrl });
-        alert("🖼️ 탭 이미지 업로드 완료!");
-      }
-    } catch (err) {
-      console.error("❌ 탭 이미지 업로드 실패:", err);
-      alert("탭 이미지 업로드 실패");
-    }
-  };
-
-  // ✅ 수정 중인 탭 이미지 변경
-const handleEditPageImageUpload = async (e) => {
-  const file = e.target.files[0];
-  if (!file || !editPage) return;
-  try {
-    const formData = new FormData();
-    formData.append("image", file);
-    const res = await api.post("/api/upload", formData, {
-      headers: { "Content-Type": "multipart/form-data", ...getAuthHeader() },
-    });
-    if (res.data?.imageUrl) {
-      setEditPage({ ...editPage, image: res.data.imageUrl });
-      alert("🖼️ 수정용 이미지 업로드 완료!");
-    }
-  } catch (err) {
-    console.error("❌ 탭 이미지 업로드 실패:", err);
-  }
-};
-
-
-  // ✅ 탭 삭제
-  const deletePage = async (id) => {
-    if (!window.confirm("정말 이 탭을 삭제할까요?")) return;
-    try {
-      await api.delete(`/api/pages/${id}`, { headers: getAuthHeader() });
+      alert("✅ 탭이 수정되었습니다!");
+      setEditPage(null);
       fetchPages();
     } catch (err) {
-      console.error("❌ 탭 삭제 실패:", err);
-      alert("탭 삭제 실패 (인증 필요)");
+      console.error("❌ 탭 수정 실패:", err);
+      alert(err.response?.data?.message || "탭 수정 실패 (인증 필요)");
     }
   };
-
-  // ✅ 탭 수정 저장
-const updatePage = async () => {
-  if (!editPage || !editPage._id) return alert("수정할 탭이 없습니다.");
-
-  try {
-    await api.put(`/api/pages/${editPage._id}`, editPage, {
-      headers: { "Content-Type": "application/json", ...getAuthHeader() },
-    });
-    alert("✅ 탭이 수정되었습니다!");
-    setEditPage(null);
-    fetchPages();
-  } catch (err) {
-    console.error("❌ 탭 수정 실패:", err);
-    alert(err.response?.data?.message || "탭 수정 실패 (인증 필요)");
-  }
-};
-
 
   // ✅ 탭 순서 변경
   const movePage = async (id, direction) => {
@@ -291,162 +247,11 @@ const updatePage = async () => {
     }
   };
 
-  // ✅ Cloudinary 업로드 (상품 이미지)
-  const uploadSingle = async (file) => {
-    try {
-      const formData = new FormData();
-      formData.append("image", file);
-      const res = await api.post("/api/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data", ...getAuthHeader() },
-      });
-      return res.data?.imageUrl || null;
-    } catch (err) {
-      console.error("❌ 단일 업로드 실패:", err);
-      return null;
-    }
-  };
-
-  const handleImageUpload = async (filesToUpload) => {
-    const uploadedUrls = [];
-    setUploading("🕓 이미지 업로드 중...");
-    for (let i = 0; i < filesToUpload.length; i++) {
-      const file = filesToUpload[i];
-      const url = await uploadSingle(file);
-      if (url) uploadedUrls.push(url);
-      await new Promise((r) => setTimeout(r, 400));
-    }
-    setUploading(false);
-    return uploadedUrls;
-  };
-
-  const handleFileChange = async (e) => {
-    const selected = Array.from(e.target.files);
-    if (!selected.length) return;
-    const previews = selected.map((f) => URL.createObjectURL(f));
-    setForm((prev) => ({ ...prev, images: [...prev.images, ...previews] }));
-    const uploaded = await handleImageUpload(selected);
-    if (uploaded.length) {
-      setForm((prev) => {
-        const replaced = prev.images.map((img) =>
-          img.startsWith("blob:") ? uploaded.shift() || img : img
-        );
-        return {
-          ...prev,
-          images: replaced.filter(Boolean),
-          mainImage: prev.mainImage || replaced[0],
-        };
-      });
-    }
-  };
-
-  // ✅ 상품 저장
-  const saveProduct = async () => {
-    if (!form.name || !form.price) {
-      alert("상품명과 가격은 필수입니다!");
-      return;
-    }
-
-    const cleanImages = form.images
-      .filter((i) => i && i.startsWith("http"))
-      .filter((v, i, arr) => arr.indexOf(v) === i);
-
-    const mainImg =
-      form.mainImage && cleanImages.includes(form.mainImage)
-        ? form.mainImage
-        : cleanImages[0] || "https://placehold.co/250x200?text=No+Image";
-
-    const productData = {
-      name: form.name.trim(),
-      price: Number(form.price),
-      description: form.description.trim(),
-      images: cleanImages,
-      mainImage: mainImg,
-      categoryPage:
-        form.categoryPage &&
-        form.categoryPage !== "null" &&
-        form.categoryPage !== ""
-          ? form.categoryPage
-          : selectedPage || null,
-    };
-
-    try {
-      setUploading("🕓 상품 저장 중...");
-      if (editingId) {
-        await api.put(`/products/${editingId}`, productData, {
-          headers: getAuthHeader(),
-        });
-      } else {
-        await api.post("/products", productData, { headers: getAuthHeader() });
-      }
-      await fetchProducts();
-      setEditingId(null);
-      setForm({
-        name: "",
-        price: "",
-        description: "",
-        images: [],
-        mainImage: "",
-        categoryPage: "",
-      });
-      setUploading(false);
-    } catch (err) {
-      console.error("❌ 상품 저장 실패:", err);
-      setUploading(false);
-    }
-  };
-  const startEdit = (p) => {
-    setEditingId(p._id);
-    setForm({
-      name: p.name,
-      price: p.price,
-      description: p.description,
-      images: p.images || [],
-      mainImage: p.mainImage || p.images?.[0] || "",
-      categoryPage:
-        typeof p.categoryPage === "object"
-          ? p.categoryPage?._id || ""
-          : p.categoryPage || "",
-    });
-    setShowProductForm(true);
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-    setForm({
-      name: "",
-      price: "",
-      description: "",
-      images: [],
-      mainImage: "",
-      categoryPage: "",
-    });
-    setShowProductForm(false);
-  };
-
-  const removeImage = (index) => {
-    const newImages = form.images.filter((_, i) => i !== index);
-    const newMain =
-      form.mainImage === form.images[index] ? newImages[0] || "" : form.mainImage;
-    setForm({ ...form, images: newImages, mainImage: newMain });
-  };
-
-  const setAsMainImage = (img) => setForm((prev) => ({ ...prev, mainImage: img }));
-
-  const deleteProduct = async (id) => {
-    if (!window.confirm("정말 삭제하시겠습니까?")) return;
-    try {
-      await api.delete(`/products/${id}`, { headers: getAuthHeader() });
-      fetchProducts();
-    } catch (err) {
-      console.error("❌ 상품 삭제 실패:", err);
-    }
-  };
-
   return (
     <div style={{ padding: "20px" }}>
       <h1>📦 관리자 페이지</h1>
 
-      {/* ✅ 새 탭 추가 섹션 */}
+      {/* ✅ 새 탭 추가 섹션 (상품명 입력칸 제거 완료) */}
       <div
         style={{
           border: "1px solid #ccc",
@@ -457,18 +262,68 @@ const updatePage = async () => {
         }}
       >
         <h3>🆕 새 탭 추가</h3>
+
+        {/* ✅ 탭 이름 (내부 name 값) */}
         <input
           type="text"
-          placeholder="탭 이름 (name)"
+          placeholder="탭 이름 (예: top)"
           value={newPage.name}
-          onChange={(e) => setNewPage({ ...newPage, name: e.target.value })}
+          onChange={(e) =>
+            setNewPage({ ...newPage, name: e.target.value })
+          }
+          style={{ display: "block", marginBottom: "8px", width: "100%" }}
         />
+
+        {/* ✅ 언어별 표시명 입력 */}
         <input
           type="text"
-          placeholder="표시명 (label)"
-          value={newPage.label}
-          onChange={(e) => setNewPage({ ...newPage, label: e.target.value })}
+          placeholder="한국어 표시명 (ko)"
+          value={newPage.i18nLabels?.ko || ""}
+          onChange={(e) =>
+            setNewPage({
+              ...newPage,
+              i18nLabels: {
+                ...(newPage.i18nLabels || {}),
+                ko: e.target.value,
+              },
+            })
+          }
+          style={{ display: "block", marginBottom: "8px", width: "100%" }}
         />
+
+        <input
+          type="text"
+          placeholder="영어 표시명 (en)"
+          value={newPage.i18nLabels?.en || ""}
+          onChange={(e) =>
+            setNewPage({
+              ...newPage,
+              i18nLabels: {
+                ...(newPage.i18nLabels || {}),
+                en: e.target.value,
+              },
+            })
+          }
+          style={{ display: "block", marginBottom: "8px", width: "100%" }}
+        />
+
+        <input
+          type="text"
+          placeholder="태국어 표시명 (th)"
+          value={newPage.i18nLabels?.th || ""}
+          onChange={(e) =>
+            setNewPage({
+              ...newPage,
+              i18nLabels: {
+                ...(newPage.i18nLabels || {}),
+                th: e.target.value,
+              },
+            })
+          }
+          style={{ display: "block", marginBottom: "8px", width: "100%" }}
+        />
+
+        {/* ✅ 순서 입력 */}
         <input
           type="number"
           placeholder="순서 (order)"
@@ -476,6 +331,7 @@ const updatePage = async () => {
           onChange={(e) =>
             setNewPage({ ...newPage, order: Number(e.target.value) })
           }
+          style={{ display: "block", marginBottom: "8px", width: "100%" }}
         />
 
         {/* ✅ 탭 이미지 업로드 */}
@@ -485,6 +341,7 @@ const updatePage = async () => {
           onChange={handlePageImageUpload}
           style={{ marginTop: "8px" }}
         />
+
         {newPage.image && (
           <img
             src={newPage.image}
@@ -499,6 +356,7 @@ const updatePage = async () => {
             }}
           />
         )}
+
         <button
           onClick={addPage}
           style={{
@@ -515,43 +373,38 @@ const updatePage = async () => {
           ➕ 탭 추가
         </button>
       </div>
-
       {/* ✅ 탭 목록 */}
-      <h2>🗂 탭 목록 / 상품 분류</h2>
-      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+      {pages.map((p) => (
         <button
-          onClick={() => handleTabClick("all")}
+          key={p._id}
+          onClick={() => handleTabClick(p._id)}
           style={{
-            background: activeTab === "all" ? "#007bff" : "#eee",
-            color: activeTab === "all" ? "white" : "black",
+            background: activeTab === p._id ? "#007bff" : "#eee",
+            color: activeTab === p._id ? "white" : "black",
             borderRadius: "6px",
             padding: "6px 12px",
+            marginRight: "6px",
+            marginBottom: "6px",
+            border: "none",
+            cursor: "pointer",
           }}
         >
-          전체 보기
+          {p.i18nLabels?.[currentLang] || p.label || p.name}
         </button>
-        {pages.map((p) => (
-          <button
-            key={p._id}
-            onClick={() => handleTabClick(p._id)}
-            style={{
-              background: activeTab === p._id ? "#007bff" : "#eee",
-              color: activeTab === p._id ? "white" : "black",
-              borderRadius: "6px",
-              padding: "6px 12px",
-            }}
-          >
-            {t(`tabs.${p.name}`, { defaultValue: p.label })}
-          </button>
-        ))}
-      </div>
+      ))}
 
       {/* ✅ 선택된 탭에 따라 상품 등록 폼 표시 */}
       {selectedPage && (
         <div style={{ marginTop: "30px" }}>
           <h2>
-  🛍 {t(`tabs.${pages.find((p) => p._id === selectedPage)?.name}`, { defaultValue: pages.find((p) => p._id === selectedPage)?.label || "상품" })} 추가
-</h2>
+            🛍{" "}
+            {pages.find((p) => p._id === selectedPage)?.i18nLabels?.[
+              currentLang
+            ] ||
+              pages.find((p) => p._id === selectedPage)?.label ||
+              "상품"}{" "}
+            추가
+          </h2>
 
           <AdminProductForm
             selectedPage={selectedPage}
@@ -562,6 +415,7 @@ const updatePage = async () => {
           />
         </div>
       )}
+
       {/* ✅ 기존 직접 입력 상품 등록 폼 (수정 시 표시됨) */}
       {editingId && !selectedPage && (
         <div
@@ -575,12 +429,44 @@ const updatePage = async () => {
           }}
         >
           <h2>✏️ 상품 수정 중...</h2>
+
+          {/* ✅ 언어별 상품명 입력 */}
           <input
             type="text"
-            placeholder="상품명"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            placeholder="상품명 (한국어)"
+            value={form.i18nNames?.ko || ""}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                i18nNames: { ...(form.i18nNames || {}), ko: e.target.value },
+              })
+            }
           />
+
+          <input
+            type="text"
+            placeholder="상품명 (영어)"
+            value={form.i18nNames?.en || ""}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                i18nNames: { ...(form.i18nNames || {}), en: e.target.value },
+              })
+            }
+          />
+
+          <input
+            type="text"
+            placeholder="상품명 (태국어)"
+            value={form.i18nNames?.th || ""}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                i18nNames: { ...(form.i18nNames || {}), th: e.target.value },
+              })
+            }
+          />
+
           <input
             type="number"
             placeholder="가격"
@@ -591,22 +477,30 @@ const updatePage = async () => {
             placeholder="설명"
             rows={3}
             value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, description: e.target.value })
+            }
           />
           <select
             value={form.categoryPage}
-            onChange={(e) => setForm({ ...form, categoryPage: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, categoryPage: e.target.value })
+            }
           >
             <option value="">탭 선택 없음</option>
             {pages.map((p) => (
               <option key={p._id} value={p._id}>
-  {t(`tabs.${p.name}`, { defaultValue: p.label })}
-</option>
-
+                {t(`tabs.${p.name}`, { defaultValue: p.label })}
+              </option>
             ))}
           </select>
 
-          <input type="file" accept="image/*" multiple onChange={handleFileChange} />
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFileChange}
+          />
 
           {uploading && <p style={{ color: "blue" }}>{uploading}</p>}
 
@@ -621,7 +515,9 @@ const updatePage = async () => {
                     height: "80px",
                     objectFit: "cover",
                     border:
-                      img === form.mainImage ? "3px solid blue" : "1px solid #ccc",
+                      img === form.mainImage
+                        ? "3px solid blue"
+                        : "1px solid #ccc",
                     borderRadius: "6px",
                     cursor: "pointer",
                   }}
@@ -647,7 +543,6 @@ const updatePage = async () => {
               </div>
             ))}
           </div>
-
           <button
             onClick={saveProduct}
             style={{
@@ -714,7 +609,8 @@ const updatePage = async () => {
                 }}
               />
               <div style={{ flex: 1 }}>
-                <strong>{p.name}</strong> - {p.price}원
+                <strong>{p.i18nNames?.[currentLang] || p.name}</strong> -{" "}
+                {p.price}원
                 <br />
                 <small>{p.description}</small>
                 {p.categoryPage?.label && (
@@ -723,19 +619,20 @@ const updatePage = async () => {
                   </p>
                 )}
               </div>
+
               <button
-  onClick={() => navigate(`/admin/products/${p._id}/edit`)}
-  style={{
-    padding: "6px 10px",
-    background: "#007bff",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-  }}
->
-  ✏️ 수정
-</button>
+                onClick={() => navigate(`/admin/products/${p._id}/edit`)}
+                style={{
+                  padding: "6px 10px",
+                  background: "#007bff",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                }}
+              >
+                ✏️ 수정
+              </button>
 
               <button
                 onClick={() => deleteProduct(p._id)}
@@ -754,6 +651,7 @@ const updatePage = async () => {
           ))}
         </ul>
       )}
+
       {/* ✅ 상품 상세 이미지 모달 */}
       {modalImages.length > 0 && (
         <ImageModal
@@ -774,6 +672,7 @@ const updatePage = async () => {
                 : p.categoryPage;
             return categoryId === page._id;
           }).length;
+
           return (
             <div
               key={page._id}
@@ -818,8 +717,11 @@ const updatePage = async () => {
                   </div>
                 )}
                 <span>
-                  📂 <strong>{t(`tabs.${page.name}`, { defaultValue: page.label })}</strong> ({count}개)
-
+                  📂{" "}
+                  <strong>
+                    {page.i18nLabels?.[currentLang] || page.label || page.name}
+                  </strong>{" "}
+                  ({count}개)
                 </span>
               </div>
 
@@ -862,22 +764,20 @@ const updatePage = async () => {
                 >
                   ▼
                 </button>
-
                 <button
-  onClick={() => setEditPage(page)}
-  style={{
-    marginLeft: "6px",
-    background: "#ffc107",
-    border: "none",
-    color: "black",
-    padding: "4px 10px",
-    borderRadius: "6px",
-    cursor: "pointer",
-  }}
->
-  ✏ 수정
-</button>
-
+                  onClick={() => setEditPage(page)}
+                  style={{
+                    marginLeft: "6px",
+                    background: "#ffc107",
+                    border: "none",
+                    color: "black",
+                    padding: "4px 10px",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                  }}
+                >
+                  ✏ 수정
+                </button>
                 <button
                   onClick={() => deletePage(page._id)}
                   style={{
@@ -910,97 +810,142 @@ const updatePage = async () => {
         }}
       >
         © 2025 ONYOU 관리자 — 상품 및 페이지 관리 시스템
+
         {/* ✅ 탭 수정 폼 */}
-{editPage && (
-  <div
-    style={{
-      marginTop: "30px",
-      padding: "15px",
-      border: "1px solid #ddd",
-      borderRadius: "8px",
-      maxWidth: "400px",
-    }}
-  >
-    <h3>✏️ 탭 수정 중: {editPage.label}</h3>
+        {editPage && (
+          <div
+            style={{
+              marginTop: "30px",
+              padding: "15px",
+              border: "1px solid #ddd",
+              borderRadius: "8px",
+              maxWidth: "400px",
+              marginInline: "auto",
+            }}
+          >
+            <h3>✏️ 탭 수정 중: {editPage.label}</h3>
+            <input
+              type="text"
+              placeholder="탭 이름 (name)"
+              value={editPage.name}
+              onChange={(e) =>
+                setEditPage({ ...editPage, name: e.target.value })
+              }
+              style={{ display: "block", marginBottom: "8px", width: "100%" }}
+            />
 
-    <input
-      type="text"
-      placeholder="탭 이름 (name)"
-      value={editPage.name}
-      onChange={(e) => setEditPage({ ...editPage, name: e.target.value })}
-      style={{ display: "block", marginBottom: "6px", width: "100%" }}
-    />
+            {/* ✅ 언어별 표시명 */}
+            <input
+              type="text"
+              placeholder="한국어 표시명 (ko)"
+              value={editPage.i18nLabels?.ko || ""}
+              onChange={(e) =>
+                setEditPage({
+                  ...editPage,
+                  i18nLabels: {
+                    ...(editPage.i18nLabels || {}),
+                    ko: e.target.value,
+                  },
+                })
+              }
+              style={{ display: "block", marginBottom: "8px", width: "100%" }}
+            />
+            <input
+              type="text"
+              placeholder="영어 표시명 (en)"
+              value={editPage.i18nLabels?.en || ""}
+              onChange={(e) =>
+                setEditPage({
+                  ...editPage,
+                  i18nLabels: {
+                    ...(editPage.i18nLabels || {}),
+                    en: e.target.value,
+                  },
+                })
+              }
+              style={{ display: "block", marginBottom: "8px", width: "100%" }}
+            />
+            <input
+              type="text"
+              placeholder="태국어 표시명 (th)"
+              value={editPage.i18nLabels?.th || ""}
+              onChange={(e) =>
+                setEditPage({
+                  ...editPage,
+                  i18nLabels: {
+                    ...(editPage.i18nLabels || {}),
+                    th: e.target.value,
+                  },
+                })
+              }
+              style={{ display: "block", marginBottom: "8px", width: "100%" }}
+            />
 
-    <input
-      type="text"
-      placeholder="표시명 (label)"
-      value={editPage.label}
-      onChange={(e) => setEditPage({ ...editPage, label: e.target.value })}
-      style={{ display: "block", marginBottom: "6px", width: "100%" }}
-    />
+            {/* ✅ 순서 */}
+            <input
+              type="number"
+              placeholder="순서 (order)"
+              value={editPage.order}
+              onChange={(e) =>
+                setEditPage({
+                  ...editPage,
+                  order: Number(e.target.value),
+                })
+              }
+              style={{ display: "block", marginBottom: "8px", width: "100%" }}
+            />
 
-    <input
-      type="number"
-      placeholder="순서 (order)"
-      value={editPage.order}
-      onChange={(e) =>
-        setEditPage({ ...editPage, order: Number(e.target.value) })
-      }
-      style={{ display: "block", marginBottom: "6px", width: "100%" }}
-    />
+            {/* ✅ 이미지 업로드 */}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleEditPageImageUpload}
+              style={{ display: "block", marginBottom: "8px" }}
+            />
 
-    <input
-      type="file"
-      accept="image/*"
-      onChange={handleEditPageImageUpload}
-      style={{ display: "block", marginBottom: "8px" }}
-    />
+            {editPage.image && (
+              <img
+                src={editPage.image}
+                alt="미리보기"
+                style={{
+                  width: "120px",
+                  height: "80px",
+                  objectFit: "cover",
+                  borderRadius: "8px",
+                  border: "1px solid #ccc",
+                  marginBottom: "10px",
+                }}
+              />
+            )}
 
-    {editPage.image && (
-      <img
-        src={editPage.image}
-        alt="미리보기"
-        style={{
-          width: "120px",
-          height: "80px",
-          objectFit: "cover",
-          borderRadius: "8px",
-          border: "1px solid #ccc",
-          marginBottom: "10px",
-        }}
-      />
-    )}
-
-    <button
-      onClick={updatePage}
-      style={{
-        background: "#28a745",
-        color: "white",
-        border: "none",
-        padding: "8px 12px",
-        borderRadius: "6px",
-        cursor: "pointer",
-        marginRight: "8px",
-      }}
-    >
-      💾 수정 완료
-    </button>
-
-    <button
-      onClick={() => setEditPage(null)}
-      style={{
-        background: "#ccc",
-        border: "none",
-        padding: "8px 12px",
-        borderRadius: "6px",
-        cursor: "pointer",
-      }}
-    >
-      취소
-    </button>
-  </div>
-)}
-
+            <button
+              onClick={updatePage}
+              style={{
+                background: "#28a745",
+                color: "white",
+                border: "none",
+                padding: "8px 12px",
+                borderRadius: "6px",
+                cursor: "pointer",
+                marginRight: "8px",
+              }}
+            >
+              💾 수정 완료
+            </button>
+            <button
+              onClick={() => setEditPage(null)}
+              style={{
+                background: "#ccc",
+                border: "none",
+                padding: "8px 12px",
+                borderRadius: "6px",
+                cursor: "pointer",
+              }}
+            >
+              취소
+            </button>
+          </div>
+        )}
       </footer>
     </div>
   );

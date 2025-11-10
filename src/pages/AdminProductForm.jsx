@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import api from "../lib/api";
 import noImage from "../assets/no-image.png";
+import { useTranslation } from "react-i18next";
 
-// ✅ 로그인 토큰 자동 포함
 const getAuthHeader = () => {
   const token =
     localStorage.getItem("token") || sessionStorage.getItem("token");
@@ -10,41 +10,23 @@ const getAuthHeader = () => {
 };
 
 function AdminProductForm({ selectedPage, onSave }) {
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language || "ko";
+
   const [form, setForm] = useState({
-    name: "",
+    i18nNames: { ko: "", en: "", th: "" }, // ✅ 다국어 상품명 추가
     price: "",
     description: "",
-    detailText: "", // ✅ 상품 상세정보 추가
-    sizeText: "",   // ✅ 사이즈 및 구매안내 추가
+    detailText: "",
+    sizeText: "",
     images: [],
     mainImage: "",
     categoryPage: selectedPage || "",
   });
 
-  const [pages, setPages] = useState([]);
   const [uploading, setUploading] = useState(false);
 
-  useEffect(() => {
-    fetchPages();
-  }, []);
-
-  useEffect(() => {
-    if (selectedPage) {
-      setForm((prev) => ({ ...prev, categoryPage: selectedPage }));
-    }
-  }, [selectedPage]);
-
-  // ✅ 탭(카테고리 페이지) 목록 불러오기
-  const fetchPages = async () => {
-    try {
-      const res = await api.get("/api/pages", { headers: getAuthHeader() });
-      setPages(res.data || []);
-    } catch (err) {
-      console.error("❌ 탭 불러오기 실패:", err);
-    }
-  };
-
-  // ✅ Cloudinary 단일 업로드
+  // ✅ 단일 이미지 업로드
   const uploadSingle = async (file) => {
     try {
       const formData = new FormData();
@@ -54,12 +36,12 @@ function AdminProductForm({ selectedPage, onSave }) {
       });
       return res.data?.imageUrl || null;
     } catch (err) {
-      console.error("❌ 이미지 업로드 실패:", err);
+      console.error("❌ 업로드 실패:", err);
       return null;
     }
   };
 
-  // ✅ 여러 이미지 업로드
+  // ✅ 다중 업로드
   const handleImageUpload = async (filesToUpload) => {
     const uploadedUrls = [];
     setUploading("🕓 이미지 업로드 중...");
@@ -67,22 +49,20 @@ function AdminProductForm({ selectedPage, onSave }) {
       const file = filesToUpload[i];
       const url = await uploadSingle(file);
       if (url) uploadedUrls.push(url);
-      await new Promise((r) => setTimeout(r, 300));
+      await new Promise((r) => setTimeout(r, 400));
     }
     setUploading(false);
     return uploadedUrls;
   };
 
-  // ✅ 이미지 선택 시 업로드 처리
+  // ✅ 업로드 + 미리보기
   const handleFileChange = async (e) => {
     const selected = Array.from(e.target.files);
     if (!selected.length) return;
 
-    // 미리보기
     const previews = selected.map((f) => URL.createObjectURL(f));
     setForm((prev) => ({ ...prev, images: [...prev.images, ...previews] }));
 
-    // 업로드
     const uploaded = await handleImageUpload(selected);
     if (uploaded.length) {
       setForm((prev) => {
@@ -98,22 +78,22 @@ function AdminProductForm({ selectedPage, onSave }) {
     }
   };
 
-  // ✅ 메인 이미지 설정
-  const setAsMainImage = (img) => {
-    setForm((prev) => ({ ...prev, mainImage: img }));
-  };
-
-  // ✅ 이미지 제거
+  // ✅ 이미지 삭제
   const removeImage = (index) => {
     const newImages = form.images.filter((_, i) => i !== index);
     const newMain =
-      form.mainImage === form.images[index] ? newImages[0] || "" : form.mainImage;
+      form.mainImage === form.images[index]
+        ? newImages[0] || ""
+        : form.mainImage;
     setForm({ ...form, images: newImages, mainImage: newMain });
   };
+
+  const setAsMainImage = (img) => setForm({ ...form, mainImage: img });
+
   // ✅ 상품 저장
   const saveProduct = async () => {
-    if (!form.name || !form.price) {
-      alert("상품명과 가격은 필수입니다!");
+    if (!form.i18nNames?.ko || !form.price) {
+      alert("상품명(한국어)과 가격은 필수입니다!");
       return;
     }
 
@@ -126,13 +106,13 @@ function AdminProductForm({ selectedPage, onSave }) {
         ? form.mainImage
         : cleanImages[0] || "https://placehold.co/250x200?text=No+Image";
 
-    // ✅ 상품 상세정보(detailText), 사이즈(sizeText) 함께 전송
     const productData = {
-      name: form.name.trim(),
+      i18nNames: form.i18nNames,
+      name: form.i18nNames?.ko || "Unnamed Product", // ✅ ko 기준
       price: Number(form.price),
       description: form.description.trim(),
-      detailText: form.detailText.trim(), // ✅ 추가됨
-      sizeText: form.sizeText.trim(),     // ✅ 추가됨
+      detailText: form.detailText.trim(),
+      sizeText: form.sizeText.trim(),
       images: cleanImages,
       mainImage: mainImg,
       categoryPage:
@@ -144,22 +124,22 @@ function AdminProductForm({ selectedPage, onSave }) {
     try {
       setUploading("🕓 상품 저장 중...");
       await api.post("/products", productData, { headers: getAuthHeader() });
-      alert("✅ 상품이 추가되었습니다!");
-      if (onSave) onSave();
+      setUploading(false);
+      alert("✅ 상품이 등록되었습니다!");
       setForm({
-        name: "",
+        i18nNames: { ko: "", en: "", th: "" },
         price: "",
         description: "",
-        detailText: "", // ✅ 초기화
-        sizeText: "",   // ✅ 초기화
+        detailText: "",
+        sizeText: "",
         images: [],
         mainImage: "",
         categoryPage: selectedPage || "",
       });
-      setUploading(false);
+      onSave?.();
     } catch (err) {
       console.error("❌ 상품 저장 실패:", err);
-      alert("상품 저장 실패 (권한 필요)");
+      alert("상품 저장 중 오류가 발생했습니다.");
       setUploading(false);
     }
   };
@@ -167,19 +147,48 @@ function AdminProductForm({ selectedPage, onSave }) {
   return (
     <div
       style={{
-        border: "1px solid #ccc",
-        borderRadius: "10px",
-        padding: "20px",
-        maxWidth: "400px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+        maxWidth: "350px",
         marginBottom: "30px",
       }}
     >
-      <h3>🛒 상품 추가</h3>
+      <h3>🛍 새 상품 추가</h3>
+
+      {/* ✅ 언어별 상품명 입력 */}
       <input
         type="text"
-        placeholder="상품명"
-        value={form.name}
-        onChange={(e) => setForm({ ...form, name: e.target.value })}
+        placeholder="상품명 (한국어)"
+        value={form.i18nNames?.ko || ""}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            i18nNames: { ...(form.i18nNames || {}), ko: e.target.value },
+          })
+        }
+      />
+      <input
+        type="text"
+        placeholder="상품명 (영어)"
+        value={form.i18nNames?.en || ""}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            i18nNames: { ...(form.i18nNames || {}), en: e.target.value },
+          })
+        }
+      />
+      <input
+        type="text"
+        placeholder="상품명 (태국어)"
+        value={form.i18nNames?.th || ""}
+        onChange={(e) =>
+          setForm({
+            ...form,
+            i18nNames: { ...(form.i18nNames || {}), th: e.target.value },
+          })
+        }
       />
       <input
         type="number"
@@ -187,65 +196,40 @@ function AdminProductForm({ selectedPage, onSave }) {
         value={form.price}
         onChange={(e) => setForm({ ...form, price: e.target.value })}
       />
+
       <textarea
         placeholder="상품 설명"
         rows={3}
         value={form.description}
         onChange={(e) => setForm({ ...form, description: e.target.value })}
       />
-      {/* ✅ 상품 상세정보 추가 */}
+
       <textarea
-        placeholder="상품 상세정보 입력 (예: 원단, 세탁법, 재질 등)"
-        rows={4}
+        placeholder="상세 설명 (detailText)"
+        rows={3}
         value={form.detailText}
         onChange={(e) => setForm({ ...form, detailText: e.target.value })}
-        style={{ marginTop: "10px" }}
       />
-      {/* ✅ 사이즈 및 구매안내 추가 */}
+
       <textarea
-        placeholder="사이즈 및 구매 안내 입력 (예: 사이즈표, 주의사항 등)"
-        rows={4}
+        placeholder="사이즈 정보 (sizeText)"
+        rows={2}
         value={form.sizeText}
         onChange={(e) => setForm({ ...form, sizeText: e.target.value })}
-        style={{ marginTop: "10px" }}
       />
-      <select
-        value={form.categoryPage}
-        onChange={(e) => setForm({ ...form, categoryPage: e.target.value })}
-      >
-        <option value="">탭 선택 없음</option>
-        {pages.map((p) => (
-          <option key={p._id} value={p._id}>
-            {p.label}
-          </option>
-        ))}
-      </select>
 
-      {/* ✅ 이미지 업로드 입력 */}
+      {/* ✅ 이미지 업로드 */}
       <input
         type="file"
         accept="image/*"
         multiple
         onChange={handleFileChange}
-        style={{ marginTop: "10px" }}
       />
 
-      {/* ✅ 업로드 상태 표시 */}
-      {uploading && (
-        <p style={{ color: "blue", marginTop: "8px" }}>
-          {uploading === true ? "업로드 중..." : uploading}
-        </p>
-      )}
+      {uploading && <p style={{ color: "blue" }}>{uploading}</p>}
 
       {/* ✅ 이미지 미리보기 */}
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "8px",
-          marginTop: "10px",
-        }}
-      >
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
         {form.images.map((img, idx) => (
           <div key={idx} style={{ position: "relative" }}>
             <img
@@ -261,6 +245,7 @@ function AdminProductForm({ selectedPage, onSave }) {
                 cursor: "pointer",
               }}
               onClick={() => setAsMainImage(img)}
+              onError={(e) => (e.currentTarget.src = noImage)}
             />
             <button
               onClick={() => removeImage(idx)}
@@ -283,30 +268,11 @@ function AdminProductForm({ selectedPage, onSave }) {
         ))}
       </div>
 
-      {/* ✅ 메인 이미지 표시 */}
-      {form.mainImage && (
-        <div style={{ marginTop: "10px" }}>
-          <p style={{ fontSize: "12px", color: "gray" }}>메인 이미지 미리보기</p>
-          <img
-            src={form.mainImage || noImage}
-            alt="main"
-            style={{
-              width: "120px",
-              height: "120px",
-              objectFit: "cover",
-              borderRadius: "8px",
-              border: "2px solid #007bff",
-            }}
-          />
-        </div>
-      )}
-
       {/* ✅ 저장 버튼 */}
       <button
         onClick={saveProduct}
         style={{
-          display: "block",
-          marginTop: "20px",
+          marginTop: "10px",
           background: "#28a745",
           color: "white",
           border: "none",
@@ -315,7 +281,7 @@ function AdminProductForm({ selectedPage, onSave }) {
           cursor: "pointer",
         }}
       >
-        💾 상품 추가 완료
+        💾 상품 저장
       </button>
     </div>
   );
