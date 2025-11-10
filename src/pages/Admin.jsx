@@ -541,7 +541,7 @@ const updatePage = async () => {
               padding: "6px 12px",
             }}
           >
-            {p.i18nLabels?.[currentLang] || p.label}
+            {t(`tabs.${p.name}`, { defaultValue: p.label })}
           </button>
         ))}
       </div>
@@ -549,7 +549,10 @@ const updatePage = async () => {
       {/* ✅ 선택된 탭에 따라 상품 등록 폼 표시 */}
       {selectedPage && (
         <div style={{ marginTop: "30px" }}>
-          <h2>🛍 {pages.find((p) => p._id === selectedPage)?.label || "상품"} 추가</h2>
+          <h2>
+  🛍 {t(`tabs.${pages.find((p) => p._id === selectedPage)?.name}`, { defaultValue: pages.find((p) => p._id === selectedPage)?.label || "상품" })} 추가
+</h2>
+
           <AdminProductForm
             selectedPage={selectedPage}
             onSave={() => {
@@ -597,8 +600,9 @@ const updatePage = async () => {
             <option value="">탭 선택 없음</option>
             {pages.map((p) => (
               <option key={p._id} value={p._id}>
-                {p.label}
-              </option>
+  {t(`tabs.${p.name}`, { defaultValue: p.label })}
+</option>
+
             ))}
           </select>
 
@@ -814,7 +818,8 @@ const updatePage = async () => {
                   </div>
                 )}
                 <span>
-                  📂 <strong>{page.label}</strong> ({count}개)
+                  📂 <strong>{t(`tabs.${page.name}`, { defaultValue: page.label })}</strong> ({count}개)
+
                 </span>
               </div>
 
@@ -905,6 +910,97 @@ const updatePage = async () => {
         }}
       >
         © 2025 ONYOU 관리자 — 상품 및 페이지 관리 시스템
+        {/* ✅ 탭 수정 폼 */}
+{editPage && (
+  <div
+    style={{
+      marginTop: "30px",
+      padding: "15px",
+      border: "1px solid #ddd",
+      borderRadius: "8px",
+      maxWidth: "400px",
+    }}
+  >
+    <h3>✏️ 탭 수정 중: {editPage.label}</h3>
+
+    <input
+      type="text"
+      placeholder="탭 이름 (name)"
+      value={editPage.name}
+      onChange={(e) => setEditPage({ ...editPage, name: e.target.value })}
+      style={{ display: "block", marginBottom: "6px", width: "100%" }}
+    />
+
+    <input
+      type="text"
+      placeholder="표시명 (label)"
+      value={editPage.label}
+      onChange={(e) => setEditPage({ ...editPage, label: e.target.value })}
+      style={{ display: "block", marginBottom: "6px", width: "100%" }}
+    />
+
+    <input
+      type="number"
+      placeholder="순서 (order)"
+      value={editPage.order}
+      onChange={(e) =>
+        setEditPage({ ...editPage, order: Number(e.target.value) })
+      }
+      style={{ display: "block", marginBottom: "6px", width: "100%" }}
+    />
+
+    <input
+      type="file"
+      accept="image/*"
+      onChange={handleEditPageImageUpload}
+      style={{ display: "block", marginBottom: "8px" }}
+    />
+
+    {editPage.image && (
+      <img
+        src={editPage.image}
+        alt="미리보기"
+        style={{
+          width: "120px",
+          height: "80px",
+          objectFit: "cover",
+          borderRadius: "8px",
+          border: "1px solid #ccc",
+          marginBottom: "10px",
+        }}
+      />
+    )}
+
+    <button
+      onClick={updatePage}
+      style={{
+        background: "#28a745",
+        color: "white",
+        border: "none",
+        padding: "8px 12px",
+        borderRadius: "6px",
+        cursor: "pointer",
+        marginRight: "8px",
+      }}
+    >
+      💾 수정 완료
+    </button>
+
+    <button
+      onClick={() => setEditPage(null)}
+      style={{
+        background: "#ccc",
+        border: "none",
+        padding: "8px 12px",
+        borderRadius: "6px",
+        cursor: "pointer",
+      }}
+    >
+      취소
+    </button>
+  </div>
+)}
+
       </footer>
     </div>
   );
