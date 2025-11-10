@@ -9,7 +9,8 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    fallbackLng: "ko", // 기본 언어 (한국어)
+    fallbackLng: "th", // 기본 언어 (한국어)
+    supportedLngs: ["ko", "en", "th"],
     debug: true,
     backend: {
       // ✅ public 폴더 안의 locales에서 번역 파일 불러오기
