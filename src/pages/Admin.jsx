@@ -209,6 +209,185 @@ function Admin() {
     }
   };
 
+  // ✅ 단일 이미지 업로드 (상품·탭 공용)
+  const uploadSingle = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await api.post("/api/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data", ...getAuthHeader() },
+      });
+      return res.data?.imageUrl || null;
+    } catch (err) {
+      console.error("❌ 단일 업로드 실패:", err);
+      return null;
+    }
+  };
+
+  // ✅ 새 탭 이미지 업로드 (탭 추가용)
+  const handlePageImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const uploadedUrl = await uploadSingle(file);
+    if (uploadedUrl) {
+      setNewPage((prev) => ({ ...prev, image: uploadedUrl }));
+      alert("✅ 탭 이미지 업로드 완료!");
+    }
+  };
+
+  // ✅ 탭 수정 시 이미지 업로드 (수정용)
+  const handleEditPageImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const uploadedUrl = await uploadSingle(file);
+    if (uploadedUrl) {
+      setEditPage((prev) => ({ ...prev, image: uploadedUrl }));
+      alert("✅ 수정 중인 탭 이미지 업로드 완료!");
+    }
+  };
+
+  // ✅ 상품 이미지 업로드 (기존 상품용)
+  const handleFileChange = async (e) => {
+    const selected = Array.from(e.target.files);
+    if (!selected.length) return;
+
+    const uploadedUrls = [];
+    setUploading("🕓 이미지 업로드 중...");
+
+    for (let i = 0; i < selected.length; i++) {
+      const file = selected[i];
+      const uploadedUrl = await uploadSingle(file);
+      if (uploadedUrl) uploadedUrls.push(uploadedUrl);
+    }
+
+    setUploading(false);
+
+    setForm((prev) => ({
+      ...prev,
+      images: [...prev.images, ...uploadedUrls],
+      mainImage: prev.mainImage || uploadedUrls[0],
+    }));
+  };
+
+  // ✅ 메인 이미지 지정
+  const setAsMainImage = (img) =>
+    setForm((prev) => ({ ...prev, mainImage: img }));
+
+  // ✅ 이미지 제거
+  const removeImage = (index) => {
+    setForm((prev) => {
+      const newImages = prev.images.filter((_, i) => i !== index);
+      return {
+        ...prev,
+        images: newImages,
+        mainImage:
+          prev.mainImage === prev.images[index]
+            ? newImages[0] || ""
+            : prev.mainImage,
+      };
+    });
+  };
+
+  // ✅ 상품 저장
+  const saveProduct = async () => {
+    if (!form.i18nNames?.ko || !form.price) {
+      alert("상품명(한국어)과 가격은 필수입니다!");
+      return;
+    }
+
+    const cleanImages = form.images.filter(Boolean);
+    const mainImg =
+      form.mainImage && cleanImages.includes(form.mainImage)
+        ? form.mainImage
+        : cleanImages[0] || "";
+
+    const productData = {
+      i18nNames: form.i18nNames,
+      name: form.i18nNames.ko || form.name,
+      price: Number(form.price),
+      description: form.description.trim(),
+      detailText: form.detailText.trim(),
+      sizeText: form.sizeText.trim(),
+      images: cleanImages,
+      mainImage: mainImg,
+      categoryPage: selectedPage,
+    };
+
+    try {
+      setUploading("🕓 상품 저장 중...");
+      if (editingId) {
+        await api.put(`/products/${editingId}`, productData, {
+          headers: getAuthHeader(),
+        });
+      } else {
+        await api.post("/products", productData, {
+          headers: getAuthHeader(),
+        });
+      }
+      alert("✅ 상품이 저장되었습니다!");
+      setUploading(false);
+      fetchProducts();
+      setEditingId(null);
+      setForm({
+        i18nNames: { ko: "", en: "", th: "" },
+        name: "",
+        price: "",
+        description: "",
+        detailText: "",
+        sizeText: "",
+        images: [],
+        mainImage: "",
+        categoryPage: "",
+      });
+    } catch (err) {
+      console.error("❌ 상품 저장 실패:", err);
+      setUploading(false);
+      alert("상품 저장 중 오류가 발생했습니다.");
+    }
+  };
+
+    // ✅ 상품 수정 취소
+  const cancelEdit = () => {
+    setEditingId(null);
+    setForm({
+      i18nNames: { ko: "", en: "", th: "" },
+      name: "",
+      price: "",
+      description: "",
+      detailText: "",
+      sizeText: "",
+      images: [],
+      mainImage: "",
+      categoryPage: "",
+    });
+  };
+
+  // ✅ 상품 삭제
+  const deleteProduct = async (id) => {
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+    try {
+      await api.delete(`/products/${id}`, { headers: getAuthHeader() });
+      fetchProducts();
+      alert("🗑️ 상품이 삭제되었습니다!");
+    } catch (err) {
+      console.error("❌ 상품 삭제 실패:", err);
+      alert("상품 삭제 중 오류가 발생했습니다.");
+    }
+  };
+
+    // ✅ 탭 삭제
+  const deletePage = async (id) => {
+    if (!window.confirm("정말 이 탭을 삭제하시겠습니까?")) return;
+    try {
+      await api.delete(`/api/pages/${id}`, { headers: getAuthHeader() });
+      alert("🗑️ 탭이 삭제되었습니다!");
+      fetchPages();
+    } catch (err) {
+      console.error("❌ 탭 삭제 실패:", err);
+      alert(err.response?.data?.message || "탭 삭제 중 오류가 발생했습니다.");
+    }
+  };
+
   // ✅ 탭 순서 변경
   const movePage = async (id, direction) => {
     const index = pages.findIndex((p) => p._id === id);
@@ -633,6 +812,7 @@ function Admin() {
               >
                 ✏️ 수정
               </button>
+              
 
               <button
                 onClick={() => deleteProduct(p._id)}
