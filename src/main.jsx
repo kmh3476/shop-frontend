@@ -1,4 +1,5 @@
 // 📁 src/main.jsx
+import "./i18n"; // ✅ 꼭 제일 위에서 i18next 초기화
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
