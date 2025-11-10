@@ -10,25 +10,23 @@ i18n
   .use(initReactI18next)
   .init({
     debug: true,
-
-    fallbackLng: "th", // ✅ 기본 언어를 태국어로 설정
-    supportedLngs: ["ko", "en", "th"], // ✅ 지원 언어 목록
-    preload: ["th"], // ✅ 태국어 먼저 미리 로드
-    load: "languageOnly", // ✅ th-TH → th 로 변환
-
+    fallbackLng: "th", // ✅ 태국어 기본
+    supportedLngs: ["ko", "en", "th"],
+    preload: ["th"],
+    load: "languageOnly",
     backend: {
-      // ✅ public 폴더 안의 locales 경로에서 불러오기
       loadPath: "/locales/{{lng}}/translation.json",
     },
-
     detection: {
-      order: ["localStorage", "navigator", "htmlTag"],
-      caches: ["localStorage"], // ✅ 언어 설정 저장
+      order: ["localStorage"], // ✅ 브라우저 언어 감지 제거
+      caches: ["localStorage"], // ✅ 저장된 언어만 따름
     },
-
     interpolation: {
       escapeValue: false,
     },
   });
+
+// ✅ 앱 실행 시 기본 언어를 태국어로 강제 설정
+i18n.changeLanguage("th");
 
 export default i18n;
