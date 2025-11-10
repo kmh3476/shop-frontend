@@ -310,19 +310,19 @@ function ProductList() {
         </button>
 
         {pages.map((p) => (
-          <button
-            key={p._id}
-            onClick={() => handlePageChange(p._id)}
-            className={`px-4 py-2 rounded-full border transition ${
-              activePage === p._id
-                ? "bg-blue-500 text-white border-blue-500"
-                : "bg-white text-gray-600 border-gray-300 hover:bg-blue-50"
-            }`}
-            disabled={isEditMode || isResizeMode}
-          >
-            {p.label}
-          </button>
-        ))}
+  <button
+    key={p._id}
+    onClick={() => handlePageChange(p._id)}
+    className={`px-4 py-2 rounded-full border transition ${
+      activePage === p._id
+        ? "bg-blue-500 text-white border-blue-500"
+        : "bg-white text-gray-600 border-gray-300 hover:bg-blue-50"
+    }`}
+    disabled={isEditMode || isResizeMode}
+  >
+    {p.i18nLabels?.[i18n.language] || p.label || p.name}
+  </button>
+))}
       </div>
 
       {/* 상품 목록 */}
