@@ -375,5 +375,23 @@
     "top": "Top",
     "bottom": "Bottom",
     "coordi": "Coordi"
+  },
+
+  "authapi": {
+    "signup_success": "Sign-up successful",
+    "signup_error": "Sign-up failed",
+    "login_success": "Login successful",
+    "login_failed": "Login failed",
+    "logout_done": "Logout completed",
+    "logout_failed": "Logout failed",
+    "refresh_failed": "Token refresh failed",
+    "profile_failed": "Failed to load profile",
+    "update_success": "Profile updated successfully",
+    "update_failed": "Profile update failed",
+    "password_changed": "Password changed successfully",
+    "password_change_failed": "Password change failed",
+    "email_check_failed": "Email duplication check failed",
+    "token_invalid": "Token is invalid. Please log in again.",
+    "admin_check_failed": "Admin verification failed"
   }
 }
