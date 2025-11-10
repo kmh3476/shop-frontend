@@ -3,6 +3,7 @@ import api from "../lib/api";
 import noImage from "../assets/no-image.png";
 import AdminProductForm from "./AdminProductForm"; // ✅ 상품 등록 컴포넌트 연결 추가
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 // ✅ 로그인 토큰 자동 포함 헬퍼
 const getAuthHeader = () => {
@@ -72,6 +73,8 @@ function ImageModal({ images = [], startIndex = 0, onClose }) {
 }
 
 function Admin() {
+  const { i18n } = useTranslation();
+const currentLang = i18n.language || "en";
   const navigate = useNavigate();
 
   const [products, setProducts] = useState([]);
@@ -98,6 +101,8 @@ function Admin() {
   const [activeTab, setActiveTab] = useState("all"); // ✅ 현재 선택된 탭
   const [showProductForm, setShowProductForm] = useState(false);
   const [selectedPage, setSelectedPage] = useState(null);
+  const [editPage, setEditPage] = useState(null); // ✅ 현재 수정 중인 탭 정보
+
 
   useEffect(() => {
     fetchProducts();
@@ -198,6 +203,26 @@ function Admin() {
     }
   };
 
+  // ✅ 수정 중인 탭 이미지 변경
+const handleEditPageImageUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file || !editPage) return;
+  try {
+    const formData = new FormData();
+    formData.append("image", file);
+    const res = await api.post("/api/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data", ...getAuthHeader() },
+    });
+    if (res.data?.imageUrl) {
+      setEditPage({ ...editPage, image: res.data.imageUrl });
+      alert("🖼️ 수정용 이미지 업로드 완료!");
+    }
+  } catch (err) {
+    console.error("❌ 탭 이미지 업로드 실패:", err);
+  }
+};
+
+
   // ✅ 탭 삭제
   const deletePage = async (id) => {
     if (!window.confirm("정말 이 탭을 삭제할까요?")) return;
@@ -209,6 +234,24 @@ function Admin() {
       alert("탭 삭제 실패 (인증 필요)");
     }
   };
+
+  // ✅ 탭 수정 저장
+const updatePage = async () => {
+  if (!editPage || !editPage._id) return alert("수정할 탭이 없습니다.");
+
+  try {
+    await api.put(`/api/pages/${editPage._id}`, editPage, {
+      headers: { "Content-Type": "application/json", ...getAuthHeader() },
+    });
+    alert("✅ 탭이 수정되었습니다!");
+    setEditPage(null);
+    fetchPages();
+  } catch (err) {
+    console.error("❌ 탭 수정 실패:", err);
+    alert(err.response?.data?.message || "탭 수정 실패 (인증 필요)");
+  }
+};
+
 
   // ✅ 탭 순서 변경
   const movePage = async (id, direction) => {
@@ -498,7 +541,7 @@ function Admin() {
               padding: "6px 12px",
             }}
           >
-            {p.label}
+            {p.i18nLabels?.[currentLang] || p.label}
           </button>
         ))}
       </div>
@@ -814,6 +857,22 @@ function Admin() {
                 >
                   ▼
                 </button>
+
+                <button
+  onClick={() => setEditPage(page)}
+  style={{
+    marginLeft: "6px",
+    background: "#ffc107",
+    border: "none",
+    color: "black",
+    padding: "4px 10px",
+    borderRadius: "6px",
+    cursor: "pointer",
+  }}
+>
+  ✏ 수정
+</button>
+
                 <button
                   onClick={() => deletePage(page._id)}
                   style={{

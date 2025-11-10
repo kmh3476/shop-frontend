@@ -368,5 +368,12 @@
     "brandStoryTitle": "Brand Story",
     "brandStoryDesc": "ONYOU pursues comfort in everyday life through simple yet sophisticated design. Inspired by nature, color, and texture, our products bring new inspiration to your daily routine.",
     "footer": "All rights reserved by ONYOU."
+  },
+
+  "tabs": {
+    "featured": "Featured",
+    "top": "Top",
+    "bottom": "Bottom",
+    "coordi": "Coordi"
   }
 }
