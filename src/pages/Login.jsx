@@ -49,9 +49,8 @@ export default function Login() {
       navigate("/");
     } catch (err) {
       console.error("로그인 오류:", err);
-      setError(
-        err.response?.data?.message || t("login.failed")
-      );
+      setError(err.response?.data || { message: t("login.failed") });
+
     } finally {
       setLoading(false);
     }
@@ -78,10 +77,11 @@ export default function Login() {
         {/* 폼 */}
         <form onSubmit={handleSubmit} className="px-6 py-8" autoComplete="off">
           {error && (
-            <div className="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded">
-              {error}
-            </div>
-          )}
+  <div className="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded">
+    {error.i18n?.text || error.message || error || t("login.failed")}
+  </div>
+)}
+
 
           {/* 아이디/이메일 */}
           <label className="block text-sm font-medium text-gray-700">
