@@ -34,4 +34,6 @@ i18n.on("initialized", () => {
   console.log("✅ i18n initialized → 기본 언어: th");
 });
 
+window.i18next = i18n;
+
 export default i18n;
