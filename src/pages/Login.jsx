@@ -8,7 +8,7 @@ export default function Login() {
   const [loginInput, setLoginInput] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
-  const [error, setError] = useState("");
+const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const { t } = useTranslation();
 
@@ -18,49 +18,51 @@ export default function Login() {
   const API = "https://shop-backend-1-dfsl.onrender.com/api/auth/login";
 
   async function handleSubmit(e) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  e.preventDefault();
+  setError(null);
+  setLoading(true);
 
-    if (!loginInput.trim()) {
-      setLoading(false);
-      return setError(t("login.missingIdOrEmail"));
-    }
-    if (!password.trim()) {
-      setLoading(false);
-      return setError(t("login.missingPassword"));
-    }
-
-    try {
-      const isEmail = /\S+@\S+\.\S+/.test(loginInput);
-      const payload = isEmail
-        ? { email: loginInput, password }
-        : { userId: loginInput, password };
-
-      const res = await axios.post(API, payload);
-
-      if (!res.data?.token) {
-        throw new Error(t("login.noToken"));
-      }
-
-      login(res.data.user, res.data.token, res.data.refreshToken);
-
-      alert(t("login.success"));
-      navigate("/");
-    } catch (err) {
-      console.error("로그인 오류:", err);
-      const data = err.response?.data;
-if (typeof data === "string") {
-  setError({ message: data });
-} else {
-  setError(data || { message: t("login.failed") });
-}
-
-
-    } finally {
-      setLoading(false);
-    }
+  if (!loginInput.trim()) {
+    setLoading(false);
+    return setError(t("login.missingIdOrEmail"));
   }
+  if (!password.trim()) {
+    setLoading(false);
+    return setError(t("login.missingPassword"));
+  }
+
+  try {
+    const isEmail = /\S+@\S+\.\S+/.test(loginInput);
+    const payload = isEmail
+      ? { email: loginInput, password }
+      : { userId: loginInput, password };
+
+    const res = await axios.post(API, payload);
+
+    if (!res.data?.token) {
+      throw new Error(t("login.noToken"));
+    }
+
+    login(res.data.user, res.data.token, res.data.refreshToken);
+    alert(t("login.success"));
+    navigate("/");
+  } catch (err) {
+    console.error("로그인 오류:", err);
+    const data = err.response?.data;
+
+    if (!data) {
+      setError({ message: t("login.failed") });
+    } else if (typeof data === "string") {
+      setError({ message: data });
+    } else if (data.i18n) {
+      setError({ message: data.message, i18n: data.i18n });
+    } else {
+      setError({ message: data.message || t("login.failed") });
+    }
+  } finally {
+    setLoading(false);
+  } // ✅ 이 닫는 괄호 추가!!
+} // ✅ handleSubmit 함수 닫기
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-start justify-center py-8 px-4 sm:px-6">
