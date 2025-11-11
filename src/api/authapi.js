@@ -10,7 +10,7 @@ const getCurrentLng = () => {
 };
 
 // 초기 설정
-axios.defaults.headers.common["Accept-Language"] = getCurrentLng();
+axios.defaults.headers.common["X-App-Language"] = getCurrentLng();
 
 // 언어 변경 시 즉시 반영
 i18next.on("languageChanged", (lng) => {
@@ -20,9 +20,11 @@ i18next.on("languageChanged", (lng) => {
 // 요청 직전 인터셉터 (항상 최신 언어 반영)
 axios.interceptors.request.use((config) => {
   config.headers = config.headers || {};
-  config.headers["Accept-Language"] = getCurrentLng();
+  config.headers["X-App-Language"] = getCurrentLng();
+  console.log("🚀 보내는 X-App-Language:", getCurrentLng());
   return config;
 });
+
 
 /* -------------------------------------------------
 ✅ 2. API URL 설정
