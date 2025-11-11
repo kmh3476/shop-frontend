@@ -1,47 +1,41 @@
 // 📁 src/api/authapi.js
 import axios from "axios";
-import i18next from "i18next"; // ✅ 번역기 직접 import
+import i18next from "i18next"; // ✅ 번역기 import 추가
 
 const API_URL =
   import.meta.env.VITE_API_URL || "https://shop-backend-1-dfsl.onrender.com";
 
-// ✅ API 호출 함수들
+// ✅ 회원가입
 export const signup = async (userData) => {
   try {
     const res = await axios.post(`${API_URL}/api/auth/signup`, userData);
     console.log("회원가입 성공:", res.data);
-    alert(i18next.t("authapi.signup_success")); // ✅ 번역 적용
+    alert(i18next.t("authapi.signup_success")); // ✅ i18n 메시지 적용
     return res.data;
   } catch (err) {
     console.error("회원가입 오류:", err);
-    const msg =
-      err.response?.data?.messageCode ||
-      err.response?.data?.message ||
-      "authapi.signup_error";
-    alert(i18next.t(msg)); // ✅ i18next.t() 사용
+    alert(i18next.t("authapi.signup_error"));
     throw err;
   }
 };
 
+// ✅ 로그인
 export const login = async (email, password) => {
   try {
     const res = await axios.post(`${API_URL}/api/auth/login`, { email, password });
     console.log("로그인 성공:", res.data);
-    alert(i18next.t("authapi.login_success"));
+    alert(i18next.t("authapi.login_success")); // ✅ i18n 메시지 적용
     localStorage.setItem("token", res.data.token);
     localStorage.setItem("refreshToken", res.data.refreshToken);
     return res.data;
   } catch (err) {
     console.error("로그인 오류:", err);
-    const msg =
-      err.response?.data?.messageCode ||
-      err.response?.data?.message ||
-      "authapi.login_failed";
-    alert(i18next.t(msg));
+    alert(i18next.t("authapi.login_failed")); // ✅ 실패 메시지도 번역 키로
     throw err;
   }
 };
 
+// ✅ 로그아웃
 export const logout = async () => {
   try {
     const refreshToken = localStorage.getItem("refreshToken");
@@ -55,6 +49,7 @@ export const logout = async () => {
   }
 };
 
+// ✅ 토큰 갱신
 export const refreshAccessToken = async () => {
   try {
     const refreshToken = localStorage.getItem("refreshToken");
@@ -72,6 +67,7 @@ export const refreshAccessToken = async () => {
   }
 };
 
+// ✅ 프로필 조회
 export const getProfile = async () => {
   try {
     const token = localStorage.getItem("token");
@@ -86,7 +82,7 @@ export const getProfile = async () => {
   }
 };
 
-// ✅ 추가 기능들
+// ✅ 프로필 수정
 export const updateProfile = async (updateData) => {
   try {
     const token = localStorage.getItem("token");
@@ -97,15 +93,12 @@ export const updateProfile = async (updateData) => {
     return res.data;
   } catch (err) {
     console.error("프로필 업데이트 오류:", err);
-    const msg =
-      err.response?.data?.messageCode ||
-      err.response?.data?.message ||
-      "authapi.update_failed";
-    alert(i18next.t(msg));
+    alert(i18next.t("authapi.update_failed"));
     throw err;
   }
 };
 
+// ✅ 비밀번호 변경
 export const changePassword = async (oldPw, newPw) => {
   try {
     const token = localStorage.getItem("token");
@@ -118,15 +111,12 @@ export const changePassword = async (oldPw, newPw) => {
     return res.data;
   } catch (err) {
     console.error("비밀번호 변경 실패:", err);
-    const msg =
-      err.response?.data?.messageCode ||
-      err.response?.data?.message ||
-      "authapi.password_change_failed";
-    alert(i18next.t(msg));
+    alert(i18next.t("authapi.password_change_failed"));
     throw err;
   }
 };
 
+// ✅ 이메일 중복 확인
 export const checkEmailExists = async (email) => {
   try {
     const res = await axios.get(`${API_URL}/api/auth/check-email`, {
@@ -140,6 +130,7 @@ export const checkEmailExists = async (email) => {
   }
 };
 
+// ✅ 토큰 검증
 export const verifyToken = async () => {
   try {
     const token = localStorage.getItem("token");
@@ -157,6 +148,7 @@ export const verifyToken = async () => {
   }
 };
 
+// ✅ 관리자 확인
 export const checkAdmin = async () => {
   try {
     const token = localStorage.getItem("token");
