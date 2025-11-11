@@ -9,7 +9,7 @@ const getCurrentLng = () => {
   return raw.split("-")[0];
 };
 
-// 모든 요청에 언어 헤더 추가
+// 초기 설정
 axios.defaults.headers.common["Accept-Language"] = getCurrentLng();
 
 // 언어 변경 시 즉시 반영
@@ -17,7 +17,7 @@ i18next.on("languageChanged", (lng) => {
   axios.defaults.headers.common["Accept-Language"] = (lng || "th").split("-")[0];
 });
 
-// 요청 직전에도 주입 (보강용)
+// 요청 직전 인터셉터 (항상 최신 언어 반영)
 axios.interceptors.request.use((config) => {
   config.headers = config.headers || {};
   config.headers["Accept-Language"] = getCurrentLng();
@@ -42,19 +42,28 @@ export const checkDuplicate = async (data) => {
 
 // ✅ 이메일 인증 코드 전송
 export const sendEmailCode = async (email) => {
-  const res = await axios.post(`${API_URL}/api/auth/send-email-code`, { email });
-  alert(res.data.message || i18next.t("authapi.email_sent"));
-  return res.data;
+  try {
+    const res = await axios.post(`${API_URL}/api/auth/send-email-code`, { email });
+    alert(res.data.i18n?.text || res.data.message || i18next.t("authapi.email_sent"));
+    return res.data;
+  } catch (err) {
+    console.error("이메일 코드 전송 오류:", err);
+    alert(i18next.t("authapi.email_send_failed"));
+    throw err;
+  }
 };
 
 // ✅ 이메일 인증 코드 검증
 export const verifyEmailCode = async (email, code) => {
-  const res = await axios.post(`${API_URL}/api/auth/verify-email-code`, {
-    email,
-    code,
-  });
-  alert(res.data.message || i18next.t("authapi.email_verified"));
-  return res.data;
+  try {
+    const res = await axios.post(`${API_URL}/api/auth/verify-email-code`, { email, code });
+    alert(res.data.i18n?.text || res.data.message || i18next.t("authapi.email_verified"));
+    return res.data;
+  } catch (err) {
+    console.error("이메일 인증 코드 오류:", err);
+    alert(i18next.t("authapi.email_verify_failed"));
+    throw err;
+  }
 };
 
 // ✅ 회원가입
@@ -88,9 +97,7 @@ export const login = async (loginData) => {
 // ✅ 토큰 갱신
 export const refreshAccessToken = async (refreshToken) => {
   try {
-    const res = await axios.post(`${API_URL}/api/auth/refresh`, {
-      refreshToken,
-    });
+    const res = await axios.post(`${API_URL}/api/auth/refresh`, { refreshToken });
     localStorage.setItem("token", res.data.token);
     return res.data.token;
   } catch (err) {
@@ -106,7 +113,8 @@ export const logout = async () => {
     localStorage.removeItem("token");
     localStorage.removeItem("refreshToken");
     alert(i18next.t("authapi.logout_done"));
-  } catch {
+  } catch (err) {
+    console.error("로그아웃 오류:", err);
     alert(i18next.t("authapi.logout_failed"));
   }
 };
