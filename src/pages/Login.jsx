@@ -49,7 +49,13 @@ export default function Login() {
       navigate("/");
     } catch (err) {
       console.error("로그인 오류:", err);
-      setError(err.response?.data || { message: t("login.failed") });
+      const data = err.response?.data;
+if (typeof data === "string") {
+  setError({ message: data });
+} else {
+  setError(data || { message: t("login.failed") });
+}
+
 
     } finally {
       setLoading(false);
