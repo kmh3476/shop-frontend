@@ -1,6 +1,9 @@
 import axios from "axios";
 import i18next from "i18next";
 
+import axios from "axios";
+import i18next from "i18next";
+
 /* -------------------------------------------------
 ✅ 1. 언어 자동 설정
 -------------------------------------------------- */
@@ -9,21 +12,22 @@ const getCurrentLng = () => {
   return raw.split("-")[0];
 };
 
-// 초기 설정
+// 모든 요청에 언어 헤더 추가 (커스텀)
 axios.defaults.headers.common["X-App-Language"] = getCurrentLng();
 
 // 언어 변경 시 즉시 반영
 i18next.on("languageChanged", (lng) => {
-  axios.defaults.headers.common["Accept-Language"] = (lng || "th").split("-")[0];
+  axios.defaults.headers.common["X-App-Language"] = (lng || "th").split("-")[0];
 });
 
-// 요청 직전 인터셉터 (항상 최신 언어 반영)
+// 요청 직전에도 주입 (보강용)
 axios.interceptors.request.use((config) => {
   config.headers = config.headers || {};
   config.headers["X-App-Language"] = getCurrentLng();
-  console.log("🚀 보내는 X-App-Language:", getCurrentLng());
+  console.log("🚀 보내는 X-App-Language:", config.headers["X-App-Language"]);
   return config;
 });
+
 
 
 /* -------------------------------------------------
