@@ -26,7 +26,12 @@ i18n
     },
   });
 
-// ✅ 앱 실행 시 기본 언어를 태국어로 강제 설정
-i18n.changeLanguage("th");
+// ✅ 초기화가 끝난 뒤 태국어로 전환
+i18n.on("initialized", () => {
+  i18n.changeLanguage("th");
+  localStorage.setItem("i18nextLng", "th");
+  console.log("✅ i18n initialized → 기본 언어: th");
+});
+ 
 
 export default i18n;
