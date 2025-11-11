@@ -1,9 +1,6 @@
 import axios from "axios";
 import i18next from "i18next";
 
-import axios from "axios";
-import i18next from "i18next";
-
 /* -------------------------------------------------
 ✅ 1. 언어 자동 설정
 -------------------------------------------------- */
