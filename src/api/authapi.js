@@ -1,22 +1,34 @@
 // 📁 src/api/authapi.js
 import axios from "axios";
-import i18next from "i18next"; // ✅ 번역기 import
+import i18next from "i18next";
 
 const API_URL =
   import.meta.env.VITE_API_URL || "https://shop-backend-1-dfsl.onrender.com";
 
-// ✅ 기본 언어가 비어 있으면 태국어로 설정
+// ✅ 기본 언어가 없으면 태국어로 설정
 if (!localStorage.getItem("i18nextLng")) {
   localStorage.setItem("i18nextLng", "th");
 }
 
-// ✅ i18n 초기화가 끝날 때까지 기다리는 헬퍼
+// ✅ i18n 로드 완료까지 기다리는 함수 (언어 파일 로드 포함)
 async function waitForI18n() {
-  if (i18next.isInitialized) return;
+  // 이미 초기화 완료 + 번역 로드된 경우
+  if (i18next.isInitialized && Object.keys(i18next.store.data).length > 0) {
+    return;
+  }
+
   await new Promise((resolve) => {
-    i18next.on("initialized", () => resolve());
+    // 초기화 완료 이벤트
+    i18next.on("initialized", () => {
+      // 언어 리소스가 로드될 때까지도 기다림
+      i18next.loadLanguages("th", () => {
+        i18next.changeLanguage("th").then(() => {
+          console.log("✅ i18n 완전히 로드됨:", i18next.language);
+          resolve();
+        });
+      });
+    });
   });
-  console.log("🌐 현재 언어:", i18next.language);
 }
 
 // ✅ 회원가입
@@ -172,4 +184,3 @@ export const checkAdmin = async () => {
     return false;
   }
 };
-  
