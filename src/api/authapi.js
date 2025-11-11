@@ -92,7 +92,7 @@ export const login = async (loginData) => {
     return res.data;
   } catch (err) {
     console.error("로그인 오류:", err);
-    alert(i18next.t("authapi.login_failed"));
+    alert(res.data.i18n?.text || res.data.message || i18next.t("authapi.login_failed"));
     throw err;
   }
 };
