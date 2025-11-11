@@ -1,296 +1,142 @@
-import express from "express";
-import jwt from "jsonwebtoken";
-import User from "../models/User.js";
-import { createAccessToken, createRefreshToken } from "../utils/token.js";
-
-const router = express.Router();
+import axios from "axios";
+import i18next from "i18next";
 
 /* -------------------------------------------------
-🆕 i18n 보강 영역 (추가만 함)
+✅ 1. 언어 자동 설정
 -------------------------------------------------- */
-
-// 다국어 메시지 테이블
-const MESSAGES = {
-  ko: {
-    signup_success: "회원가입 성공",
-    signup_error: "회원가입 중 오류가 발생했습니다.",
-    login_success: "로그인 성공",
-    login_failed: "로그인 실패. 아이디나 비밀번호를 확인해주세요.",
-    logout_done: "로그아웃 완료",
-    refresh_failed: "토큰 갱신 실패",
-  },
-  en: {
-    signup_success: "Sign-up successful",
-    signup_error: "Sign-up failed",
-    login_success: "Login successful",
-    login_failed: "Login failed. Please check your credentials.",
-    logout_done: "Logout complete",
-    refresh_failed: "Token refresh failed",
-  },
-  th: {
-    signup_success: "สมัครสมาชิกสำเร็จ!",
-    signup_error: "เกิดข้อผิดพลาดระหว่างการสมัครสมาชิก",
-    login_success: "เข้าสู่ระบบสำเร็จ!",
-    login_failed: "เข้าสู่ระบบล้มเหลว กรุณาตรวจสอบข้อมูลอีกครั้ง",
-    logout_done: "ออกจากระบบเรียบร้อยแล้ว",
-    refresh_failed: "การต่ออายุโทเค็นล้มเหลว",
-  },
+const getCurrentLng = () => {
+  const raw = i18next?.language || localStorage.getItem("i18nextLng") || "th";
+  return raw.split("-")[0];
 };
 
-// 언어 감지
-function getLang(req) {
-  const acceptLang = req.headers["accept-language"];
-  if (!acceptLang) return "th"; // 기본은 태국어
-  const lang = acceptLang.split(",")[0].split("-")[0];
-  return ["ko", "en", "th"].includes(lang) ? lang : "th";
-}
+// 모든 요청에 언어 헤더 추가
+axios.defaults.headers.common["Accept-Language"] = getCurrentLng();
 
-// 간단한 t() 팩토리
-function tFactory(lang) {
-  return (key) => MESSAGES[lang]?.[key] || MESSAGES.th[key] || key;
-}
+// 언어 변경 시 즉시 반영
+i18next.on("languageChanged", (lng) => {
+  axios.defaults.headers.common["Accept-Language"] = (lng || "th").split("-")[0];
+});
 
-// 미들웨어로 설정
-router.use((req, res, next) => {
-  const lang = getLang(req);
-  res.locals.lang = lang;
-  res.locals.t = tFactory(lang);
-  next();
+// 요청 직전에도 주입 (보강용)
+axios.interceptors.request.use((config) => {
+  config.headers = config.headers || {};
+  config.headers["Accept-Language"] = getCurrentLng();
+  return config;
 });
 
 /* -------------------------------------------------
-  ✅ 기존 로직은 그대로 유지 — 아래는 기존 회원가입, 로그인 등
+✅ 2. API URL 설정
+-------------------------------------------------- */
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://shop-backend-1-dfsl.onrender.com";
+
+/* -------------------------------------------------
+✅ 3. API 함수들
 -------------------------------------------------- */
 
+// ✅ 아이디 / 닉네임 / 이메일 중복 확인
+export const checkDuplicate = async (data) => {
+  const res = await axios.post(`${API_URL}/api/auth/check-id`, data);
+  return res.data;
+};
+
+// ✅ 이메일 인증 코드 전송
+export const sendEmailCode = async (email) => {
+  const res = await axios.post(`${API_URL}/api/auth/send-email-code`, { email });
+  alert(res.data.message || i18next.t("authapi.email_sent"));
+  return res.data;
+};
+
+// ✅ 이메일 인증 코드 검증
+export const verifyEmailCode = async (email, code) => {
+  const res = await axios.post(`${API_URL}/api/auth/verify-email-code`, {
+    email,
+    code,
+  });
+  alert(res.data.message || i18next.t("authapi.email_verified"));
+  return res.data;
+};
+
 // ✅ 회원가입
-router.post("/signup", async (req, res) => {
+export const signup = async (userData) => {
   try {
-    const { userId, password, email } = req.body;
-    if (!userId || !password || !email) {
-      return res.status(400).json({
-        message: "필수 입력값 누락",
-        i18n: { code: "signup_error", text: res.locals.t("signup_error") },
-      });
-    }
-
-    const exists = await User.findOne({ email });
-    if (exists) {
-      return res.status(409).json({
-        message: "이미 등록된 이메일입니다.",
-        i18n: { code: "signup_error", text: res.locals.t("signup_error") },
-      });
-    }
-
-    const user = await User.create({ userId, password, email });
-    res.json({
-      message: "회원가입 성공",
-      i18n: { code: "signup_success", text: res.locals.t("signup_success") },
-      user: { id: user._id, email: user.email },
-    });
+    const res = await axios.post(`${API_URL}/api/auth/signup`, userData);
+    alert(res.data.i18n?.text || res.data.message || i18next.t("authapi.signup_success"));
+    return res.data;
   } catch (err) {
     console.error("회원가입 오류:", err);
-    res.status(500).json({
-      message: "서버 오류",
-      i18n: { code: "signup_error", text: res.locals.t("signup_error") },
-    });
+    alert(i18next.t("authapi.signup_error"));
+    throw err;
   }
-});
+};
 
 // ✅ 로그인
-router.post("/login", async (req, res) => {
+export const login = async (loginData) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({
-        message: "사용자를 찾을 수 없습니다.",
-        i18n: { code: "login_failed", text: res.locals.t("login_failed") },
-      });
-    }
-
-    if (user.password !== password) {
-      return res.status(401).json({
-        message: "비밀번호가 일치하지 않습니다.",
-        i18n: { code: "login_failed", text: res.locals.t("login_failed") },
-      });
-    }
-
-    const token = createAccessToken(user);
-    const refreshToken = createRefreshToken(user);
-
-    res.json({
-      message: "로그인 성공",
-      i18n: { code: "login_success", text: res.locals.t("login_success") },
-      token,
-      refreshToken,
-      user: {
-        id: user._id,
-        userId: user.userId,
-        email: user.email,
-      },
-    });
+    const res = await axios.post(`${API_URL}/api/auth/login`, loginData);
+    alert(res.data.i18n?.text || res.data.message || i18next.t("authapi.login_success"));
+    localStorage.setItem("token", res.data.token);
+    localStorage.setItem("refreshToken", res.data.refreshToken);
+    return res.data;
   } catch (err) {
     console.error("로그인 오류:", err);
-    res.status(500).json({
-      message: "서버 오류",
-      i18n: { code: "login_failed", text: res.locals.t("login_failed") },
-    });
+    alert(i18next.t("authapi.login_failed"));
+    throw err;
   }
-});
-// ✅ 로그아웃
-router.post("/logout", async (req, res) => {
-  try {
-    const { refreshToken } = req.body;
-    if (!refreshToken) {
-      return res.status(400).json({
-        message: "리프레시 토큰이 필요합니다.",
-        i18n: { code: "logout_failed", text: res.locals.t("refresh_failed") },
-      });
-    }
-
-    // 실제 로그아웃 로직 (DB 토큰 삭제 등)
-    res.json({
-      message: "로그아웃 완료",
-      i18n: { code: "logout_done", text: res.locals.t("logout_done") },
-    });
-  } catch (err) {
-    console.error("로그아웃 오류:", err);
-    res.status(500).json({
-      message: "서버 오류",
-      i18n: { code: "logout_failed", text: res.locals.t("refresh_failed") },
-    });
-  }
-});
+};
 
 // ✅ 토큰 갱신
-router.post("/refresh", async (req, res) => {
+export const refreshAccessToken = async (refreshToken) => {
   try {
-    const { refreshToken } = req.body;
-    if (!refreshToken) {
-      return res.status(400).json({
-        message: "리프레시 토큰이 필요합니다.",
-        i18n: { code: "refresh_failed", text: res.locals.t("refresh_failed") },
-      });
-    }
-
-    const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
-    const user = await User.findById(decoded.id);
-    if (!user) {
-      return res.status(401).json({
-        message: "유효하지 않은 토큰입니다.",
-        i18n: { code: "refresh_failed", text: res.locals.t("refresh_failed") },
-      });
-    }
-
-    const newToken = createAccessToken(user);
-    res.json({
-      message: "토큰 갱신 성공",
-      i18n: { code: "refresh_success", text: res.locals.t("login_success") },
-      token: newToken,
+    const res = await axios.post(`${API_URL}/api/auth/refresh`, {
+      refreshToken,
     });
+    localStorage.setItem("token", res.data.token);
+    return res.data.token;
   } catch (err) {
     console.error("토큰 갱신 실패:", err);
-    res.status(500).json({
-      message: "토큰 갱신 실패",
-      i18n: { code: "refresh_failed", text: res.locals.t("refresh_failed") },
-    });
+    alert(i18next.t("authapi.refresh_failed"));
+    throw err;
   }
-});
+};
+
+// ✅ 로그아웃
+export const logout = async () => {
+  try {
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+    alert(i18next.t("authapi.logout_done"));
+  } catch {
+    alert(i18next.t("authapi.logout_failed"));
+  }
+};
 
 // ✅ 프로필 조회
-router.get("/profile", async (req, res) => {
+export const getProfile = async () => {
   try {
-    const auth = req.headers.authorization;
-    if (!auth)
-      return res.status(401).json({
-        message: "인증 필요",
-        i18n: { code: "login_failed", text: res.locals.t("login_failed") },
-      });
-
-    const token = auth.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.ACCESS_SECRET);
-    const user = await User.findById(decoded.id).select("-password");
-
-    if (!user)
-      return res.status(404).json({
-        message: "사용자 없음",
-        i18n: { code: "login_failed", text: res.locals.t("login_failed") },
-      });
-
-    res.json({
-      message: "프로필 조회 성공",
-      i18n: { code: "profile_success", text: res.locals.t("login_success") },
-      user,
+    const token = localStorage.getItem("token");
+    const res = await axios.get(`${API_URL}/api/auth/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
     });
+    return res.data;
   } catch (err) {
-    console.error("프로필 오류:", err);
-    res.status(500).json({
-      message: "서버 오류",
-      i18n: { code: "profile_failed", text: res.locals.t("login_failed") },
-    });
+    console.error("프로필 불러오기 실패:", err);
+    alert(i18next.t("authapi.profile_failed"));
+    throw err;
   }
-});
-
-// ✅ 비밀번호 변경
-router.post("/change-password", async (req, res) => {
-  try {
-    const auth = req.headers.authorization;
-    const token = auth?.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.ACCESS_SECRET);
-
-    const { oldPw, newPw } = req.body;
-    const user = await User.findById(decoded.id);
-
-    if (!user || user.password !== oldPw) {
-      return res.status(400).json({
-        message: "비밀번호가 올바르지 않습니다.",
-        i18n: { code: "password_change_failed", text: res.locals.t("login_failed") },
-      });
-    }
-
-    user.password = newPw;
-    await user.save();
-
-    res.json({
-      message: "비밀번호 변경 완료",
-      i18n: { code: "password_changed", text: res.locals.t("login_success") },
-    });
-  } catch (err) {
-    console.error("비밀번호 변경 실패:", err);
-    res.status(500).json({
-      message: "서버 오류",
-      i18n: { code: "password_change_failed", text: res.locals.t("login_failed") },
-    });
-  }
-});
+};
 
 // ✅ 관리자 확인
-router.get("/admin", async (req, res) => {
+export const checkAdmin = async () => {
   try {
-    const auth = req.headers.authorization;
-    const token = auth?.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.ACCESS_SECRET);
-    const user = await User.findById(decoded.id);
-
-    if (!user || !user.isAdmin) {
-      return res.status(403).json({
-        message: "관리자 권한이 없습니다.",
-        i18n: { code: "admin_check_failed", text: res.locals.t("login_failed") },
-      });
-    }
-
-    res.json({
-      message: "관리자 확인 성공",
-      i18n: { code: "admin_check_success", text: res.locals.t("login_success") },
-      isAdmin: true,
+    const token = localStorage.getItem("token");
+    const res = await axios.get(`${API_URL}/api/auth/admin`, {
+      headers: { Authorization: `Bearer ${token}` },
     });
+    return res.data.isAdmin;
   } catch (err) {
     console.error("관리자 확인 실패:", err);
-    res.status(500).json({
-      message: "서버 오류",
-      i18n: { code: "admin_check_failed", text: res.locals.t("login_failed") },
-    });
+    alert(i18next.t("authapi.admin_check_failed"));
+    return false;
   }
-});
-
-export default router;
+};
