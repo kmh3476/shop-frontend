@@ -1,6 +1,8 @@
 {
   "auth": {
     "loginTitle": "เข้าสู่ระบบ",
+    "noSuchAccount": "ไม่พบบัญชีผู้ใช้",
+    "wrongPassword": "รหัสผ่านไม่ถูกต้อง",
     "missingCredentials": "กรุณากรอกอีเมลหรือรหัสผู้ใช้และรหัสผ่าน",
     "loginFailed": "เข้าสู่ระบบล้มเหลว",
     "loginSuccess": "เข้าสู่ระบบสำเร็จ!",

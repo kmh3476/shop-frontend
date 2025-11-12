@@ -1,6 +1,8 @@
 {
   "auth": {
     "loginTitle": "로그인",
+    "noSuchAccount": "존재하지 않는 계정입니다.",
+    "wrongPassword": "비밀번호가 틀립니다.",
     "missingCredentials": "아이디 또는 이메일과 비밀번호를 입력해주세요.",
     "loginFailed": "로그인에 실패했습니다.",
     "loginSuccess": "로그인 성공!",
