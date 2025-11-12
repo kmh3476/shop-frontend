@@ -12,7 +12,14 @@
     "findId": "아이디 찾기",
     "findPassword": "비밀번호 찾기",
     "noAccount": "계정이 없으신가요?",
-    "signup": "회원가입"
+    "signup": "회원가입",
+    "findIdTitle": "아이디 찾기",
+    "findIdPlaceholder": "가입한 이메일을 입력하세요",
+    "findIdButton": "아이디 찾기",
+    "findingId": "조회 중...",
+    "enterEmail": "이메일을 입력해주세요.",
+    "foundId": "찾은 아이디",
+    "findIdFailed": "아이디 찾기에 실패했습니다."
   },
 
   "button": {

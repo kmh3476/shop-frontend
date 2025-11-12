@@ -12,7 +12,14 @@
     "findId": "Find ID",
     "findPassword": "Find Password",
     "noAccount": "Don't have an account?",
-    "signup": "Sign Up"
+    "signup": "Sign Up",
+    "findIdTitle": "Find ID",
+    "findIdPlaceholder": "Enter your registered email",
+    "findIdButton": "Find ID",
+    "findingId": "Searching...",
+    "enterEmail": "Please enter your email.",
+    "foundId": "Found ID",
+    "findIdFailed": "Failed to find ID"
   },
 
   "button": {

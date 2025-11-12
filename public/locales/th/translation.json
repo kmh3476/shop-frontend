@@ -12,8 +12,15 @@
     "findId": "ค้นหารหัสผู้ใช้",
     "findPassword": "กู้คืนรหัสผ่าน",
     "noAccount": "ยังไม่มีบัญชีใช่ไหม?",
-    "signup": "สมัครสมาชิก"
-  },
+    "signup": "สมัครสมาชิก",
+    "findIdTitle": "ค้นหาไอดี",
+    "findIdPlaceholder": "กรอกอีเมลที่ใช้สมัครสมาชิก",
+    "findIdButton": "ค้นหาไอดี",
+    "findingId": "กำลังค้นหา...",
+    "enterEmail": "กรุณากรอกอีเมลของคุณ",
+    "foundId": "ไอดีที่พบ",
+    "findIdFailed": "การค้นหาไอดีล้มเหลว"
+},
 
   "button": {
     "login": "เข้าสู่ระบบ",
