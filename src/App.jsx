@@ -76,9 +76,18 @@ function Login() {
         navigate("/products");
       } else throw new Error(t("auth.invalidResponse")); // ✅
     } catch (err) {
-      console.error("로그인 오류:", err);
-      setError(err.message);
-    } finally {
+  console.error("로그인 오류:", err);
+  const msg = err.message;
+
+  // ✅ 한국어 원문을 번역 키로 매핑
+  const translated =
+    msg.includes("존재하지 않는 계정") ? t("auth.noSuchAccount") :
+    msg.includes("비밀번호가 틀립니다") ? t("auth.wrongPassword") :
+    t("auth.loginFailed");
+
+  setError(translated);
+}
+ finally {
       setLoading(false);
     }
   }
