@@ -404,7 +404,7 @@
     "admin_check_failed": "Admin verification failed"
   },
 
-  "mailModal_en": {
+  "mailModal": {
     "title": "📬 Admin Replies",
     "selectAll": "Select All",
     "unselectAll": "Unselect All",
