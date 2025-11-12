@@ -24,11 +24,11 @@ const [error, setError] = useState(null);
 
   if (!loginInput.trim()) {
     setLoading(false);
-    return setError(t("login.missingIdOrEmail"));
+    return setError({ message: t("login.missingIdOrEmail") });
   }
   if (!password.trim()) {
     setLoading(false);
-    return setError(t("login.missingPassword"));
+    return setError({ message: t("login.missingPassword") });
   }
 
   try {
@@ -61,8 +61,9 @@ const [error, setError] = useState(null);
     }
   } finally {
     setLoading(false);
-  } // ✅ 이 닫는 괄호 추가!!
-} // ✅ handleSubmit 함수 닫기
+  }
+}
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-start justify-center py-8 px-4 sm:px-6">
