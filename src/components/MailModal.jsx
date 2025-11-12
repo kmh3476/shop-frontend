@@ -2,13 +2,15 @@
 import { useEffect, useState } from "react";
 import { X, Trash2, MailOpen, CheckSquare, Square } from "lucide-react";
 import API from "../api/axiosInstance"; // ✅ axios 인스턴스 import
+import { useTranslation } from "react-i18next"; // ✅ 추가
 
 export default function MailModal({ onClose }) {
   const [replies, setReplies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedMail, setSelectedMail] = useState(null);
-  const [selectedIds, setSelectedIds] = useState([]); // ✅ 선택된 메일 ID 저장
+  const [selectedIds, setSelectedIds] = useState([]);
+  const { t } = useTranslation(); // ✅ i18n 훅 추가
 
   const API_URL = "/api/support/replies";
 
@@ -17,10 +19,10 @@ export default function MailModal({ onClose }) {
 
   useEffect(() => {
     if (!token) {
-      setError("로그인이 필요합니다.");
+      setError(t("mailModal.loginRequired")); // ✅ 다국어 적용
       setLoading(false);
     }
-  }, [token]);
+  }, [token, t]);
 
   // ✅ 메일 목록 불러오기 (axiosInstance 사용)
   useEffect(() => {
@@ -28,38 +30,45 @@ export default function MailModal({ onClose }) {
       try {
         if (!token) return;
 
-        const res = await API.get(API_URL); // ✅ axiosInstance 자동 헤더 + 토큰 갱신
+        const res = await API.get(API_URL);
         console.log("📬 메일함 응답:", res.data);
 
         setReplies(res.data.replies || []);
       } catch (err) {
         console.error("메일 로드 중 오류:", err);
-        setError(err.response?.data?.message || "서버 오류가 발생했습니다.");
+        setError(
+          err.response?.data?.message || t("mailModal.loadError")
+        );
       } finally {
         setLoading(false);
       }
     }
 
     if (token) fetchReplies();
-  }, [token]);
+  }, [token, t]);
 
   // ✅ 개별 삭제
   async function handleDelete(id) {
-    if (!window.confirm("정말 이 메일을 삭제하시겠습니까?")) return;
+    if (!window.confirm(t("mailModal.confirmDelete"))) return;
 
     try {
-      await API.delete(`${API_URL}/${id}`); // ✅ axiosInstance 사용
+      await API.delete(`${API_URL}/${id}`);
       setReplies((prev) => prev.filter((r) => r._id !== id));
       setSelectedIds((prev) => prev.filter((sid) => sid !== id));
     } catch (err) {
-      alert(err.response?.data?.message || "삭제 실패");
+      alert(err.response?.data?.message || t("mailModal.deleteFailed"));
     }
   }
 
   // ✅ 여러 개 삭제
   async function handleBulkDelete() {
-    if (selectedIds.length === 0) return alert("삭제할 메일을 선택하세요.");
-    if (!window.confirm(`${selectedIds.length}개의 메일을 삭제하시겠습니까?`))
+    if (selectedIds.length === 0)
+      return alert(t("mailModal.selectMailToDelete"));
+    if (
+      !window.confirm(
+        t("mailModal.confirmBulkDelete", { count: selectedIds.length })
+      )
+    )
       return;
 
     for (const id of selectedIds) {
@@ -71,7 +80,9 @@ export default function MailModal({ onClose }) {
   // ✅ 개별 선택 토글
   const toggleSelect = (id) => {
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
+      prev.includes(id)
+        ? prev.filter((sid) => sid !== id)
+        : [...prev, id]
     );
   };
 
@@ -127,7 +138,7 @@ export default function MailModal({ onClose }) {
             cursor: "pointer",
             color: "#666",
           }}
-          title="닫기"
+          title={t("mailModal.close")}
         >
           <X size={26} />
         </button>
@@ -141,7 +152,7 @@ export default function MailModal({ onClose }) {
             marginBottom: "10px",
           }}
         >
-          📬 관리자 답장함
+          📬 {t("mailModal.title")}
         </h2>
 
         {/* ✅ 전체선택 / 선택삭제 버튼 */}
@@ -164,8 +175,11 @@ export default function MailModal({ onClose }) {
               cursor: "pointer",
             }}
           >
-            {selectedIds.length === replies.length ? "선택 해제" : "전체 선택"}
+            {selectedIds.length === replies.length
+              ? t("mailModal.unselectAll")
+              : t("mailModal.selectAll")}
           </button>
+
           <button
             onClick={handleBulkDelete}
             style={{
@@ -177,17 +191,19 @@ export default function MailModal({ onClose }) {
               cursor: "pointer",
             }}
           >
-            선택 삭제
+            {t("mailModal.deleteSelected")}
           </button>
         </div>
         {/* ✅ 로딩/에러/데이터 표시 */}
         {loading ? (
-          <p style={{ textAlign: "center", color: "#777" }}>불러오는 중...</p>
+          <p style={{ textAlign: "center", color: "#777" }}>
+            {t("mailModal.loading")}
+          </p>
         ) : error ? (
           <p style={{ textAlign: "center", color: "red" }}>❌ {error}</p>
         ) : replies.length === 0 ? (
           <p style={{ textAlign: "center", color: "#555" }}>
-            받은 답장이 없습니다.
+            {t("mailModal.noReplies")}
           </p>
         ) : (
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
@@ -243,7 +259,7 @@ export default function MailModal({ onClose }) {
                         margin: 0,
                       }}
                     >
-                      {reply.inquiryTitle || "제목 없음"}
+                      {reply.inquiryTitle || t("mailModal.noTitle")}
                     </h3>
                   </div>
 
@@ -255,7 +271,7 @@ export default function MailModal({ onClose }) {
                       whiteSpace: "pre-line",
                     }}
                   >
-                    {reply.message}
+                    {reply.message || t("mailModal.noContent")}
                   </p>
 
                   <p
@@ -281,7 +297,7 @@ export default function MailModal({ onClose }) {
                     cursor: "pointer",
                     marginLeft: "auto",
                   }}
-                  title="삭제"
+                  title={t("mailModal.delete")}
                 >
                   <Trash2 size={20} color="#999" />
                 </button>
@@ -330,7 +346,7 @@ export default function MailModal({ onClose }) {
                   background: "transparent",
                   cursor: "pointer",
                 }}
-                title="닫기"
+                title={t("mailModal.close")}
               >
                 <X size={28} />
               </button>
@@ -344,7 +360,7 @@ export default function MailModal({ onClose }) {
                   paddingBottom: "8px",
                 }}
               >
-                {selectedMail.inquiryTitle || "제목 없음"}
+                {selectedMail.inquiryTitle || t("mailModal.noTitle")}
               </h3>
 
               {/* 내가 쓴 문의 */}
@@ -358,9 +374,13 @@ export default function MailModal({ onClose }) {
                 }}
               >
                 <p
-                  style={{ fontWeight: "600", color: "#333", marginBottom: "6px" }}
+                  style={{
+                    fontWeight: "600",
+                    color: "#333",
+                    marginBottom: "6px",
+                  }}
                 >
-                  ✉️ 내가 보낸 문의
+                  ✉️ {t("mailModal.userMessage")}
                 </p>
                 <p
                   style={{
@@ -370,7 +390,8 @@ export default function MailModal({ onClose }) {
                     lineHeight: "1.6",
                   }}
                 >
-                  {selectedMail.inquiryMessage || "내용을 불러올 수 없습니다."}
+                  {selectedMail.inquiryMessage ||
+                    t("mailModal.noContent")}
                 </p>
               </div>
 
@@ -390,7 +411,7 @@ export default function MailModal({ onClose }) {
                     marginBottom: "6px",
                   }}
                 >
-                  🧑‍💼 관리자 답장
+                  🧑‍💼 {t("mailModal.adminReply")}
                 </p>
                 <p
                   style={{
@@ -400,7 +421,8 @@ export default function MailModal({ onClose }) {
                     lineHeight: "1.6",
                   }}
                 >
-                  {selectedMail.adminReply}
+                  {selectedMail.adminReply ||
+                    t("mailModal.noContent")}
                 </p>
               </div>
 
