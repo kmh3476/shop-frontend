@@ -402,5 +402,26 @@
     "email_check_failed": "Email duplication check failed",
     "token_invalid": "Token is invalid. Please log in again.",
     "admin_check_failed": "Admin verification failed"
+  },
+
+  "mailModal_en": {
+    "title": "📬 Admin Replies",
+    "selectAll": "Select All",
+    "unselectAll": "Unselect All",
+    "deleteSelected": "Delete Selected",
+    "loading": "Loading...",
+    "noReplies": "No replies received.",
+    "userMessage": "Your Message",
+    "adminReply": "Admin Reply",
+    "confirmDelete": "Are you sure you want to delete this mail?",
+    "confirmBulkDelete": "Do you want to delete {{count}} selected messages?",
+    "deleteFailed": "Delete failed.",
+    "loginRequired": "Login is required.",
+    "loadError": "An error occurred while loading mail.",
+    "noTitle": "No title",
+    "noContent": "No content.",
+    "delete": "Delete",
+    "close": "Close",
+    "totalCount": "Total mails"
   }
 }
