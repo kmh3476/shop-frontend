@@ -12,7 +12,8 @@ export default function MailModal({ onClose }) {
   const [selectedIds, setSelectedIds] = useState([]);
   const { t } = useTranslation(); // ✅ i18n 훅 추가
 
-  const API_URL = "/api/support";
+  const API_URL = "/api/support/replies";
+
 
   // ✅ 로그인 확인
   const token = localStorage.getItem("token");
@@ -253,36 +254,36 @@ export default function MailModal({ onClose }) {
                   >
                     <MailOpen size={20} color="#555" />
                     <h3
-                      style={{
-                        fontSize: "18px",
-                        fontWeight: "600",
-                        margin: 0,
-                      }}
+  style={{
+    fontSize: "18px",
+    fontWeight: "600",
+    margin: 0,
+  }}
                     >
-                      {reply.inquiryTitle || t("mailModal.noTitle")}
-                    </h3>
+                      {reply.subject || t("mailModal.noTitle")}
+</h3>
                   </div>
 
                   <p
-                    style={{
-                      fontSize: "15px",
-                      color: "#444",
-                      marginTop: "4px",
-                      whiteSpace: "pre-line",
-                    }}
-                  >
-                    {reply.message || t("mailModal.noContent")}
-                  </p>
+  style={{
+    fontSize: "15px",
+    color: "#444",
+    marginTop: "4px",
+    whiteSpace: "pre-line",
+  }}
+>
+  {reply.message}
+</p>
 
                   <p
-                    style={{
-                      fontSize: "13px",
-                      color: "#777",
-                      marginTop: "8px",
-                    }}
-                  >
-                    📅 {new Date(reply.createdAt).toLocaleString()}
-                  </p>
+  style={{
+    fontSize: "13px",
+    color: "#777",
+    marginTop: "8px",
+  }}
+>
+  📅 {new Date(reply.updatedAt || reply.createdAt).toLocaleString()}
+</p>
                 </div>
 
                 {/* ✅ 삭제 버튼 */}
@@ -360,7 +361,7 @@ export default function MailModal({ onClose }) {
                   paddingBottom: "8px",
                 }}
               >
-                {selectedMail.inquiryTitle || t("mailModal.noTitle")}
+                {selectedMail.subject || t("mailModal.noTitle")}
               </h3>
 
               {/* 내가 쓴 문의 */}
@@ -390,8 +391,7 @@ export default function MailModal({ onClose }) {
                     lineHeight: "1.6",
                   }}
                 >
-                  {selectedMail.inquiryMessage ||
-                    t("mailModal.noContent")}
+                  {selectedMail.message || t("mailModal.noContent")}
                 </p>
               </div>
 
@@ -405,37 +405,39 @@ export default function MailModal({ onClose }) {
                 }}
               >
                 <p
-                  style={{
-                    fontWeight: "600",
-                    color: "#c27800",
-                    marginBottom: "6px",
-                  }}
-                >
-                  🧑‍💼 {t("mailModal.adminReply")}
-                </p>
-                <p
-                  style={{
-                    fontSize: "15px",
-                    color: "#555",
-                    whiteSpace: "pre-line",
-                    lineHeight: "1.6",
-                  }}
-                >
-                  {selectedMail.adminReply ||
-                    t("mailModal.noContent")}
-                </p>
+  style={{
+    fontWeight: "600",
+    color: "#c27800",
+    marginBottom: "6px",
+  }}
+>
+  🧑‍💼 {t("mailModal.adminReply")}
+</p>
+
+<p
+  style={{
+    fontSize: "15px",
+    color: "#555",
+    whiteSpace: "pre-line",
+    lineHeight: "1.6",
+  }}
+>
+  {selectedMail.adminReply || t("mailModal.noReply")}
+</p>
+
               </div>
 
               <p
-                style={{
-                  fontSize: "14px",
-                  color: "#777",
-                  marginTop: "20px",
-                  textAlign: "right",
-                }}
-              >
-                📅 {new Date(selectedMail.createdAt).toLocaleString()}
-              </p>
+  style={{
+    fontSize: "14px",
+    color: "#777",
+    marginTop: "20px",
+    textAlign: "right",
+  }}
+>
+  📅 {new Date(selectedMail.updatedAt || selectedMail.createdAt).toLocaleString()}
+</p>
+
             </div>
           </div>
         )}

@@ -404,24 +404,25 @@
     "admin_check_failed": "관리자 확인 실패"
   },
 
-   "mailModal": {
-    "title": "📬 관리자 답장함",
-    "selectAll": "전체 선택",
+  "mailModal": {
+    "loginRequired": "로그인이 필요합니다.",
+    "loadError": "메일을 불러오는 중 오류가 발생했습니다.",
+    "close": "닫기",
+    "title": "관리자 답장함",
     "unselectAll": "선택 해제",
+    "selectAll": "전체 선택",
     "deleteSelected": "선택 삭제",
     "loading": "불러오는 중...",
     "noReplies": "받은 답장이 없습니다.",
-    "userMessage": "내가 보낸 문의",
-    "adminReply": "관리자 답장",
     "confirmDelete": "정말 이 메일을 삭제하시겠습니까?",
     "confirmBulkDelete": "{{count}}개의 메일을 삭제하시겠습니까?",
-    "deleteFailed": "삭제 실패",
-    "loginRequired": "로그인이 필요합니다.",
-    "loadError": "메일을 불러오는 중 오류가 발생했습니다.",
+    "deleteFailed": "삭제에 실패했습니다.",
+    "selectMailToDelete": "삭제할 메일을 선택하세요.",
     "noTitle": "제목 없음",
     "noContent": "내용이 없습니다.",
-    "delete": "삭제",
-    "close": "닫기",
-    "totalCount": "총 메일 수"
-  }
+    "userMessage": "내가 보낸 문의",
+    "adminReply": "관리자 답장",
+    "noReply": "아직 답장이 없습니다."
+}
+
 }
