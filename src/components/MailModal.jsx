@@ -12,7 +12,7 @@ export default function MailModal({ onClose }) {
   const [selectedIds, setSelectedIds] = useState([]);
   const { t } = useTranslation(); // ✅ i18n 훅 추가
 
-  const API_URL = "/api/support/replies";
+  const API_URL = "/api/inquiries/my/replies";
 
 
   // ✅ 로그인 확인
