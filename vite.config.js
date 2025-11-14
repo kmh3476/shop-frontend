@@ -8,7 +8,6 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
-    base: "./", // ✅ 상대경로 — Vercel 정적 배포 시 필수
 
     server: {
       host: "localhost",
