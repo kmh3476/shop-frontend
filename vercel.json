@@ -1,61 +1,20 @@
 {
   "version": 2,
-
-  "buildCommand": "npm install --legacy-peer-deps && npm run build",
-  "installCommand": "echo '⚙️ Custom install handled in buildCommand'",
-
-  "outputDirectory": "dist",
-
-  "rewrites": [
+  "builds": [
     {
-      "source": "/api/(.*)",
-      "destination": "https://shop-backend-1-dfsl.onrender.com/api/$1"
-    },
-    {
-      "source": "/cms/(.*)",
-      "destination": "http://localhost:1337/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "index.html",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
     }
   ],
-
-  "headers": [
+  "routes": [
     {
-      "source": "/(.*)\\.(js|css|png|jpg|jpeg|gif|svg|ico|json|webp|woff2|woff|ttf|eot|map)$",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
+      "src": "/api/(.*)",
+      "dest": "https://shop-backend-1-dfsl.onrender.com/api/$1"
     },
     {
-      "source": "/index.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache"
-        }
-      ]
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
-  ],
-
-  "env": {
-    "VITE_API_BASE_URL": "https://shop-backend-1-dfsl.onrender.com",
-    "VITE_STRAPI_URL": "http://localhost:1337",
-    "VITE_STRAPI_TOKEN": "",
-    "VITE_BUILDER_PUBLIC_API_KEY": "",
-    "VITE_BUILDER_API_URL": "https://cdn.builder.io/api/v3",
-    "VITE_BUILDER_MODEL": "page",
-    "VITE_BUILDER_PREVIEW": "true",
-    "VITE_ENV": "production",
-    "CI": "false",
-    "NPM_FLAGS": "--legacy-peer-deps",
-    "NODE_ENV": "production"
-  },
-
-  "cleanUrls": true,
-  "trailingSlash": false
+  ]
 }
