@@ -422,7 +422,10 @@
     "noContent": "내용이 없습니다.",
     "userMessage": "내가 보낸 문의",
     "adminReply": "관리자 답장",
-    "noReply": "아직 답장이 없습니다."
+    "noReply": "아직 답장이 없습니다.",
+    "delete": "삭제",
+    "cancel": "취소",
+    "ok": "확인"
 }
 
 }

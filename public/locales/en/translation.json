@@ -422,7 +422,10 @@
     "noContent": "No content.",
     "userMessage": "Your Inquiry",
     "adminReply": "Admin Reply",
-    "noReply": "No reply yet."
+    "noReply": "No reply yet.",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "ok": "OK"
 }
 
 }
