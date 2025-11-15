@@ -328,8 +328,8 @@ function ProductList() {
 
       {/* 상품 목록 */}
       <section
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 
-                    gap-x-12 gap-y-14 w-full max-w-[1300px] mx-auto px-4"
+        className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 
+             gap-x-6 gap-y-10 w-full max-w-[1300px] mx-auto px-4"
       >
         {filteredProducts.map((p) => (
           <ProductCard
