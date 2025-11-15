@@ -517,18 +517,18 @@ function InnerApp() {
 
 function AppWrapper({ children }) {
   const [deviceWidth, setDeviceWidth] = useState(window.innerWidth);
-  const [baseWidth, setBaseWidth] = useState(1920); // PC 기본값 1920
+  const [baseWidth, setBaseWidth] = useState(1920); // 기본은 PC
 
   const updateBaseWidth = (width) => {
     if (width <= 480) {
-      // 스마트폰
+      // 모바일
       setBaseWidth(390);
     } else if (width <= 1024) {
       // 태블릿
       setBaseWidth(768);
     } else {
-      // PC (무조건 1920px 고정)
-      setBaseWidth(1920);
+      // PC
+      setBaseWidth(1920);   // PC에서만 1920 유지
     }
   };
 
@@ -545,7 +545,7 @@ function AppWrapper({ children }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // PC는 scale = 1
+  // ⭐ 모바일/태블릿만 scale 적용, PC에서는 scale = 1
   const scale =
     deviceWidth > 1024
       ? 1
@@ -554,7 +554,7 @@ function AppWrapper({ children }) {
   return (
     <div
       style={{
-        width: `${baseWidth}px`,   // PC: 1920px, Tablet: 768px, Mobile: 390px
+        width: `${baseWidth}px`,
         transform: `scale(${scale})`,
         transformOrigin: "top center",
         margin: "0 auto",
@@ -564,6 +564,7 @@ function AppWrapper({ children }) {
     </div>
   );
 }
+
 
 
 /* -------------------- ✅ 전체 앱 구조 -------------------- */

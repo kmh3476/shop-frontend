@@ -196,13 +196,11 @@ function MainLayout() {
             : "border border-gray-200 hover:shadow-2xl"
         } ${isLocked ? "pointer-events-none" : ""}`}
         style={{
-          width: `${size.width}px`,
-          height: `${size.height}px`,
-          fontSize: `${scale * 1}rem`,
-          transformOrigin: "top left",
-          cursor: isResizeMode ? "se-resize" : "pointer",
-          userSelect: "none",
-        }}
+  width: `min(${size.width}px, 80vw)`,
+  height: `auto`,
+  aspectRatio: `${size.width / size.height}`,
+}}
+
       >
         <div className="w-full h-[60%] overflow-hidden relative select-none">
           <EditableImage
@@ -360,7 +358,14 @@ function MainLayout() {
         <Swiper
           modules={[Navigation, Pagination]}
           spaceBetween={10}
-          slidesPerView={3.5}
+          slidesPerView={
+  window.innerWidth <= 480
+    ? 1.2
+    : window.innerWidth <= 1024
+    ? 2.2
+    : 3.5
+}
+
           navigation={!isEditMode && !isResizeMode}
           pagination={!isEditMode && !isResizeMode ? { clickable: true } : false}
           allowTouchMove={!isEditMode && !isResizeMode}
@@ -392,7 +397,14 @@ const FeaturedSwiper = () => {
     <Swiper
       modules={[Autoplay, Navigation, Pagination]}
       spaceBetween={10}
-      slidesPerView={2.8}
+      slidesPerView={
+  window.innerWidth <= 480
+    ? 1.1
+    : window.innerWidth <= 1024
+    ? 1.8
+    : 2.8
+}
+
       navigation={!isEditMode && !isResizeMode}
       pagination={!isEditMode && !isResizeMode ? { clickable: true } : false}
       autoplay={
