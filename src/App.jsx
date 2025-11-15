@@ -324,29 +324,24 @@ useEffect(() => {
 
       {/* 🔹 메뉴 패널 */}
       <div
-        style={{
-          position: "fixed",
-          top: 0,
-          right: 0,
-          width: panelWidth,
-          height: panelHeight,
-          backgroundColor: "white",
-          zIndex: 250,
-
-transform: isOpen
-  ? "translateX(0)"
-  : `translateX(${panelWidthPx}px)`,
-
-          transition:
-            "transform 0.4s ease-in-out, width 0.3s ease, height 0.3s ease",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "flex-start",
-          paddingTop: `${size * 1.0}px`,
-          overflowY: "auto",
-          boxShadow: isOpen ? "-8px 0 20px rgba(0,0,0,0.1)" : "none",
-        }}
+  style={{
+    position: "fixed",
+    top: 0,
+    right: 0,
+    width: panelWidth,
+    height: panelHeight,
+    backgroundColor: "white",
+    zIndex: 250,
+    transform: isOpen ? "translateX(0)" : `translateX(${panelWidth})`,
+    transition: "transform 0.4s ease-in-out",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    paddingTop: `${size * 1.0}px`,
+    overflowY: "auto",
+    boxShadow: isOpen ? "-8px 0 20px rgba(0,0,0,0.1)" : "none",
+  }}
       >
         {/* 사용자 정보 */}
         <div
