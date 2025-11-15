@@ -272,9 +272,9 @@ function Navigation() {
   style={{
     width: `${size * 0.65}px`,   // 옛날 80px
     height: `${barHeight}px`,    // 옛날 10px
-    backgroundColor: isHome ? "white" : "#333",
+    backgroundColor: isHome ? "white" : "#333",  
     transform: isOpen
-  ? `rotate(45deg) translate(${size * 0.05}px, ${size * 0.1}px)`
+  ? `rotate(45deg) translate(${size * 0.15}px, ${size * 0.18}px)`
   : "none",
   transition: "transform 0.3s ease",
 
@@ -293,9 +293,9 @@ function Navigation() {
   style={{
     width: `${size * 0.65}px`,
     height: `${barHeight}px`,
-    backgroundColor: isHome ? "white" : "#333",
+    backgroundColor: isHome ? "white" : "#333", 
     transform: isOpen
-      ? `rotate(-45deg) translate(${size * 0.05}px, -${size * 0.1}px)`
+      ? `rotate(-45deg) translate(${size * 0.15}px, -${size * 0.18}px)`
       : "none",
     transition: "transform 0.3s ease",
   }}
