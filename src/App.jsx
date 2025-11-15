@@ -206,7 +206,7 @@ function Navigation() {
 
     if (width <= 480) {
       // 📱 모바일
-      setPanelWidth("100%");
+      setPanelWidth("100vw");
       setPanelHeight("100vh");
     } else if (width <= 1024) {
       // 📱 태블릿
@@ -640,6 +640,7 @@ const BUTTON_BASE = {
         transform: `scale(${scale})`,
         transformOrigin: "top center",
         margin: "0 auto",
+        overflowX: "hidden",
       }}
     >
       {children}
