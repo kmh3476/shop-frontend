@@ -177,21 +177,66 @@ function Navigation() {
   const { t } = useTranslation(); // ✅ 다국어 적용
   const [panelWidth, setPanelWidth] = useState("400px");
   const [panelHeight, setPanelHeight] = useState("100vh");
+    const [buttonConfig, setButtonConfig] = useState({
+    size: 120,      // 버튼 전체 크기 (기본 PC)
+    barHeight: 10,  // 삼선 막대 두께
+    gap: 18,        // 막대 사이 간격
+  });
+
 
   useEffect(() => {
-    const updatePanelSize = () => {
+  const updatePanelSize = () => {
+    const width = window.innerWidth;
+
+    if (width <= 480) {
+      // 📱 모바일
+      setPanelWidth("100%");
+      setPanelHeight("100vh");
+    } else if (width <= 1024) {
+      // 📱 태블릿
+      setPanelWidth("360px");
+      setPanelHeight("100vh");
+    } else {
+      // 🖥 PC
+      setPanelWidth("420px");
+      setPanelHeight("100vh");
+    }
+  };
+
+  updatePanelSize();
+  window.addEventListener("resize", updatePanelSize);
+
+  document.body.style.overflow = isOpen ? "hidden" : "auto";
+
+  return () => {
+    document.body.style.overflow = "auto";
+    window.removeEventListener("resize", updatePanelSize);
+  };
+}, [isOpen]);
+
+
+    useEffect(() => {
+    const updateButtonSize = () => {
       const width = window.innerWidth;
-      setPanelWidth(width <= 1600 ? "400px" : "400px");
-      setPanelHeight("400vh");
+
+      if (width <= 480) {
+        // 📱 모바일
+        setButtonConfig({ size: 60, barHeight: 6, gap: 10 });
+      } else if (width <= 1024) {
+        // 📱 태블릿
+        setButtonConfig({ size: 80, barHeight: 7, gap: 14 });
+      } else {
+        // 🖥 PC
+        setButtonConfig({ size: 120, barHeight: 10, gap: 18 });
+      }
     };
-    updatePanelSize();
-    window.addEventListener("resize", updatePanelSize);
-    document.body.style.overflow = isOpen ? "hidden" : "auto";
-    return () => {
-      document.body.style.overflow = "auto";
-      window.removeEventListener("resize", updatePanelSize);
-    };
-  }, [isOpen]);
+
+    updateButtonSize();
+    window.addEventListener("resize", updateButtonSize);
+    return () => window.removeEventListener("resize", updateButtonSize);
+  }, []);
+
+  const { size, barHeight, gap } = buttonConfig;
 
   const isActive = (path) => location.pathname.startsWith(path);
 
@@ -199,58 +244,61 @@ function Navigation() {
     <>
       {/* 🔹 햄버거 버튼 */}
       <div
-        onClick={() => setIsOpen(!isOpen)}
-        style={{
-          position: "fixed",
-          top: "30px",
-          right: "30px",
-          zIndex: 300,
-          backgroundColor: isHome
-            ? "rgba(0,0,0,0.8)"
-            : "rgba(255,255,255,0.9)",
-          borderRadius: "30%",
-          padding: "18px",
-          width: "120px",
-          height: "120px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "18px",
-          boxShadow: "0 6px 18px rgba(0,0,0,0.4)",
-          cursor: "pointer",
-          transition: "all 0.3s ease",
-        }}
-      >
+  onClick={() => setIsOpen(!isOpen)}
+  style={{
+    position: "fixed",
+    top: `${size * 0.25}px`,     // 옛날 30px → 크기에 비례
+    right: `${size * 0.25}px`,   // 옛날 30px
+    zIndex: 300,
+    backgroundColor: isHome
+      ? "rgba(0,0,0,0.8)"
+      : "rgba(255,255,255,0.9)",
+    borderRadius: "30%",
+    padding: `${size * 0.15}px`, // 옛날 18px
+    width: `${size}px`,          // 옛날 120px
+    height: `${size}px`,         // 옛날 120px
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: `${gap}px`,             // 옛날 18px
+    boxShadow: "0 6px 18px rgba(0,0,0,0.4)",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+  }}
+>
+
         <div
-          style={{
-            width: "80px",
-            height: "10px",
-            backgroundColor: isHome ? "white" : "#333",
-            transform: isOpen ? "rotate(45deg) translate(20px, 18px)" : "none",
-            transition: "transform 0.3s ease",
-          }}
-        />
+  style={{
+    width: `${size * 0.65}px`,   // 옛날 80px
+    height: `${barHeight}px`,    // 옛날 10px
+    backgroundColor: isHome ? "white" : "#333",
+    transform: isOpen
+  ? `rotate(45deg) translate(${size * 0.1}px, ${size * 0.1}px)`
+  : "none",
+
+  }}
+/>
+       <div
+  style={{
+    width: `${size * 0.65}px`,
+    height: `${barHeight}px`,
+    backgroundColor: isHome ? "white" : "#333",
+    opacity: isOpen ? 0 : 1,
+    transition: "opacity 0.3s ease",
+  }}
+/>
         <div
-          style={{
-            width: "80px",
-            height: "10px",
-            backgroundColor: isHome ? "white" : "#333",
-            opacity: isOpen ? 0 : 1,
-            transition: "opacity 0.3s ease",
-          }}
-        />
-        <div
-          style={{
-            width: "80px",
-            height: "10px",
-            backgroundColor: isHome ? "white" : "#333",
-            transform: isOpen
-              ? "rotate(-45deg) translate(20px, -18px)"
-              : "none",
-            transition: "transform 0.3s ease",
-          }}
-        />
+  style={{
+    width: `${size * 0.65}px`,
+    height: `${barHeight}px`,
+    backgroundColor: isHome ? "white" : "#333",
+    transform: isOpen
+      ? `rotate(-45deg) translate(${size * 0.1}px, -${size * 0.1}px)`
+      : "none",
+    transition: "transform 0.3s ease",
+  }}
+/>
       </div>
 
       {/* 🔹 메뉴 패널 */}
@@ -270,7 +318,7 @@ function Navigation() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "flex-start",
-          paddingTop: "120px",
+          paddingTop: `${size * 1.0}px`,
           overflowY: "auto",
           boxShadow: isOpen ? "-8px 0 20px rgba(0,0,0,0.1)" : "none",
         }}
