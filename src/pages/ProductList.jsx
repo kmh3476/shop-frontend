@@ -77,10 +77,11 @@ const useResizableCard = (id, isResizeMode, defaultWidth = 230, defaultHeight = 
   return { size, cardRef, startResize };
 };
 
-/** ✅ 개별 상품 카드 컴포넌트 */
+/* ✅ 개별 상품 카드 컴포넌트 */
 function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate }) {
   const { size, cardRef, startResize } = useResizableCard(`product-${product._id}`, isResizeMode);
   const { t } = useTranslation();
+  const isMobile = window.innerWidth <= 480;
 
   return (
     <div
@@ -95,12 +96,13 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
           : "border border-gray-200 hover:shadow-lg"
       }`}
       style={{
-        width: `${size.width}px`,
-        height: `${size.height}px`,
+        width: isMobile ? "100%" : `${size.width}px`,
+        height: isMobile ? "auto" : `${size.height}px`,
         cursor: isResizeMode ? "se-resize" : "pointer",
         userSelect: "none",
       }}
     >
+
       {/* ✅ 이미지 */}
       <EditableImage
         id={`product-img-${product._id}`}
