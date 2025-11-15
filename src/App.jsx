@@ -169,6 +169,17 @@ function AdminRoute({ children }) {
 
 /* -------------------- ✅ 네비게이션 -------------------- */
 function Navigation() {
+    const PC_BASE_WIDTH = 1920;
+
+  // 🔹 PC에서 맞춘 버튼 기준 크기
+  const BUTTON_BASE = {
+    size: 120,
+    barHeight: 10,
+    gap: 18,
+    top: 30,
+    right: 30,
+    padding: 18,
+  };
   const location = useLocation();
   const isHome = location.pathname === "/";
   const [isOpen, setIsOpen] = useState(false);
@@ -181,6 +192,7 @@ function Navigation() {
     size: 120,      // 버튼 전체 크기 (기본 PC)
     barHeight: 10,  // 삼선 막대 두께
     gap: 18,        // 막대 사이 간격
+    
   });
 
 
@@ -215,12 +227,11 @@ function Navigation() {
 }, [isOpen]);
 
 
-    // ⭐ PC 기준(1920px)에서 비율로 줄이는 버전
 useEffect(() => {
   const updateButtonSize = () => {
     const width = window.innerWidth;
 
-    // PC에서는 1, 그보다 작으면 비율만큼 축소
+    // PC=1, 작은 화면에서는 비율 축소
     const scale = Math.min(1, width / PC_BASE_WIDTH);
 
     setButtonConfig({
@@ -237,7 +248,6 @@ useEffect(() => {
   window.addEventListener("resize", updateButtonSize);
   return () => window.removeEventListener("resize", updateButtonSize);
 }, []);
-
 
   const { size, barHeight, gap } = buttonConfig;
 
