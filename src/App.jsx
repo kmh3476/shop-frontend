@@ -258,6 +258,8 @@ useEffect(() => {
 
   const isActive = (path) => location.pathname.startsWith(path);
 
+  const panelWidthPx = parseInt(panelWidth);
+
   return (
     <>
       {/* 🔹 햄버거 버튼 */}
@@ -330,7 +332,11 @@ useEffect(() => {
           height: panelHeight,
           backgroundColor: "white",
           zIndex: 250,
-          transform: isOpen ? "translateX(0)" : "translateX(100%)",
+
+transform: isOpen
+  ? "translateX(0)"
+  : `translateX(${panelWidthPx}px)`,
+
           transition:
             "transform 0.4s ease-in-out, width 0.3s ease, height 0.3s ease",
           display: "flex",
