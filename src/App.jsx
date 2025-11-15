@@ -169,6 +169,10 @@ function AdminRoute({ children }) {
 
 /* -------------------- ✅ 네비게이션 -------------------- */
 function Navigation() {
+  const MIN_SIZE = 60;     // 모바일에서도 버튼 크기 최소 60px
+  const MIN_BAR = 5;       // 막대 최소 두께
+  const MIN_GAP = 10;      // 막대 사이 간격 최소
+
     const PC_BASE_WIDTH = 1920;
 
   // 🔹 PC에서 맞춘 버튼 기준 크기
@@ -231,13 +235,13 @@ useEffect(() => {
   const updateButtonSize = () => {
     const width = window.innerWidth;
 
-    // PC=1, 작은 화면에서는 비율 축소
-    const scale = Math.min(1, width / PC_BASE_WIDTH);
+    let scale = Math.min(1, width / PC_BASE_WIDTH);
 
+    // PC 기준 → 화면작으면 PC비율대로 축소
     setButtonConfig({
-      size: BUTTON_BASE.size * scale,
-      barHeight: BUTTON_BASE.barHeight * scale,
-      gap: BUTTON_BASE.gap * scale,
+      size: Math.max(BUTTON_BASE.size * scale, MIN_SIZE),
+      barHeight: Math.max(BUTTON_BASE.barHeight * scale, MIN_BAR),
+      gap: Math.max(BUTTON_BASE.gap * scale, MIN_GAP),
       top: BUTTON_BASE.top * scale,
       right: BUTTON_BASE.right * scale,
       padding: BUTTON_BASE.padding * scale,
@@ -248,6 +252,7 @@ useEffect(() => {
   window.addEventListener("resize", updateButtonSize);
   return () => window.removeEventListener("resize", updateButtonSize);
 }, []);
+
 
   const { size, barHeight, gap } = buttonConfig;
 
@@ -260,21 +265,21 @@ useEffect(() => {
   onClick={() => setIsOpen(!isOpen)}
   style={{
     position: "fixed",
-    top: `${size * 0.25}px`,     // 옛날 30px → 크기에 비례
-    right: `${size * 0.25}px`,   // 옛날 30px
+    top: `${buttonConfig.top}px`,     // 옛날 30px → 크기에 비례
+    right: `${buttonConfig.right}px`,   // 옛날 30px
     zIndex: 300,
     backgroundColor: isHome
       ? "rgba(0,0,0,0.8)"
       : "rgba(255,255,255,0.9)",
     borderRadius: "30%",
-    padding: `${size * 0.15}px`, // 옛날 18px
-    width: `${size}px`,          // 옛날 120px
-    height: `${size}px`,         // 옛날 120px
+    padding: `${buttonConfig.padding}px`, // 옛날 18px
+    width: `${buttonConfig.size}px`,          // 옛날 120px
+    height: `${buttonConfig.size}px`,         // 옛날 120px
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    gap: `${gap}px`,             // 옛날 18px
+    gap: `${buttonConfig.gap}px`,             // 옛날 18px
     boxShadow: "0 6px 18px rgba(0,0,0,0.4)",
     cursor: "pointer",
     transition: "all 0.3s ease",
@@ -283,8 +288,8 @@ useEffect(() => {
 
         <div
   style={{
-    width: `${size * 0.65}px`,   // 옛날 80px
-    height: `${barHeight}px`,    // 옛날 10px
+    width: `${buttonConfig.size * 0.65}px`,   // 옛날 80px
+    height: `${buttonConfig.barHeight}px`,    // 옛날 10px
     backgroundColor: isHome ? "white" : "#333",  
     transform: isOpen
   ? `rotate(45deg) translate(${size * 0.15}px, ${size * 0.18}px)`
