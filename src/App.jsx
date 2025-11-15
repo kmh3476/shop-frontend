@@ -274,8 +274,9 @@ function Navigation() {
     height: `${barHeight}px`,    // 옛날 10px
     backgroundColor: isHome ? "white" : "#333",
     transform: isOpen
-  ? `rotate(45deg) translate(${size * 0.1}px, ${size * 0.1}px)`
+  ? `rotate(45deg) translate(${size * 0.05}px, ${size * 0.1}px)`
   : "none",
+  transition: "transform 0.3s ease",
 
   }}
 />
@@ -294,7 +295,7 @@ function Navigation() {
     height: `${barHeight}px`,
     backgroundColor: isHome ? "white" : "#333",
     transform: isOpen
-      ? `rotate(-45deg) translate(${size * 0.1}px, -${size * 0.1}px)`
+      ? `rotate(-45deg) translate(${size * 0.05}px, -${size * 0.1}px)`
       : "none",
     transition: "transform 0.3s ease",
   }}
