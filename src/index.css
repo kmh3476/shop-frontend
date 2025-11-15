@@ -17,12 +17,18 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ✅ PC 해상도 고정 */
+/* 공통 */
 html,
 body {
-  min-width: 1280px; /* 항상 1280px 이상 */
   overflow-x: hidden;
   background-color: #ffffff;
+}
+
+/* ✅ PC에서만 min-width 적용 */
+@media (min-width: 1025px) {
+  body {
+    min-width: 1280px;
+  }
 }
 
 /* ✅ 기본 링크 스타일 */
