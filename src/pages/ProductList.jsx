@@ -82,6 +82,7 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
   const { size, cardRef, startResize } = useResizableCard(`product-${product._id}`, isResizeMode);
   const { t } = useTranslation();
   const isMobile = window.innerWidth <= 480;
+  const imageHeight = isMobile ? 120 : 200;
 
   return (
     <div
