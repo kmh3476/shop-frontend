@@ -517,16 +517,18 @@ function InnerApp() {
 
 function AppWrapper({ children }) {
   const [deviceWidth, setDeviceWidth] = useState(window.innerWidth);
-  const [baseWidth, setBaseWidth] = useState(1280);
+  const [baseWidth, setBaseWidth] = useState(1920); // PC 기본값 1920
 
-  // 브레이크포인트별 고정 width 선택
   const updateBaseWidth = (width) => {
     if (width <= 480) {
-      setBaseWidth(390);     // 스마트폰 기준
+      // 스마트폰
+      setBaseWidth(390);
     } else if (width <= 1024) {
-      setBaseWidth(768);     // 태블릿 기준
+      // 태블릿
+      setBaseWidth(768);
     } else {
-      setBaseWidth(1280);    // PC 기준
+      // PC (무조건 1920px 고정)
+      setBaseWidth(1920);
     }
   };
 
@@ -543,16 +545,16 @@ function AppWrapper({ children }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // 최종 scale 계산 (단 하나의 위치에서)
-  const rawScale = deviceWidth / baseWidth;
-  const scale = rawScale > 1 ? 1 : rawScale; 
-  // 👉 PC에서 화면이 커져도 확대되지 않도록 (확대 막기)
-  //    원하면 무제한 확대되게 rawScale 그대로 써도 됨
+  // PC는 scale = 1
+  const scale =
+    deviceWidth > 1024
+      ? 1
+      : deviceWidth / baseWidth;
 
   return (
     <div
       style={{
-        width: `${baseWidth}px`,
+        width: `${baseWidth}px`,   // PC: 1920px, Tablet: 768px, Mobile: 390px
         transform: `scale(${scale})`,
         transformOrigin: "top center",
         margin: "0 auto",
@@ -562,6 +564,7 @@ function AppWrapper({ children }) {
     </div>
   );
 }
+
 
 /* -------------------- ✅ 전체 앱 구조 -------------------- */
 function App() {
