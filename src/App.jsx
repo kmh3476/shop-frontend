@@ -571,6 +571,20 @@ function AppWrapper({ children }) {
   const [deviceWidth, setDeviceWidth] = useState(window.innerWidth);
   const [baseWidth, setBaseWidth] = useState(1920); // 기본은 PC
 
+  // 🔹 PC 기준 해상도
+const PC_BASE_WIDTH = 1920;
+
+// 🔹 PC에서 맞춘 버튼 기준 픽셀 값
+const BUTTON_BASE = {
+  size: 120,     // 버튼 정사각형 크기
+  barHeight: 10, // 삼선 두께
+  gap: 18,       // 막대 사이 간격
+  top: 30,       // 화면 상단 여백
+  right: 30,     // 화면 오른쪽 여백
+  padding: 18,   // 버튼 패딩
+};
+
+
   const updateBaseWidth = (width) => {
     if (width <= 480) {
       // 모바일
