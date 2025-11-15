@@ -215,26 +215,29 @@ function Navigation() {
 }, [isOpen]);
 
 
-    useEffect(() => {
-    const updateButtonSize = () => {
-      const width = window.innerWidth;
+    // ⭐ PC 기준(1920px)에서 비율로 줄이는 버전
+useEffect(() => {
+  const updateButtonSize = () => {
+    const width = window.innerWidth;
 
-      if (width <= 480) {
-        // 📱 모바일
-        setButtonConfig({ size: 60, barHeight: 6, gap: 10 });
-      } else if (width <= 1024) {
-        // 📱 태블릿
-        setButtonConfig({ size: 80, barHeight: 7, gap: 14 });
-      } else {
-        // 🖥 PC
-        setButtonConfig({ size: 120, barHeight: 10, gap: 18 });
-      }
-    };
+    // PC에서는 1, 그보다 작으면 비율만큼 축소
+    const scale = Math.min(1, width / PC_BASE_WIDTH);
 
-    updateButtonSize();
-    window.addEventListener("resize", updateButtonSize);
-    return () => window.removeEventListener("resize", updateButtonSize);
-  }, []);
+    setButtonConfig({
+      size: BUTTON_BASE.size * scale,
+      barHeight: BUTTON_BASE.barHeight * scale,
+      gap: BUTTON_BASE.gap * scale,
+      top: BUTTON_BASE.top * scale,
+      right: BUTTON_BASE.right * scale,
+      padding: BUTTON_BASE.padding * scale,
+    });
+  };
+
+  updateButtonSize();
+  window.addEventListener("resize", updateButtonSize);
+  return () => window.removeEventListener("resize", updateButtonSize);
+}, []);
+
 
   const { size, barHeight, gap } = buttonConfig;
 
