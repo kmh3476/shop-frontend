@@ -173,8 +173,8 @@ function MainLayout() {
   const FeaturedCard = ({ product }) => {
     const { size, cardRef, startResize } = useResizableCard(
       `featured-${product._id || product.name}`,
-      260,
-      420
+      360,
+      520
     );
     const scale = size.width / 360;
     const isLocked = isEditMode;
@@ -253,8 +253,8 @@ function MainLayout() {
   const ProductCard = ({ product }) => {
     const { size, cardRef, startResize } = useResizableCard(
       `product-${product._id || product.name}`,
-      230,
-      380
+      300,
+      460
     );
     const scale = size.width / 300;
     const isLocked = isEditMode;
