@@ -82,7 +82,7 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
   const { size, cardRef, startResize } = useResizableCard(`product-${product._id}`, isResizeMode);
   const { t } = useTranslation();
   const isMobile = window.innerWidth <= 480;
-  const imageHeight = isMobile ? "6rem" : "12rem";
+  const imageHeight = isMobile ? "9rem" : "12rem";
 
   return (
     <div
@@ -95,15 +95,18 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
   isResizeMode
     ? "border-2 border-dashed border-blue-400"
     : "border border-gray-200 hover:shadow-lg"
-} ${isMobile ? "p-3" : "p-5"}`}
+}`}
+
 
       style={{
-        width: isMobile ? "100%" : `${size.width}px`,
-        height: isMobile ? "auto" : `${size.height}px`,
-        maxHeight: isMobile ? "300px" : "none",
-        cursor: isResizeMode ? "se-resize" : "pointer",
-        userSelect: "none",
-      }}
+  width: isMobile ? "100%" : `${size.width}px`,
+  height: isMobile ? "auto" : `${size.height}px`,
+  maxHeight: isMobile ? "300px" : "none",
+  cursor: isResizeMode ? "se-resize" : "pointer",
+  userSelect: "none",
+  padding: isMobile ? "0.5rem" : "1.25rem",
+}}
+
     >
 
       {/* ✅ 이미지 */}
@@ -154,20 +157,22 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
 
       {/* ✅ 장바구니 버튼 */}
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          if (isEditMode || isResizeMode) return;
-          addToCart(product);
-        }}
-        disabled={isEditMode || isResizeMode}
-        className={`mt-4 w-full px-4 py-2 rounded-lg text-white transition ${
-          isEditMode || isResizeMode
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-blue-500 hover:bg-blue-600"
-        }`}
-      >
-        {t("productList.addToCart")}
-      </button>
+  onClick={(e) => {
+    e.stopPropagation();
+    if (isEditMode || isResizeMode) return;
+    addToCart(product);
+  }}
+  disabled={isEditMode || isResizeMode}
+  className="
+    mt-2 w-10 h-10 flex items-center justify-center 
+    rounded-full text-white 
+    bg-blue-500 hover:bg-blue-600
+  "
+  style={{ fontSize: "1.2rem" }}
+>
+  🛒
+</button>
+
     </div>
   );
 }
