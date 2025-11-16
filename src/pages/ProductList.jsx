@@ -82,7 +82,7 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
   const { size, cardRef, startResize } = useResizableCard(`product-${product._id}`, isResizeMode);
   const { t } = useTranslation();
   const isMobile = window.innerWidth <= 480;
-  const imageHeight = isMobile ? 120 : 200;
+  const imageHeight = isMobile ? "8rem" : "12rem";
 
   return (
     <div
@@ -91,14 +91,16 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
       onClick={() => {
         if (!isEditMode && !isResizeMode) navigate(`/products/${product._id}`);
       }}
-      className={`p-5 shadow bg-white flex flex-col items-center rounded-xl transition-all duration-300 ${
-        isResizeMode
-          ? "border-2 border-dashed border-blue-400"
-          : "border border-gray-200 hover:shadow-lg"
-      }`}
+      className={`shadow bg-white flex flex-col items-center rounded-xl transition-all duration-300 ${
+  isResizeMode
+    ? "border-2 border-dashed border-blue-400"
+    : "border border-gray-200 hover:shadow-lg"
+} ${isMobile ? "p-3" : "p-5"}`}
+
       style={{
         width: isMobile ? "100%" : `${size.width}px`,
         height: isMobile ? "auto" : `${size.height}px`,
+        maxHeight: isMobile ? "340px" : "none",
         cursor: isResizeMode ? "se-resize" : "pointer",
         userSelect: "none",
       }}
@@ -118,7 +120,7 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
         componentName="ProductCard"
         style={{
           width: "100%",
-          height: "12rem",
+          height: imageHeight,
           borderRadius: "0.5rem",
           objectFit: "cover",
           marginBottom: "1rem",
@@ -331,9 +333,14 @@ function ProductList() {
 
       {/* 상품 목록 */}
       <section
-        className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 
-             gap-x-6 gap-y-10 w-full max-w-[1300px] mx-auto px-4"
-      >
+  className="
+    grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4
+    gap-x-4 gap-y-8
+    w-full max-w-[1500px] mx-auto
+    px-1 sm:px-4
+  "
+>
+
         {filteredProducts.map((p) => (
           <ProductCard
             key={p._id}
