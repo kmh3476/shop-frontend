@@ -197,7 +197,7 @@ function MainLayout() {
             : "border border-gray-200 hover:shadow-2xl"
         } ${isLocked ? "pointer-events-none" : ""}`}
         style={{
-  width: isMobile ? `${size.width * 0.7}px` : `${size.width}px`,
+  width: isMobile ? `${size.width * 0.6}px` : `${size.width}px`,
 height: "auto",
 aspectRatio: `${size.width / size.height}`,
 
