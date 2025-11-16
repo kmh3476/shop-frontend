@@ -144,16 +144,31 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
 
     {/* 장바구니 버튼 (아이콘만) */}
     <button
-      onClick={(e) => {
-        e.stopPropagation();
-        if (isEditMode || isResizeMode) return;
-        addToCart(product);
-      }}
-      disabled={isEditMode || isResizeMode}
-      className="mt-1 text-blue-500 hover:text-blue-700 text-xl"
-    >
-      🛒
-    </button>
+  onClick={(e) => {
+    e.stopPropagation();
+    if (isEditMode || isResizeMode) return;
+    addToCart(product);
+  }}
+  disabled={isEditMode || isResizeMode}
+  className="
+    mt-1 
+    text-blue-500 hover:text-blue-700 
+    text-xl
+    bg-transparent 
+    border-none
+    outline-none
+    shadow-none
+  "
+  style={{
+    backgroundColor: "transparent",
+    border: "none",
+    boxShadow: "none",
+    padding: 0,
+  }}
+>
+  🛒
+</button>
+
   </div>
 </div>
 
