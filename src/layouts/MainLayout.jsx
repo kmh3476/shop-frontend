@@ -228,19 +228,22 @@ aspectRatio: `${size.width / size.height}`,
   }}
 >
   {/* 상품명 */}
-  <h3 className="font-bold text-2xl mb-1 text-gray-900 leading-tight line-clamp-2">
+   <h3
+    className={`font-bold text-gray-900 tracking-tight mb-2 ${
+      isMobile ? "text-xl" : "text-3xl"
+    }`}
+  >
     {product.name}
   </h3>
-  
-{/* ✅ 가격 표시 추가 */}
-  <p className="text-xl font-bold text-blue-600 mb-2">
+
+  {/* 상품 가격 — 검정색 */}
+  <p
+    className={`font-semibold text-gray-900 ${
+      isMobile ? "text-base" : "text-xl"
+    }`}
+  >
     {product.price?.toLocaleString()}
     {t("main.won")}
-  </p>
-
-  {/* 설명 */}
-  <p className="mt-1 text-sm text-gray-600 leading-snug line-clamp-2">
-    {product.description || t("main.defaultDescription")}
   </p>
 </div>
 
@@ -304,16 +307,24 @@ fontSize: `${scale * (isMobile ? 0.75 : 1)}rem`,
   style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}
 >
   {/* 상품명 */}
-  <h3 className="font-semibold text-gray-800 text-sm leading-tight line-clamp-2">
-    {product.name}
-  </h3>
+ <h3
+  className={`font-semibold text-gray-800 mb-1 ${
+    isMobile ? "text-sm" : "text-xl"
+  }`}
+>
+  {product.name}
+</h3>
 
-  {/* 가격 */}
-  <p className="mt-1 text-xs text-gray-500">
-    {product.price
-      ? `${product.price.toLocaleString()}${t("main.won")}`
-      : t("main.defaultTag")}
-  </p>
+<p
+  className={`text-gray-500 ${
+    isMobile ? "text-xs" : "text-base"
+  }`}
+>
+  {product.price
+    ? `${product.price.toLocaleString()}${t("main.won")}`
+    : t("main.defaultTag")}
+</p>
+
 </div>
 
       </motion.div>
