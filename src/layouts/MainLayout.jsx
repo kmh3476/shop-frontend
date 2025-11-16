@@ -15,6 +15,7 @@ import axios from "axios";
 import { useTranslation } from "react-i18next"; // ✅ 추가
 
 function MainLayout() {
+  const isMobile = window.innerWidth <= 480;
   const { isEditMode, setIsEditMode, isResizeMode, setIsResizeMode } =
     useEditMode();
   const { user } = useAuth();
@@ -196,9 +197,10 @@ function MainLayout() {
             : "border border-gray-200 hover:shadow-2xl"
         } ${isLocked ? "pointer-events-none" : ""}`}
         style={{
-  width: `min(${size.width}px, 80vw)`,
-  height: `auto`,
-  aspectRatio: `${size.width / size.height}`,
+  width: isMobile ? `${size.width * 0.7}px` : `${size.width}px`,
+height: "auto",
+aspectRatio: `${size.width / size.height}`,
+
 }}
 
       >
@@ -276,9 +278,10 @@ function MainLayout() {
             : "border border-gray-200 hover:shadow-md"
         } ${isLocked ? "pointer-events-none" : ""}`}
         style={{
-          width: `${size.width}px`,
-          height: `${size.height}px`,
-          fontSize: `${scale * 1}rem`,
+          width: isMobile ? `${size.width * 0.48}px` : `${size.width}px`,
+height: isMobile ? `${size.height * 0.48}px` : `${size.height}px`,
+fontSize: `${scale * (isMobile ? 0.75 : 1)}rem`,
+
           cursor: isResizeMode ? "se-resize" : "pointer",
           userSelect: "none",
         }}
@@ -360,9 +363,9 @@ function MainLayout() {
           spaceBetween={10}
           slidesPerView={
   window.innerWidth <= 480
-    ? 1.2
-    : window.innerWidth <= 1024
     ? 2.2
+    : window.innerWidth <= 1024
+    ? 2.5
     : 3.5
 }
 
@@ -399,7 +402,7 @@ const FeaturedSwiper = () => {
       spaceBetween={10}
       slidesPerView={
   window.innerWidth <= 480
-    ? 2.2
+    ? 2
     : window.innerWidth <= 1024
     ? 2.8
     : 3.2
