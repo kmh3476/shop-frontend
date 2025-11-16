@@ -177,7 +177,7 @@ function MainLayout() {
       360,
       520
     );
-    const scale = size.width / 360;
+    const scale = isMobile ? (size.width / 360) : 1;
     const isLocked = isEditMode;
 
     const handleCardClick = () => {
@@ -197,7 +197,7 @@ function MainLayout() {
             : "border border-gray-200 hover:shadow-2xl"
         } ${isLocked ? "pointer-events-none" : ""}`}
         style={{
-  width: isMobile ? `${size.width * 0.5}px` : `${size.width}px`,
+  width: isMobile ? `${size.width * 0.45}px` : `${size.width}px`,
 height: "auto",
 aspectRatio: `${size.width / size.height}`,
 
@@ -231,6 +231,12 @@ aspectRatio: `${size.width / size.height}`,
   <h3 className="font-bold text-2xl mb-1 text-gray-900 leading-tight line-clamp-2">
     {product.name}
   </h3>
+  
+{/* ✅ 가격 표시 추가 */}
+  <p className="text-xl font-bold text-blue-600 mb-2">
+    {product.price?.toLocaleString()}
+    {t("main.won")}
+  </p>
 
   {/* 설명 */}
   <p className="mt-1 text-sm text-gray-600 leading-snug line-clamp-2">
@@ -249,7 +255,7 @@ aspectRatio: `${size.width / size.height}`,
       300,
       460
     );
-    const scale = size.width / 300;
+    const scale = isMobile ? (size.width / 300) : 1;
     const isLocked = isEditMode;
 
     const handleCardClick = () => {
@@ -269,7 +275,7 @@ aspectRatio: `${size.width / size.height}`,
             : "border border-gray-200 hover:shadow-md"
         } ${isLocked ? "pointer-events-none" : ""}`}
         style={{
-          width: isMobile ? `${size.width * 0.48}px` : `${size.width}px`,
+          width: isMobile ? `${size.width * 0.4}px` : `${size.width}px`,
 height: isMobile ? `${size.height * 0.48}px` : `${size.height}px`,
 fontSize: `${scale * (isMobile ? 0.75 : 1)}rem`,
 
