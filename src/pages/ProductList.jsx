@@ -261,7 +261,7 @@ function ProductList() {
     <div
   className="
     min-h-screen bg-gray-50 flex flex-col justify-start 
-    px-2 sm:px-6 md:px-8 
+    px-2 sm:px-6 md:px-4 
     pt-4 md:pt-8 
     relative select-none
   "
