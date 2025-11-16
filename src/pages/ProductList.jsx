@@ -79,101 +79,101 @@ const useResizableCard = (id, isResizeMode, defaultWidth = 230, defaultHeight = 
 
 /* ✅ 개별 상품 카드 컴포넌트 */
 function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate }) {
-  const { size, cardRef, startResize } = useResizableCard(`product-${product._id}`, isResizeMode);
   const { t } = useTranslation();
   const isMobile = window.innerWidth <= 480;
-  const imageHeight = isMobile ? "9rem" : "12rem";
+
+  const imageHeight = isMobile ? "13rem" : "15rem"; // 📌 이미지 더 길게 증가
 
   return (
     <div
-  ref={cardRef}
-  onMouseDown={startResize}
-  onClick={() => {
-    if (!isEditMode && !isResizeMode) navigate(`/products/${product._id}`);
-  }}
-  className="shadow bg-white rounded-xl overflow-hidden transition-all duration-300
-             border border-gray-200 hover:shadow-lg"
-  style={{
-    width: isMobile ? "100%" : `${size.width}px`,
-    cursor: isResizeMode ? "se-resize" : "pointer",
-    userSelect: "none"
-  }}
->
-  {/* 이미지 */}
-  <EditableImage
-    id={`product-img-${product._id}`}
-    defaultSrc={
-      product.mainImage ||
-      product.image ||
-      product.images?.[0] ||
-      "https://placehold.co/250x200?text=No+Image"
-    }
-    alt={product.name}
-    filePath="src/pages/ProductList.jsx"
-    componentName="ProductCard"
-    style={{
-      width: "100%",
-      height: isMobile ? "9rem" : "12rem",
-      objectFit: "cover",
-    }}
-  />
+      onClick={() => {
+        if (!isEditMode && !isResizeMode) navigate(`/products/${product._id}`);
+      }}
+      className="
+        bg-white rounded-xl shadow-md overflow-hidden 
+        flex flex-col relative
+        transition-all 
+        border border-gray-200
+      "
+      style={{
+        width: "100%",
+        cursor: isResizeMode ? "se-resize" : "pointer",
+        userSelect: "none"
+      }}
+    >
 
-  {/* 아래 흰 박스 */}
-  <div className="p-3 bg-white text-center">
-    <h2 className="text-base font-semibold text-gray-800 truncate">
-      <EditableText
-        id={`product-name-${product._id}`}
-        defaultText={product.name}
-        filePath="src/pages/ProductList.jsx"
-        componentName="ProductCard"
-      />
-    </h2>
+      {/* 🔹 상품 이미지 */}
+      <div className="w-full" style={{ height: imageHeight }}>
+        <EditableImage
+          id={`product-img-${product._id}`}
+          defaultSrc={
+            product.mainImage ||
+            product.image ||
+            product.images?.[0] ||
+            "https://placehold.co/300x300?text=No+Image"
+          }
+          alt={product.name}
+          filePath="src/pages/ProductList.jsx"
+          componentName="ProductCard"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover"
+          }}
+        />
+      </div>
 
-    <p className="text-gray-500 text-xs mt-1 line-clamp-1">
-      <EditableText
-        id={`product-desc-${product._id}`}
-        defaultText={product.description || t("productList.noDescription")}
-        filePath="src/pages/ProductList.jsx"
-        componentName="ProductCard"
-      />
-    </p>
+      {/* 🔹 텍스트 영역 */}
+      <div className="flex flex-col px-3 py-2 text-left">
 
-    <p className="mt-2 font-bold text-blue-600 text-sm">
-      {product.price?.toLocaleString()}{t("productList.currency")}
-    </p>
+        {/* 상품명 */}
+        <h2 className="text-base font-semibold text-gray-800 leading-tight">
+          <EditableText
+            id={`product-name-${product._id}`}
+            defaultText={product.name}
+            filePath="src/pages/ProductList.jsx"
+            componentName="ProductCard"
+          />
+        </h2>
 
-    {/* 장바구니 버튼 (아이콘만) */}
-    <button
-  onClick={(e) => {
-    e.stopPropagation();
-    if (isEditMode || isResizeMode) return;
-    addToCart(product);
-  }}
-  disabled={isEditMode || isResizeMode}
-  className="
-    mt-1 
-    text-blue-500 hover:text-blue-700 
-    text-xl
-    bg-transparent 
-    border-none
-    outline-none
-    shadow-none
-  "
-  style={{
-    backgroundColor: "transparent",
-    border: "none",
-    boxShadow: "none",
-    padding: 0,
-  }}
->
-  🛒
-</button>
+        {/* 설명 */}
+        <p className="text-gray-500 text-xs mt-1 line-clamp-1 leading-tight">
+          <EditableText
+            id={`product-desc-${product._id}`}
+            defaultText={product.description || t("productList.noDescription")}
+            filePath="src/pages/ProductList.jsx"
+            componentName="ProductCard"
+          />
+        </p>
 
-  </div>
-</div>
+        {/* 가격 */}
+        <p className="mt-2 text-sm font-bold text-blue-600">
+          {product.price?.toLocaleString()}
+          {t("productList.currency")}
+        </p>
+      </div>
 
+      {/* 🔹 장바구니 아이콘 (오른쪽 아래 작은 아이콘) */}
+      <span
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!isEditMode && !isResizeMode) addToCart(product);
+        }}
+        className="
+          absolute bottom-2 right-2 
+          text-blue-500 hover:text-blue-700 
+          text-xl cursor-pointer
+        "
+        style={{
+          fontSize: "1.5rem"
+        }}
+      >
+        🛒
+      </span>
+    </div>
   );
 }
+
 /** ✅ 전체 상품 리스트 페이지 */
 function ProductList() {
   const [products, setProducts] = useState([]);
