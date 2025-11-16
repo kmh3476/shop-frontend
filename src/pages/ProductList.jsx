@@ -258,7 +258,15 @@ function ProductList() {
 
   /** ✅ 렌더링 */
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start p-8 relative select-none">
+    <div
+  className="
+    min-h-screen bg-gray-50 flex flex-col justify-start 
+    px-2 sm:px-6 md:px-8 
+    pt-4 md:pt-8 
+    relative select-none
+  "
+>
+
       {/* 🧰 관리자 툴바 */}
       {user?.isAdmin && (
         <div className="fixed top-6 left-6 z-[9999] flex gap-3 items-center">
