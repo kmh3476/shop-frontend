@@ -335,9 +335,9 @@ function ProductList() {
       <section
   className="
     grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4
-    gap-x-2 gap-y-4
-    w-full max-w-[1900px] mx-auto
-    px-1 sm:px-2
+    gap-x-1 gap-y-3
+    w-full max-w-[2500px] mx-auto
+    px-1 sm:px-1
   "
 >
 
