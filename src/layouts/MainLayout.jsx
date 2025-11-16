@@ -197,7 +197,7 @@ function MainLayout() {
             : "border border-gray-200 hover:shadow-2xl"
         } ${isLocked ? "pointer-events-none" : ""}`}
         style={{
-  width: isMobile ? `${size.width * 0.6}px` : `${size.width}px`,
+  width: isMobile ? `${size.width * 0.5}px` : `${size.width}px`,
 height: "auto",
 aspectRatio: `${size.width / size.height}`,
 
@@ -221,32 +221,23 @@ aspectRatio: `${size.width / size.height}`,
         </div>
 
         <div
-          className="p-6 flex flex-col justify-between h-[40%] font-['Pretendard'] select-none"
-          style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}
-        >
-          <div>
-            <h3 className="font-bold text-3xl mb-3 text-gray-900 tracking-tight">
-              {product.name}
-            </h3>
-            <p className="text-base text-gray-500 mb-4 leading-relaxed">
-              {product.description || t("main.defaultDescription")}
-            </p>
-          </div>
+  className="px-5 py-4 flex flex-col h-[45%] text-left font-['Pretendard'] select-none"
+  style={{
+    transform: `scale(${scale})`,
+    transformOrigin: "top left",
+  }}
+>
+  {/* 상품명 */}
+  <h3 className="font-bold text-2xl mb-1 text-gray-900 leading-tight line-clamp-2">
+    {product.name}
+  </h3>
 
-          <div className="flex justify-end">
-            <button
-              onClick={(e) => handleAddToCartGlobal(product, e)}
-              disabled={isLocked}
-              className={`p-3 rounded-full transition ${
-                isLocked
-                  ? "bg-gray-400 text-white cursor-not-allowed"
-                  : "bg-gray-800 text-white hover:bg-gray-700"
-              }`}
-            >
-              <ShoppingCartOutlined style={{ fontSize: "1.2rem" }} />
-            </button>
-          </div>
-        </div>
+  {/* 설명 */}
+  <p className="mt-1 text-sm text-gray-600 leading-snug line-clamp-2">
+    {product.description || t("main.defaultDescription")}
+  </p>
+</div>
+
       </motion.div>
     );
   };
@@ -303,34 +294,22 @@ fontSize: `${scale * (isMobile ? 0.75 : 1)}rem`,
         </div>
 
         <div
-          className="p-5 font-['Pretendard'] flex flex-col justify-between h-[30%]"
-          style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}
-        >
-          <div>
-            <h3 className="font-semibold text-gray-800 text-lg mb-1">
-              {product.name}
-            </h3>
-            <p className="text-sm text-gray-500">
-              {product.price
-                ? `${product.price.toLocaleString()}${t("main.won")}`
-                : t("main.defaultTag")}
-            </p>
-          </div>
+  className="px-3 py-2 font-['Pretendard'] flex flex-col h-[30%] text-left"
+  style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}
+>
+  {/* 상품명 */}
+  <h3 className="font-semibold text-gray-800 text-sm leading-tight line-clamp-2">
+    {product.name}
+  </h3>
 
-          <div className="flex justify-end mt-2">
-            <button
-              onClick={(e) => handleAddToCartGlobal(product, e)}
-              disabled={isLocked}
-              className={`p-2 rounded-full transition ${
-                isLocked
-                  ? "bg-gray-400 text-white cursor-not-allowed"
-                  : "bg-gray-800 text-white hover:bg-gray-700"
-              }`}
-            >
-              <ShoppingCartOutlined style={{ fontSize: "1rem" }} />
-            </button>
-          </div>
-        </div>
+  {/* 가격 */}
+  <p className="mt-1 text-xs text-gray-500">
+    {product.price
+      ? `${product.price.toLocaleString()}${t("main.won")}`
+      : t("main.defaultTag")}
+  </p>
+</div>
+
       </motion.div>
     );
   };
