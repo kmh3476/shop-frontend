@@ -82,7 +82,7 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
   const { size, cardRef, startResize } = useResizableCard(`product-${product._id}`, isResizeMode);
   const { t } = useTranslation();
   const isMobile = window.innerWidth <= 480;
-  const imageHeight = isMobile ? "8rem" : "12rem";
+  const imageHeight = isMobile ? "6rem" : "12rem";
 
   return (
     <div
@@ -100,7 +100,7 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
       style={{
         width: isMobile ? "100%" : `${size.width}px`,
         height: isMobile ? "auto" : `${size.height}px`,
-        maxHeight: isMobile ? "340px" : "none",
+        maxHeight: isMobile ? "300px" : "none",
         cursor: isResizeMode ? "se-resize" : "pointer",
         userSelect: "none",
       }}
@@ -335,9 +335,9 @@ function ProductList() {
       <section
   className="
     grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4
-    gap-x-4 gap-y-8
-    w-full max-w-[1500px] mx-auto
-    px-1 sm:px-4
+    gap-x-3 gap-y-6
+    w-full max-w-[1700px] mx-auto
+    px-1 sm:px-3
   "
 >
 
