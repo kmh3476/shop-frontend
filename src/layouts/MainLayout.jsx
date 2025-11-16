@@ -173,8 +173,8 @@ function MainLayout() {
   const FeaturedCard = ({ product }) => {
     const { size, cardRef, startResize } = useResizableCard(
       `featured-${product._id || product.name}`,
-      360,
-      520
+      260,
+      420
     );
     const scale = size.width / 360;
     const isLocked = isEditMode;
@@ -253,8 +253,8 @@ function MainLayout() {
   const ProductCard = ({ product }) => {
     const { size, cardRef, startResize } = useResizableCard(
       `product-${product._id || product.name}`,
-      300,
-      460
+      230,
+      380
     );
     const scale = size.width / 300;
     const isLocked = isEditMode;
@@ -399,10 +399,10 @@ const FeaturedSwiper = () => {
       spaceBetween={10}
       slidesPerView={
   window.innerWidth <= 480
-    ? 1.1
+    ? 2.2
     : window.innerWidth <= 1024
-    ? 1.8
-    : 2.8
+    ? 2.8
+    : 3.2
 }
 
       navigation={!isEditMode && !isResizeMode}
