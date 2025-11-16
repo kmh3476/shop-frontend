@@ -86,94 +86,77 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
 
   return (
     <div
-      ref={cardRef}
-      onMouseDown={startResize}
-      onClick={() => {
-        if (!isEditMode && !isResizeMode) navigate(`/products/${product._id}`);
-      }}
-      className={`shadow bg-white flex flex-col items-center rounded-xl transition-all duration-300 ${
-  isResizeMode
-    ? "border-2 border-dashed border-blue-400"
-    : "border border-gray-200 hover:shadow-lg"
-}`}
+  ref={cardRef}
+  onMouseDown={startResize}
+  onClick={() => {
+    if (!isEditMode && !isResizeMode) navigate(`/products/${product._id}`);
+  }}
+  className="shadow bg-white rounded-xl overflow-hidden transition-all duration-300
+             border border-gray-200 hover:shadow-lg"
+  style={{
+    width: isMobile ? "100%" : `${size.width}px`,
+    cursor: isResizeMode ? "se-resize" : "pointer",
+    userSelect: "none"
+  }}
+>
+  {/* 이미지 */}
+  <EditableImage
+    id={`product-img-${product._id}`}
+    defaultSrc={
+      product.mainImage ||
+      product.image ||
+      product.images?.[0] ||
+      "https://placehold.co/250x200?text=No+Image"
+    }
+    alt={product.name}
+    filePath="src/pages/ProductList.jsx"
+    componentName="ProductCard"
+    style={{
+      width: "100%",
+      height: isMobile ? "9rem" : "12rem",
+      objectFit: "cover",
+    }}
+  />
 
-
-      style={{
-  width: isMobile ? "100%" : `${size.width}px`,
-  height: isMobile ? "auto" : `${size.height}px`,
-  maxHeight: isMobile ? "300px" : "none",
-  cursor: isResizeMode ? "se-resize" : "pointer",
-  userSelect: "none",
-  padding: isMobile ? "0.5rem" : "1.25rem",
-}}
-
-    >
-
-      {/* ✅ 이미지 */}
-      <EditableImage
-        id={`product-img-${product._id}`}
-        defaultSrc={
-          product.mainImage ||
-          product.image ||
-          product.images?.[0] ||
-          "https://placehold.co/250x200?text=No+Image"
-        }
-        alt={product.name}
+  {/* 아래 흰 박스 */}
+  <div className="p-3 bg-white text-center">
+    <h2 className="text-base font-semibold text-gray-800 truncate">
+      <EditableText
+        id={`product-name-${product._id}`}
+        defaultText={product.name}
         filePath="src/pages/ProductList.jsx"
         componentName="ProductCard"
-        style={{
-          width: "100%",
-          height: imageHeight,
-          borderRadius: "0.5rem",
-          objectFit: "cover",
-          marginBottom: "1rem",
-        }}
       />
+    </h2>
 
-      {/* ✅ 상품명 */}
-      <h2 className="text-lg font-semibold text-gray-800 text-center">
-        <EditableText
-          id={`product-name-${product._id}`}
-          defaultText={product.name}
-          filePath="src/pages/ProductList.jsx"
-          componentName="ProductCard"
-        />
-      </h2>
+    <p className="text-gray-500 text-xs mt-1 line-clamp-1">
+      <EditableText
+        id={`product-desc-${product._id}`}
+        defaultText={product.description || t("productList.noDescription")}
+        filePath="src/pages/ProductList.jsx"
+        componentName="ProductCard"
+      />
+    </p>
 
-      {/* ✅ 설명 */}
-      <p className="text-gray-500 text-sm mt-1 line-clamp-2 text-center">
-        <EditableText
-          id={`product-desc-${product._id}`}
-          defaultText={product.description || t("productList.noDescription")}
-          filePath="src/pages/ProductList.jsx"
-          componentName="ProductCard"
-        />
-      </p>
+    <p className="mt-2 font-bold text-blue-600 text-sm">
+      {product.price?.toLocaleString()}{t("productList.currency")}
+    </p>
 
-      {/* ✅ 가격 */}
-      <p className="mt-3 font-bold text-blue-600">
-        {product.price?.toLocaleString()}{t("productList.currency")}
-      </p>
+    {/* 장바구니 버튼 (아이콘만) */}
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        if (isEditMode || isResizeMode) return;
+        addToCart(product);
+      }}
+      disabled={isEditMode || isResizeMode}
+      className="mt-1 text-blue-500 hover:text-blue-700 text-xl"
+    >
+      🛒
+    </button>
+  </div>
+</div>
 
-      {/* ✅ 장바구니 버튼 */}
-      <button
-  onClick={(e) => {
-    e.stopPropagation();
-    if (isEditMode || isResizeMode) return;
-    addToCart(product);
-  }}
-  disabled={isEditMode || isResizeMode}
-  className="
-    mt-2 w-10 h-10 flex items-center justify-center 
-    rounded-full text-white 
-    bg-blue-500 hover:bg-blue-600
-  "
-  style={{ fontSize: "1.2rem" }}
->
-  🛒
-</button>
-
-    </div>
   );
 }
 /** ✅ 전체 상품 리스트 페이지 */
