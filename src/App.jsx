@@ -206,7 +206,7 @@ function Navigation() {
 
     if (width <= 480) {
       // 📱 모바일
-      setPanelWidth("100vw");
+      setPanelWidth("80vw");
       setPanelHeight("100vh");
     } else if (width <= 1024) {
       // 📱 태블릿
