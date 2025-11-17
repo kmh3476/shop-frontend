@@ -40,6 +40,8 @@ function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { t } = useTranslation(); // ✅ 추가됨
+  const [showAdminToolbar, setShowAdminToolbar] = useState(false);
+  const isMobile = window.innerWidth < 768;
   const [loginInput, setLoginInput] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -486,8 +488,25 @@ function InnerApp() {
         {/* ✅ 언어 선택 (전역 노출) */}
         <LanguageSelector />
 
-        {/* ✅ 전역 관리자 툴바 */}
-        <AdminToolbar />
+        {/* 🔧 모바일에서는 AdminToolbar ON/OFF 버튼 제공 */}
+{user?.isAdmin && isMobile && (
+  <>
+    {/* Floating toggle button */}
+    <button
+      onClick={() => setShowAdminToolbar(!showAdminToolbar)}
+      className="fixed bottom-5 right-5 z-[999] bg-black text-white px-4 py-3 rounded-full shadow-xl"
+    >
+      {showAdminToolbar ? "Admin OFF" : "Admin ON"}
+    </button>
+
+    {/* 실제 관리자 툴바 - ON일 때만 */}
+    {showAdminToolbar && <AdminToolbar />}
+  </>
+)}
+
+{/* 🔧 PC에서는 항상 관리자 툴바 표시 */}
+{user?.isAdmin && !isMobile && <AdminToolbar />}
+
 
         <Routes>
           {/* 홈 페이지 */}
