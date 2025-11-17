@@ -279,14 +279,14 @@ export default function ProductDetail() {
       )}
       <div className="max-w-3xl mx-auto py-10">
         <Link
-          to="/products"
-          onClick={(e) => (isEditMode || isResizeMode) && e.preventDefault()}
-          className={`text-blue-500 hover:underline mb-6 block ${
-            isEditMode || isResizeMode ? "pointer-events-none opacity-50" : ""
-          }`}
-        >
-          ← {t("product.backToList")}
-        </Link>
+  to="/products"
+  onClick={(e) => (isEditMode || isResizeMode) && e.preventDefault()}
+  className={`text-blue-500 hover:underline mb-6 block ${
+    isEditMode || isResizeMode ? "pointer-events-none opacity-50" : ""
+  }`}
+>
+  {t("product.backToList")}
+</Link>
 
         {/* ✅ 상품 상단 */}
         <div
@@ -411,30 +411,42 @@ export default function ProductDetail() {
         </div>
         {/* ✅ 탭 메뉴 */}
         <div className="sticky top-0 bg-white border-b z-40 flex justify-around py-3 shadow-sm">
-          {Object.entries({
-            detail: t("product.tab.detail"),
-            size: t("product.tab.size"),
-            review: t("product.tab.review"),
-            inquiry: t("product.tab.inquiry"),
-          }).map(([key, label]) => (
-            <button
-              key={key}
-              onClick={() => scrollTo(refs[key])}
-              className={`text-sm font-medium pb-2 ${
-                activeTab === key
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-600 hover:text-blue-500"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+
+  {Object.entries({
+    detail: t("product.tab.detail"),
+    size: t("product.tab.size"),
+    review: t("product.tab.review"),
+    inquiry: t("product.tab.inquiry"),
+  }).map(([key, label]) => (
+    <button
+      key={key}
+      onClick={() => scrollTo(refs[key])}
+      className={`
+        text-sm font-medium pb-2
+        ${activeTab === key
+          ? "text-blue-600 border-b-2 border-blue-600"
+          : "text-gray-600 hover:text-blue-500"
+        }
+
+        /* 🔥 모바일에서만 작게 */
+        max-[480px]:text-xs
+        max-[480px]:px-2
+        max-[480px]:py-1
+        max-[480px]:rounded-md
+        max-[480px]:border 
+        max-[480px]:border-gray-200
+        max-[480px]:bg-gray-50
+      `}
+    >
+      {label}
+    </button>
+  ))}
+</div>
 
         {/* ✅ 상세 섹션 */}
-        <div className="bg-white p-6 mt-2 rounded-lg shadow-sm space-y-16">
+        <div className="bg-white p-6 mt-2 rounded-lg shadow-sm space-y-8 max-[480px]:space-y-4">
+
           {/* 상세정보 */}
-          // 상세
 <section
   ref={refs.detail}
   onMouseDown={detailBox.startResize}
@@ -454,34 +466,19 @@ export default function ProductDetail() {
             />
           </section>
 
-          {/* 사이즈 안내 */}
-          // 사이즈
-<section
-  ref={refs.size}
-  onMouseDown={sizeBox.startResize}
-  style={{
-    width: "100%",
-    maxWidth: sizeBox.size.width,
-    minHeight: isResizeMode ? sizeBox.size.height : undefined,
-    cursor: isResizeMode ? "se-resize" : "default",
-  }}
-  className="p-4 border border-gray-200 rounded-md mx-auto"
->
+          <EditableText
+  id={`size-info-${id}`}
+  defaultText={(
+    product.sizeText ||
+    t("product.sizeDefault", {
+      note1: "- 사이즈는 측정 방법에 따라 ±1~3cm 오차가 있을 수 있습니다.",
+      note2: "- 모니터 환경에 따라 색상이 다르게 보일 수 있습니다.",
+      note3: "- 교환 및 반품 정책을 꼭 확인해주세요.",
+    })
+  ).replace(/<[^>]+>/g, "")}   // 🔹 여기 추가!
+  onSave={(t) => localStorage.setItem(`size-info-${id}`, t)}
+/>
 
-            <h2 className="text-lg font-semibold mb-2">📏 {t("product.sizeGuide")}</h2>
-            <EditableText
-              id={`size-info-${id}`}
-              defaultText={
-                product.sizeText ||
-                t("product.sizeDefault", {
-                  note1: "- 사이즈는 측정 방법에 따라 ±1~3cm 오차가 있을 수 있습니다.",
-                  note2: "- 모니터 환경에 따라 색상이 다르게 보일 수 있습니다.",
-                  note3: "- 교환 및 반품 정책을 꼭 확인해주세요.",
-                })
-              }
-              onSave={(t) => localStorage.setItem(`size-info-${id}`, t)}
-            />
-          </section>
 
           {/* 후기 섹션 */}
           <section ref={refs.review}>
