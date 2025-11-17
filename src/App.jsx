@@ -352,7 +352,7 @@ useEffect(() => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            gap: "10px",
+            gap: "3px",
             fontSize: window.innerWidth < 480 ? "26px" : "30px",
             fontWeight: "600",
             padding: window.innerWidth < 480 ? "35px 0" : "25px 0",
@@ -401,23 +401,40 @@ useEffect(() => {
           )}
         </div>
 
-          {/* ✅ 메일함 아이콘 (모바일/PC 위치 다르게) */}
-        {!!user?.userId && isOpen && (
-          <Mail
-            style={{
-              position: "absolute",
-              // 모바일일 때만 더 위·오른쪽으로 붙이고, 크기도 살짝 줄이기
-              top: isMobile ? "18px" : "35px",
-              right: isMobile ? "18px" : "300px",
-              width: isMobile ? "40px" : "55px",
-              height: isMobile ? "40px" : "55px",
-              color: "#000",
-              zIndex: 9999,
-              cursor: "pointer",
-            }}
-            onClick={() => setShowMailModal(true)}
-          />
-        )}
+         {/* 모바일 전용 메일 아이콘 */}
+{user?.userId && isOpen && isMobile && (
+  <Mail
+    style={{
+      position: "absolute",
+      top: "18px",
+      right: "18px",
+      width: "40px",
+      height: "40px",
+      color: "#000",
+      zIndex: 9999,
+      cursor: "pointer",
+    }}
+    onClick={() => setShowMailModal(true)}
+  />
+)}
+
+{/* PC 전용 메일 아이콘 */}
+{user?.userId && isOpen && !isMobile && (
+  <Mail
+    style={{
+      position: "absolute",
+      top: "35px",
+      right: "300px",
+      width: "55px",
+      height: "55px",
+      color: "#000",
+      zIndex: 9999,
+      cursor: "pointer",
+    }}
+    onClick={() => setShowMailModal(true)}
+  />
+)}
+
 
         {/* 메뉴 항목 */}
         <nav style={{ marginTop: "60px", width: "80%" }}>
