@@ -466,18 +466,31 @@ export default function ProductDetail() {
             />
           </section>
 
-          <EditableText
-  id={`size-info-${id}`}
-  defaultText={(
-    product.sizeText ||
-    t("product.sizeDefault", {
-      note1: "- 사이즈는 측정 방법에 따라 ±1~3cm 오차가 있을 수 있습니다.",
-      note2: "- 모니터 환경에 따라 색상이 다르게 보일 수 있습니다.",
-      note3: "- 교환 및 반품 정책을 꼭 확인해주세요.",
-    })
-  ).replace(/<[^>]+>/g, "")}   // 🔹 여기 추가!
-  onSave={(t) => localStorage.setItem(`size-info-${id}`, t)}
-/>
+          {/* 📏 사이즈 안내 */}
+<section
+  ref={refs.size}
+  onMouseDown={sizeBox.startResize}
+  style={{
+    width: "100%",
+    maxWidth: sizeBox.size.width,
+    minHeight: isResizeMode ? sizeBox.size.height : undefined,
+    cursor: isResizeMode ? "se-resize" : "default",
+  }}
+  className="p-4 border border-gray-200 rounded-md bg-white mx-auto"
+>
+  <h2 className="text-lg font-semibold mb-2">
+    📏 {t("product.sizeGuide")}
+  </h2>
+
+  {/* HTML 태그 제거 + 렌더링 */}
+  <div
+    className="prose max-w-none text-gray-800"
+    dangerouslySetInnerHTML={{
+      __html: (product.sizeText || "").replace(/<[^>]+>/g, "")
+    }}
+  />
+</section>
+
 
 
           {/* 후기 섹션 */}
