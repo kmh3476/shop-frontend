@@ -157,7 +157,7 @@ export default function ProductDetail() {
   };
 
   // ✅ 각 섹션별 리사이즈 훅
-  const hero = useResizableBox(`hero-${id}`, { width: 768, height: 999 }, isResizeMode);
+  const hero = useResizableBox(`hero-${id}`, { width: 768, height: 520 }, isResizeMode);
   const detailBox = useResizableBox(`detail-box-${id}`, { width: 715, height: 582 }, isResizeMode);
   const sizeBox = useResizableBox(`size-box-${id}`, { width: 715, height: 470 }, isResizeMode);
 
@@ -290,21 +290,27 @@ export default function ProductDetail() {
 
         {/* ✅ 상품 상단 */}
         <div
-          ref={hero.ref}
-          onMouseDown={hero.startResize}
-          style={{
-            width: hero.size.width,
-            minHeight: hero.size.height,
-            cursor: isResizeMode ? "se-resize" : "default",
-          }}
-          className="bg-white shadow-md rounded-lg overflow-hidden mb-8"
-        >
+  ref={hero.ref}
+  onMouseDown={hero.startResize}
+  style={{
+    width: "100%",                 // 모바일에서 꽉 차게
+    maxWidth: hero.size.width,     // PC에서는 리사이즈 폭 유지
+    minHeight: isResizeMode ? hero.size.height : undefined,
+    cursor: isResizeMode ? "se-resize" : "default",
+  }}
+  className="bg-white shadow-md rounded-lg overflow-hidden mb-8 mx-auto"
+>
           {/* ✅ 상품 이미지 영역 */}
           <div className="flex flex-col items-center relative select-none">
             <div
-              className="relative w-full flex justify-center items-center bg-white rounded-lg overflow-hidden"
-              style={{ minHeight: "800px" }}
-            >
+  className="
+    relative w-full flex justify-center items-center 
+    bg-white rounded-lg overflow-hidden
+    aspect-[3/4]              /* 가로:세로 비율 */
+    max-[480px]:aspect-[3/5]  /* 모바일에서는 조금 더 낮게 */
+  "
+>
+
               <img
                 src={mainImage || noImage}
                 alt={product.name}
@@ -428,16 +434,19 @@ export default function ProductDetail() {
         {/* ✅ 상세 섹션 */}
         <div className="bg-white p-6 mt-2 rounded-lg shadow-sm space-y-16">
           {/* 상세정보 */}
-          <section
-            ref={refs.detail}
-            onMouseDown={detailBox.startResize}
-            style={{
-              width: detailBox.size.width,
-              minHeight: detailBox.size.height,
-              cursor: isResizeMode ? "se-resize" : "default",
-            }}
-            className="p-4 border border-gray-200 rounded-md"
-          >
+          // 상세
+<section
+  ref={refs.detail}
+  onMouseDown={detailBox.startResize}
+  style={{
+    width: "100%",
+    maxWidth: detailBox.size.width,
+    minHeight: isResizeMode ? detailBox.size.height : undefined,
+    cursor: isResizeMode ? "se-resize" : "default",
+  }}
+  className="p-4 border border-gray-200 rounded-md mx-auto"
+>
+
             <h2 className="text-lg font-semibold mb-2">📋 {t("product.detailInfo")}</h2>
             <div
               className="prose max-w-none"
@@ -446,16 +455,19 @@ export default function ProductDetail() {
           </section>
 
           {/* 사이즈 안내 */}
-          <section
-            ref={refs.size}
-            onMouseDown={sizeBox.startResize}
-            style={{
-              width: sizeBox.size.width,
-              minHeight: sizeBox.size.height,
-              cursor: isResizeMode ? "se-resize" : "default",
-            }}
-            className="p-4 border border-gray-200 rounded-md"
-          >
+          // 사이즈
+<section
+  ref={refs.size}
+  onMouseDown={sizeBox.startResize}
+  style={{
+    width: "100%",
+    maxWidth: sizeBox.size.width,
+    minHeight: isResizeMode ? sizeBox.size.height : undefined,
+    cursor: isResizeMode ? "se-resize" : "default",
+  }}
+  className="p-4 border border-gray-200 rounded-md mx-auto"
+>
+
             <h2 className="text-lg font-semibold mb-2">📏 {t("product.sizeGuide")}</h2>
             <EditableText
               id={`size-info-${id}`}
