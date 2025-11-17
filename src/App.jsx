@@ -190,6 +190,7 @@ function Navigation() {
   const [showMailModal, setShowMailModal] = useState(false);
   const { user, logout } = useAuth();
   const { t } = useTranslation(); // ✅ 다국어 적용
+  const isMobile = window.innerWidth <= 480;   // ⭐ 모바일 여부
   const [panelWidth, setPanelWidth] = useState("400px");
   const [panelHeight, setPanelHeight] = useState("100vh");
     const [buttonConfig, setButtonConfig] = useState({
@@ -351,10 +352,10 @@ useEffect(() => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            gap: "24px",
-            fontSize: "28px",
+            gap: "10px",
+            fontSize: window.innerWidth < 480 ? "26px" : "30px",
             fontWeight: "600",
-            padding: "20px 0",
+            padding: window.innerWidth < 480 ? "35px 0" : "25px 0",
             width: "100%",
           }}
         >
@@ -400,15 +401,16 @@ useEffect(() => {
           )}
         </div>
 
-        {/* ✅ 메일함 아이콘 */}
+          {/* ✅ 메일함 아이콘 (모바일/PC 위치 다르게) */}
         {!!user?.userId && isOpen && (
           <Mail
             style={{
               position: "absolute",
-              top: "35px",
-              right: "300px",
-              width: "55px",
-              height: "55px",
+              // 모바일일 때만 더 위·오른쪽으로 붙이고, 크기도 살짝 줄이기
+              top: isMobile ? "18px" : "35px",
+              right: isMobile ? "18px" : "300px",
+              width: isMobile ? "40px" : "55px",
+              height: isMobile ? "40px" : "55px",
               color: "#000",
               zIndex: 9999,
               cursor: "pointer",

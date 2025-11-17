@@ -462,7 +462,7 @@ const FeaturedSwiper = () => {
         onClick={() => setShowAdminButtons(!showAdminButtons)}
         className="fixed top-6 left-6 z-[9999] bg-black text-white px-4 py-2 rounded-lg shadow-md"
       >
-        {showAdminButtons ? "Admin OFF" : "Admin ON"}
+        {showAdminButtons ? "OFF" : "ON"}
       </button>
     )}
 
