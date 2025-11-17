@@ -474,13 +474,19 @@ const FeaturedSwiper = () => {
 
       {/* ✅ 메인 비주얼 영역 */}
       <section
-        className="relative flex flex-col items-center justify-center w-full min-h-[110vh]"
-        style={{
-          backgroundImage: "url('/woodcard.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      ></section>
+  className="
+    relative 
+    w-full 
+    min-h-[100vh]
+    bg-cover bg-center
+  "
+  style={{
+    backgroundImage: "url('/woodcard.jpg')",
+    backgroundPosition: "center 199%",
+  }}
+>
+</section>
+
 
       {/* ✅ 추천상품 섹션 */}
 <section className="flex flex-col items-center justify-center py-[10vh] px-6 bg-white text-black relative -mt-[20vh] md:-mt-[25vh] rounded-t-[2rem] shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
