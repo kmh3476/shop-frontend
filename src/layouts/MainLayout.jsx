@@ -21,6 +21,8 @@ function MainLayout() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation(); // ✅ 추가
+  const [showAdminButtons, setShowAdminButtons] = useState(false);
+
 
   /** ✅ 상품 데이터 상태 */
   const [allProducts, setAllProducts] = useState([]);
@@ -453,25 +455,65 @@ const FeaturedSwiper = () => {
 
       {/* ✅ 관리자 모드 버튼 */}
       {user?.isAdmin && (
-        <div className="fixed top-6 left-6 z-[9999] flex gap-3 items-center">
-          <button
-            onClick={toggleEditMode}
-            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
-              isEditMode ? "bg-green-600" : "bg-gray-800"
-            }`}
-          >
-            {isEditMode ? t("main.designOn") : t("main.designOff")}
-          </button>
-          <button
-            onClick={toggleResizeMode}
-            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
-              isResizeMode ? "bg-blue-600" : "bg-gray-700"
-            }`}
-          >
-            {isResizeMode ? t("main.resizeOn") : t("main.resizeOff")}
-          </button>
-        </div>
-      )}
+  <>
+    {/* 📱 모바일: Admin Tools ON/OFF 버튼 */}
+    {isMobile && (
+      <button
+        onClick={() => setShowAdminButtons(!showAdminButtons)}
+        className="fixed top-6 left-6 z-[9999] bg-black text-white px-4 py-2 rounded-lg shadow-md"
+      >
+        {showAdminButtons ? "Admin OFF" : "Admin ON"}
+      </button>
+    )}
+
+    {/* 📱 모바일: showAdminButtons=true일 때만 관리자 버튼 표시 */}
+    {isMobile && showAdminButtons && (
+      <div className="fixed top-20 left-6 z-[9999] flex flex-col gap-3 items-start">
+        <button
+          onClick={toggleEditMode}
+          className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
+            isEditMode ? "bg-green-600" : "bg-gray-800"
+          }`}
+        >
+          {isEditMode ? t("main.designOn") : t("main.designOff")}
+        </button>
+
+        <button
+          onClick={toggleResizeMode}
+          className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
+            isResizeMode ? "bg-blue-600" : "bg-gray-700"
+          }`}
+        >
+          {isResizeMode ? t("main.resizeOn") : t("main.resizeOff")}
+        </button>
+      </div>
+    )}
+
+    {/* 🖥 PC: 기존처럼 관리자 버튼 항상 표시 */}
+    {!isMobile && (
+      <div className="fixed top-6 left-6 z-[9999] flex gap-3 items-center">
+        <button
+          onClick={toggleEditMode}
+          className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
+            isEditMode ? "bg-green-600" : "bg-gray-800"
+          }`}
+        >
+          {isEditMode ? t("main.designOn") : t("main.designOff")}
+        </button>
+
+        <button
+          onClick={toggleResizeMode}
+          className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
+            isResizeMode ? "bg-blue-600" : "bg-gray-700"
+          }`}
+        >
+          {isResizeMode ? t("main.resizeOn") : t("main.resizeOff")}
+        </button>
+      </div>
+    )}
+  </>
+)}
+
 
       {/* ✅ 메인 비주얼 영역 */}
       <section
