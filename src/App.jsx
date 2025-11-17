@@ -406,7 +406,7 @@ useEffect(() => {
   <Mail
     style={{
       position: "absolute",
-      top: "18px",
+      top: "55px",   // ← 모바일은 더 내려야 닉네임 아래로 나옴
       right: "18px",
       width: "40px",
       height: "40px",
@@ -417,6 +417,7 @@ useEffect(() => {
     onClick={() => setShowMailModal(true)}
   />
 )}
+
 
 {/* PC 전용 메일 아이콘 */}
 {user?.userId && isOpen && !isMobile && (
