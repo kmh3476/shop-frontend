@@ -190,7 +190,7 @@ function Navigation() {
   const [showMailModal, setShowMailModal] = useState(false);
   const { user, logout } = useAuth();
   const { t } = useTranslation(); // ✅ 다국어 적용
-  const isMobile = window.innerWidth <= 480;   // ⭐ 모바일 여부
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 480);
   const [panelWidth, setPanelWidth] = useState("400px");
   const [panelHeight, setPanelHeight] = useState("100vh");
     const [buttonConfig, setButtonConfig] = useState({
@@ -231,6 +231,16 @@ function Navigation() {
   };
 }, [isOpen]);
 
+useEffect(() => {
+  const updateMobile = () => {
+    setIsMobile(window.innerWidth <= 480);
+  };
+
+  updateMobile(); // 초기 한 번 실행
+  window.addEventListener("resize", updateMobile);
+  return () => window.removeEventListener("resize", updateMobile);
+}, []);
+
 
 useEffect(() => {
   const updateButtonSize = () => {
@@ -253,6 +263,17 @@ useEffect(() => {
   window.addEventListener("resize", updateButtonSize);
   return () => window.removeEventListener("resize", updateButtonSize);
 }, []);
+
+useEffect(() => {
+  const updateMobile = () => {
+    setIsMobile(window.innerWidth <= 480);
+  };
+
+  updateMobile(); // 초기 한 번 실행
+  window.addEventListener("resize", updateMobile);
+  return () => window.removeEventListener("resize", updateMobile);
+}, []);
+
 
 
   const { size, barHeight, gap } = buttonConfig;
@@ -340,6 +361,7 @@ useEffect(() => {
     alignItems: "center",
     justifyContent: "flex-start",
     paddingTop: `${size * 1.0}px`,
+    overflow: "visible",
     overflowY: "auto",
     boxShadow: isOpen ? "-8px 0 20px rgba(0,0,0,0.1)" : "none",
   }}
