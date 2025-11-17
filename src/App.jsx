@@ -40,8 +40,6 @@ function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { t } = useTranslation(); // ✅ 추가됨
-  const [showAdminToolbar, setShowAdminToolbar] = useState(false);
-  const isMobile = window.innerWidth < 768;
   const [loginInput, setLoginInput] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -469,6 +467,8 @@ useEffect(() => {
 function InnerApp() {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const [showAdminToolbar, setShowAdminToolbar] = useState(false);
+  const isMobile = window.innerWidth < 768;
 
   useEffect(() => {
     const logEntry = {
