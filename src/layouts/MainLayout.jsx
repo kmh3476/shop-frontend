@@ -338,7 +338,7 @@ fontSize: `${scale * (isMobile ? 0.75 : 1)}rem`,
     );
 
     return (
-      <section className="w-full max-w-[1300px] mx-auto px-6 py-[10vh] bg-white text-black font-['Pretendard']">
+      <section className="w-full max-w-[1300px] mx-auto px-6 py-[2vh] bg-white text-black font-['Pretendard']">
         <motion.h2
           className="text-4xl md:text-5xl font-extrabold mb-10 drop-shadow-sm tracking-tight text-gray-900"
           initial={{ opacity: 0, y: 40 }}
@@ -449,7 +449,8 @@ const FeaturedSwiper = () => {
 
   /** ✅ 메인 구조 */
   return (
-    <div className="flex flex-col min-h-screen w-full text-white bg-white overflow-x-hidden font-['Pretendard']">
+    <div className="flex flex-col w-full text-white bg-white overflow-x-hidden font-['Pretendard']">
+
       {/* ✅ 관리자 모드 버튼 */}
       {user?.isAdmin && (
         <div className="fixed top-6 left-6 z-[9999] flex gap-3 items-center">
