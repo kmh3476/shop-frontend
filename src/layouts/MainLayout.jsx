@@ -478,14 +478,16 @@ const FeaturedSwiper = () => {
     relative 
     w-full 
     min-h-[100vh]
-    bg-cover bg-center
+    bg-cover
+    bg-[40%_199%]              // PC
+    max-[480px]:bg-[55%_-120px]  // Mobile: 위로 더 올림
   "
   style={{
     backgroundImage: "url('/woodcard.jpg')",
-    backgroundPosition: "center 199%",
   }}
 >
 </section>
+
 
 
       {/* ✅ 추천상품 섹션 */}
