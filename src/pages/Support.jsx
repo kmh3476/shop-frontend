@@ -209,7 +209,14 @@ const mobileSafeStyle = isMobile
 
 
   return (
-  <div className="min-h-screen bg-white text-black py-16 px-4 font-['Pretendard'] relative">
+  <div
+  className="
+    min-h-screen bg-white text-black 
+    py-16 px-4 
+    max-[480px]:py-6 max-[480px]:px-2
+  "
+>
+
 
       {/* 🔧 모바일용 관리자 툴바 ON/OFF 토글 버튼 */}
       {user?.isAdmin && isMobile && (
@@ -293,7 +300,13 @@ const mobileSafeStyle = isMobile
         </div>
       </div>
 
-      <h1 className="text-4xl font-extrabold text-center mb-14">
+      <h1
+  className="
+    text-4xl font-extrabold text-center mb-14
+    max-[480px]:text-2xl max-[480px]:mb-6
+  "
+>
+
         <EditableText id="support-title" defaultText={t("support.title")} />
       </h1>
 
@@ -392,19 +405,75 @@ const mobileSafeStyle = isMobile
   cursor: isResizeMode ? "se-resize" : "default",
 }}
 
-          className="max-w-6xl mx-auto bg-white p-4 rounded shadow"
+          className="
+  max-w-6xl mx-auto bg-white p-4 rounded shadow
+  max-[480px]:p-2 max-[480px]:rounded-lg
+"
+
         >
           <h2 className="text-3xl font-bold mb-6">{t("support.listTitle")}</h2>
-          <table className="w-full border-collapse border-t border-gray-300">
+          <table
+  className="
+    w-full border-collapse border-t border-gray-300
+    text-base
+    max-[480px]:text-xs
+  "
+>
+
             <thead className="bg-gray-100">
-              <tr className="text-left">
-                <th className="p-3 text-center w-[8%]">{t("support.number")}</th>
-                <th className="p-3 w-[20%]">{t("support.writer")}</th>
-                <th className="p-3 w-[25%]">{t("support.title")}</th>
-                <th className="p-3 w-[35%]">{t("support.content")}</th>
-                <th className="p-3 text-center w-[12%]">{t("support.status")}</th>
-              </tr>
-            </thead>
+  <tr className="text-left max-[480px]:text-center">
+    {/* 번호 */}
+    <th
+      className="
+        p-3 text-center w-[8%]
+        max-[480px]:p-1 max-[480px]:text-xs
+      "
+    >
+      {t("support.number")}
+    </th>
+
+    {/* 작성자 */}
+    <th
+      className="
+        p-3 w-[20%]
+        max-[480px]:p-1 max-[480px]:text-xs
+      "
+    >
+      {t("support.writer")}
+    </th>
+
+    {/* 제목 */}
+    <th
+      className="
+        p-3 w-[25%]
+        max-[480px]:p-1 max-[480px]:text-xs
+      "
+    >
+      {t("support.title")}
+    </th>
+
+    {/* 내용 */}
+    <th
+      className="
+        p-3 w-[35%]
+        max-[480px]:p-1 max-[480px]:text-xs
+      "
+    >
+      {t("support.content")}
+    </th>
+
+    {/* 상태 */}
+    <th
+      className="
+        p-3 text-center w-[12%]
+        max-[480px]:p-1 max-[480px]:text-xs
+      "
+    >
+      {t("support.status")}
+    </th>
+  </tr>
+</thead>
+
             <tbody>
               {posts.map((p, i) => (
                 <tr
@@ -414,11 +483,29 @@ const mobileSafeStyle = isMobile
                   }`}
                   onClick={() => setSelectedPost(p)}
                 >
-                  <td className="p-3 text-center">{i + 1}</td>
-                  <td className="p-3 text-sm">
+                  <td
+  className="
+    p-3 text-center
+    max-[480px]:p-1 max-[480px]:text-xs
+  "
+>
+{i + 1}</td>
+                  <td
+  className="
+    p-3 text-sm
+    max-[480px]:p-1 max-[480px]:text-xs
+  "
+>
+
                     {p.isNotice ? t("support.admin") : displayEmail(p.email)}
                   </td>
-                  <td className="p-3 font-semibold text-gray-800">
+                  <td
+  className="
+    p-3 font-semibold text-gray-800
+    max-[480px]:p-1 max-[480px]:text-xs
+  "
+>
+
                     {p.isNotice && (
                       <span className="text-blue-600 font-bold">
                         [{t("support.notice")}]
@@ -429,7 +516,13 @@ const mobileSafeStyle = isMobile
                       <span className="ml-1 text-gray-500 text-xs">🔒</span>
                     )}
                   </td>
-                  <td className="p-3 text-gray-700 text-sm">
+                  <td
+  className="
+    p-3 text-gray-700 text-sm
+    max-[480px]:p-1 max-[480px]:text-xs
+  "
+>
+
                     {p.isPrivate ? (
                       <span className="italic text-gray-400">
                         🔒 {t("support.privateInquiry")}
@@ -440,7 +533,13 @@ const mobileSafeStyle = isMobile
                       p.answer
                     )}
                   </td>
-                  <td className="p-3 text-center">
+                  <td
+  className="
+    p-3 text-center
+    max-[480px]:p-1 max-[480px]:text-xs
+  "
+>
+
                     {p.reply ? (
                       <span className="text-green-600 font-medium">
                         {t("support.answered")}
