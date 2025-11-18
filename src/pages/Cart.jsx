@@ -4,6 +4,7 @@ import noImage from "../assets/no-image.png"; // 기본 이미지
 import { useTranslation } from "react-i18next";
 
 function Cart() {
+  const isMobile = window.innerWidth <= 480;
   const [cart, setCart] = useState(() => {
     const saved = localStorage.getItem("cart");
     return saved ? JSON.parse(saved) : [];
@@ -80,17 +81,18 @@ function Cart() {
           <ul style={{ listStyle: "none", padding: 0 }}>
             {cart.map((item, index) => (
               <li
-                key={index}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "15px",
-                  marginBottom: "20px",
-                  padding: "10px",
-                  border: "1px solid #ddd",
-                  borderRadius: "10px",
-                }}
-              >
+  key={index}
+  style={{
+    display: isMobile ? "block" : "flex",
+    alignItems: isMobile ? "flex-start" : "center",
+    gap: "15px",
+    marginBottom: "20px",
+    padding: "10px",
+    border: "1px solid #ddd",
+    borderRadius: "10px",
+  }}
+>
+
                 {/* ✅ 상품 이미지 (클릭 시 상세페이지 이동) */}
                 <img
                   src={getImageUrl(item)}
@@ -121,51 +123,74 @@ function Cart() {
                 </div>
 
                 {/* ✅ 수량 조절 */}
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
-                  <button
-                    onClick={() => decreaseQty(index)}
-                    style={{
-                      width: "28px",
-                      height: "28px",
-                      border: "1px solid #aaa",
-                      borderRadius: "50%",
-                      background: "white",
-                      cursor: "pointer",
-                    }}
-                  >
-                    −
-                  </button>
-                  <span>{item.quantity || 1}</span>
-                  <button
-                    onClick={() => increaseQty(index)}
-                    style={{
-                      width: "28px",
-                      height: "28px",
-                      border: "1px solid #aaa",
-                      borderRadius: "50%",
-                      background: "white",
-                      cursor: "pointer",
-                    }}
-                  >
-                    +
-                  </button>
-                </div>
+<div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    marginTop: isMobile ? "10px" : "0",
+  }}
+>
+  <button
+    onClick={() => decreaseQty(index)}
+    style={{
+      width: "32px",
+      height: "32px",
+      borderRadius: "6px",
+      border: "1px solid #aaa",
+      background: "#f8f8f8",
+      fontSize: "20px",
+      cursor: "pointer",
+    }}
+  >
+    -
+  </button>
+
+  <span style={{ fontSize: "18px", fontWeight: "bold" }}>
+    {item.quantity || 1}
+  </span>
+
+  <button
+    onClick={() => increaseQty(index)}
+    style={{
+      width: "32px",
+      height: "32px",
+      borderRadius: "6px",
+      border: "1px solid #aaa",
+      background: "#f8f8f8",
+      fontSize: "20px",
+      cursor: "pointer",
+    }}
+  >
+    +
+  </button>
+</div>
+
                 {/* ✅ 개별 삭제 */}
-                <button
-                  onClick={() => removeFromCart(index)}
-                  style={{
-                    backgroundColor: "red",
-                    color: "white",
-                    border: "none",
-                    padding: "6px 12px",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                  }}
-                >
-                  {t("cart.remove")}
-                </button>
+                {/* 삭제 버튼 */}
+<div
+  style={{
+    marginTop: isMobile ? "10px" : "0",
+    width: isMobile ? "100%" : "auto",
+  }}
+>
+  <button
+    onClick={() => removeFromCart(index)}
+    style={{
+      backgroundColor: "red",
+      color: "white",
+      border: "none",
+      padding: "8px 12px",
+      borderRadius: "6px",
+      cursor: "pointer",
+      width: isMobile ? "100%" : "auto",
+      fontSize: isMobile ? "14px" : "16px",
+    }}
+  >
+    {t("cart.remove")}
+  </button>
+</div>
+
               </li>
             ))}
           </ul>
