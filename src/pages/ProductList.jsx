@@ -275,12 +275,23 @@ function ProductList() {
 {/* 🔧 모바일 관리자 툴바 ON/OFF 토글 */}
 {user?.isAdmin && isMobile && (
   <button
-    onClick={() => setShowAdminToolbar(!showAdminToolbar)}
-    className="fixed bottom-5 right-5 z-[9999] bg-black text-white px-4 py-3 rounded-full shadow-xl"
+    onClick={() => {
+      const newState = !showAdminToolbar;
+      setShowAdminToolbar(newState);
+
+      // OFF 시 모드 초기화
+      if (!newState) {
+        setIsEditMode(false);
+        setIsResizeMode(false);
+      }
+    }}
+    className="fixed bottom-16 right-6 z-[9999] 
+               bg-black text-white px-5 py-3 rounded-full shadow-xl"
   >
     {showAdminToolbar ? "OFF" : "ON"}
   </button>
 )}
+
 
 
       {/* 🧰 관리자 툴바 - PC or ON일 때만 표시 */}
