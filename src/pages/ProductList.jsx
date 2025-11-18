@@ -176,7 +176,7 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
 
 /** ✅ 전체 상품 리스트 페이지 */
 function ProductList() {
-  const [showAdminToolbar, setShowAdminToolbar] = useState(true);
+  const [showAdminToolbar, setShowAdminToolbar] = useState(false);
   const isMobile = window.innerWidth <= 480;
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -275,31 +275,30 @@ function ProductList() {
 {/* 🔧 모바일 관리자 툴바 ON/OFF 토글 */}
 {user?.isAdmin && isMobile && (
   <button
-    onClick={() => {
-      const newState = !showAdminToolbar;
-      setShowAdminToolbar(newState);
-
-      // OFF 시 모드 초기화
-      if (!newState) {
-        setIsEditMode(false);
-        setIsResizeMode(false);
-      }
-    }}
-    className="fixed bottom-16 right-6 z-[9999] 
-               bg-black text-white px-5 py-3 rounded-full shadow-xl"
-  >
-    {showAdminToolbar ? "OFF" : "ON"}
-  </button>
+  className="fixed top-6 left-6 z-[9999] 
+             bg-black text-white px-4 py-2 rounded-lg shadow-md"
+  onClick={() => {
+    const newState = !showAdminToolbar;
+    setShowAdminToolbar(newState);
+    if (!newState) {
+      setIsEditMode(false);
+      setIsResizeMode(false);
+    }
+  }}
+>
+  {showAdminToolbar ? "OFF" : "ON"}
+</button>
 )}
 
 
 
       {/* 🧰 관리자 툴바 - PC or ON일 때만 표시 */}
-{user?.isAdmin && (showAdminToolbar || !isMobile) && (
-  <div className="fixed top-6 left-6 z-[9999] flex gap-3 items-center">
+{/* 📱 모바일: showAdminToolbar=true일 때만 관리자 버튼 표시 */}
+{user?.isAdmin && isMobile && showAdminToolbar && (
+  <div className="fixed top-20 left-6 z-[9999] flex flex-col gap-3 items-start">
     <button
       onClick={toggleEditMode}
-      className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
+      className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md ${
         isEditMode ? "bg-green-600" : "bg-gray-800"
       }`}
     >
@@ -308,7 +307,7 @@ function ProductList() {
 
     <button
       onClick={toggleResizeMode}
-      className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
+      className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md ${
         isResizeMode ? "bg-blue-600" : "bg-gray-700"
       }`}
     >
