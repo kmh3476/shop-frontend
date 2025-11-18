@@ -127,44 +127,65 @@ function Cart() {
   style={{
     display: "flex",
     alignItems: "center",
-    gap: "8px",
+    gap: "10px",
     marginTop: isMobile ? "10px" : "0",
   }}
 >
+  {/* ➖ 감소 */}
   <button
     onClick={() => decreaseQty(index)}
     style={{
-      width: "32px",
-      height: "32px",
-      borderRadius: "6px",
-      border: "1px solid #aaa",
-      background: "#f8f8f8",
-      fontSize: "20px",
+      width: "36px",
+      height: "36px",
+      borderRadius: "8px",
+      border: "1px solid #ccc",
+      background: "#f2f2f2",
+      color: "#000",
+      fontSize: "22px",
+      fontWeight: "bold",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
       cursor: "pointer",
     }}
   >
     -
   </button>
 
-  <span style={{ fontSize: "18px", fontWeight: "bold" }}>
+  {/* 수량 표시 */}
+  <span
+    style={{
+      fontSize: "18px",
+      fontWeight: "600",
+      minWidth: "25px",
+      textAlign: "center",
+    }}
+  >
     {item.quantity || 1}
   </span>
 
+  {/* ➕ 증가 */}
   <button
     onClick={() => increaseQty(index)}
     style={{
-      width: "32px",
-      height: "32px",
-      borderRadius: "6px",
-      border: "1px solid #aaa",
-      background: "#f8f8f8",
-      fontSize: "20px",
+      width: "36px",
+      height: "36px",
+      borderRadius: "8px",
+      border: "1px solid #ccc",
+      background: "#f2f2f2",
+      color: "#000",
+      fontSize: "22px",
+      fontWeight: "bold",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
       cursor: "pointer",
     }}
   >
     +
   </button>
 </div>
+
 
                 {/* ✅ 개별 삭제 */}
                 {/* 삭제 버튼 */}
