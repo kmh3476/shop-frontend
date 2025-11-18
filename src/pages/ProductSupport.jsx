@@ -66,6 +66,8 @@ function useResizableBox(id, defaultSize = { width: 900, height: 600 }, active) 
  ✅ ProductSupport 메인 컴포넌트
 -------------------------------------------------------- */
 export default function ProductSupport() {
+  const [showAdminToolbar, setShowAdminToolbar] = useState(false);
+  const isMobile = window.innerWidth <= 480;
   const { user } = useAuth();
   const { isEditMode, isResizeMode, setIsEditMode, setIsResizeMode } = useEditMode();
   const [posts, setPosts] = useState([]);
@@ -234,33 +236,60 @@ export default function ProductSupport() {
   -------------------------------------------------------- */
   return (
     <div className="min-h-screen bg-white text-black py-16 px-4 font-['Pretendard'] relative">
-      {/* ✅ 관리자 툴바 (왼쪽 상단) */}
-      {user?.isAdmin && (
-        <div className="fixed top-6 left-6 z-50 flex gap-3">
-          <button
-            onClick={() => setIsEditMode((p) => !p)}
-            className={`px-4 py-2 rounded text-white font-semibold ${
-              isEditMode ? "bg-green-600" : "bg-gray-700"
-            }`}
-          >
-            {isEditMode ? t("productSupport.designOn") : t("productSupport.designOff")}
-          </button>
-          <button
-            onClick={() => setIsResizeMode((p) => !p)}
-            className={`px-4 py-2 rounded text-white font-semibold ${
-              isResizeMode ? "bg-blue-600" : "bg-gray-700"
-            }`}
-          >
-            {isResizeMode ? t("productSupport.resizeOn") : t("productSupport.resizeOff")}
-          </button>
-          <button
-            onClick={handleNoticeSubmit}
-            className="px-4 py-2 rounded bg-yellow-500 text-white font-semibold hover:bg-yellow-600"
-          >
-            📢 {t("productSupport.addNotice")}
-          </button>
-        </div>
-      )}
+      {/* 🔧 모바일용 관리자 툴바 ON/OFF 토글 버튼 */}
+{user?.isAdmin && isMobile && (
+  <button
+    onClick={() => {
+      const newState = !showAdminToolbar;
+      setShowAdminToolbar(newState);
+
+      // OFF 시 디자인/리사이즈모드 자동 off
+      if (!newState) {
+        setIsEditMode(false);
+        setIsResizeMode(false);
+      }
+    }}
+    className="fixed top-4 left-4 z-[9999] bg-black text-white px-3 py-2 rounded-lg shadow-md text-sm"
+  >
+    {showAdminToolbar ? "OFF" : "ON"}
+  </button>
+)}
+
+{/* 🧰 관리자 툴바 (PC에서는 항상 / 모바일은 ON일 때만 보임) */}
+{user?.isAdmin && (showAdminToolbar || !isMobile) && (
+  <div className="fixed top-16 left-4 z-[9999] flex flex-col gap-2">
+    
+    {/* 디자인 모드 */}
+    <button
+      onClick={() => setIsEditMode(p => !p)}
+      className={`px-3 py-2 rounded text-white font-semibold text-sm shadow ${
+        isEditMode ? "bg-green-600" : "bg-gray-700"
+      }`}
+    >
+      {isEditMode ? "디자인모드 ON" : "디자인모드 OFF"}
+    </button>
+
+    {/* 리사이즈 모드 */}
+    <button
+      onClick={() => setIsResizeMode(p => !p)}
+      className={`px-3 py-2 rounded text-white font-semibold text-sm shadow ${
+        isResizeMode ? "bg-blue-600" : "bg-gray-700"
+      }`}
+    >
+      {isResizeMode ? "리사이즈 ON" : "리사이즈 OFF"}
+    </button>
+
+    {/* 공지 추가 */}
+    <button
+      onClick={handleNoticeSubmit}
+      className="px-3 py-2 rounded bg-yellow-500 text-white font-semibold text-sm shadow hover:bg-yellow-600"
+    >
+      📢 공지 추가
+    </button>
+
+  </div>
+)}
+
 
       {/* ✅ 상단 탭 */}
       <div className="flex justify-center mb-12">
