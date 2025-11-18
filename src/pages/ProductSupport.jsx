@@ -68,6 +68,10 @@ function useResizableBox(id, defaultSize = { width: 900, height: 600 }, active) 
 export default function ProductSupport() {
   const [showAdminToolbar, setShowAdminToolbar] = useState(false);
   const isMobile = window.innerWidth <= 480;
+  // 📱 모바일 전용 전체폭 스타일
+const mobileSafeStyle = isMobile
+   ? { width: "100%" }
+   : {};
   const { user } = useAuth();
   const { isEditMode, isResizeMode, setIsEditMode, setIsResizeMode } = useEditMode();
   const [posts, setPosts] = useState([]);
@@ -235,7 +239,14 @@ export default function ProductSupport() {
    ✅ 렌더링 시작
   -------------------------------------------------------- */
   return (
-    <div className="min-h-screen bg-white text-black py-16 px-4 font-['Pretendard'] relative">
+    <div
+  className="
+    min-h-screen bg-white text-black
+    py-16 px-4
+    max-[480px]:py-6 max-[480px]:px-2
+  "
+>
+
       {/* 🔧 모바일용 관리자 툴바 ON/OFF 토글 버튼 */}
 {user?.isAdmin && isMobile && (
   <button
@@ -243,7 +254,6 @@ export default function ProductSupport() {
       const newState = !showAdminToolbar;
       setShowAdminToolbar(newState);
 
-      // OFF 시 디자인/리사이즈모드 자동 off
       if (!newState) {
         setIsEditMode(false);
         setIsResizeMode(false);
@@ -255,10 +265,10 @@ export default function ProductSupport() {
   </button>
 )}
 
-{/* 🧰 관리자 툴바 (PC에서는 항상 / 모바일은 ON일 때만 보임) */}
+{/* 🧰 관리자 툴바 */}
 {user?.isAdmin && (showAdminToolbar || !isMobile) && (
   <div className="fixed top-16 left-4 z-[9999] flex flex-col gap-2">
-    
+
     {/* 디자인 모드 */}
     <button
       onClick={() => setIsEditMode(p => !p)}
@@ -266,7 +276,7 @@ export default function ProductSupport() {
         isEditMode ? "bg-green-600" : "bg-gray-700"
       }`}
     >
-      {isEditMode ? "디자인모드 ON" : "디자인모드 OFF"}
+      {isEditMode ? t("support.designModeOn") : t("support.designModeOff")}
     </button>
 
     {/* 리사이즈 모드 */}
@@ -276,20 +286,19 @@ export default function ProductSupport() {
         isResizeMode ? "bg-blue-600" : "bg-gray-700"
       }`}
     >
-      {isResizeMode ? "리사이즈 ON" : "리사이즈 OFF"}
+      {isResizeMode ? t("support.resizeModeOn") : t("support.resizeModeOff")}
     </button>
 
-    {/* 공지 추가 */}
+    {/* 공지추가 */}
     <button
       onClick={handleNoticeSubmit}
       className="px-3 py-2 rounded bg-yellow-500 text-white font-semibold text-sm shadow hover:bg-yellow-600"
     >
-      📢 공지 추가
+      📢 {t("support.addNotice")}
     </button>
 
   </div>
 )}
-
 
       {/* ✅ 상단 탭 */}
       <div className="flex justify-center mb-12">
@@ -317,9 +326,15 @@ export default function ProductSupport() {
         </div>
       </div>
 
-      <h1 className="text-4xl font-extrabold text-center mb-14">
-        <EditableText id="support-title" defaultText={t("productSupport.title")} />
-      </h1>
+      <h1
+  className="
+    text-4xl font-extrabold text-center mb-14
+    max-[480px]:text-2xl max-[480px]:mb-6
+  "
+>
+  <EditableText id="support-title" defaultText={t("productSupport.title")} />
+</h1>
+
 
       {/* ✅ 문의 작성 버튼 */}
       {!showForm && !selectedPost && (
@@ -346,10 +361,11 @@ export default function ProductSupport() {
           ref={formRef}
           onContextMenu={startFormResize}
           style={{
-            width: `${formSize.width}px`,
-            minHeight: `${formSize.height}px`,
-            cursor: isResizeMode ? "se-resize" : "default",
-          }}
+  ...(isMobile ? mobileSafeStyle : { width: `${formSize.width}px` }),
+  minHeight: `${formSize.height}px`,
+  cursor: isResizeMode ? "se-resize" : "default",
+}}
+
           className="max-w-3xl mx-auto mb-16 bg-gray-50 rounded-2xl p-8 shadow"
         >
           <h2 className="text-2xl font-bold mb-6">{t("productSupport.writeFormTitle")}</h2>
@@ -411,72 +427,156 @@ export default function ProductSupport() {
           ref={tableRef}
           onContextMenu={startTableResize}
           style={{
-            width: `${tableSize.width}px`,
-            minHeight: `${tableSize.height}px`,
-            cursor: isResizeMode ? "se-resize" : "default",
-          }}
-          className="max-w-6xl mx-auto bg-white p-4 rounded shadow"
+  ...(isMobile ? mobileSafeStyle : { width: `${tableSize.width}px` }),
+  minHeight: `${tableSize.height}px`,
+  cursor: isResizeMode ? "se-resize" : "default",
+}}
+
+          className="
+  max-w-6xl mx-auto bg-white p-4 rounded shadow
+  max-[480px]:p-2 max-[480px]:rounded-lg
+"
+
         >
           <h2 className="text-3xl font-bold mb-6">{t("productSupport.listTitle")}</h2>
-          <table className="w-full border-collapse border-t border-gray-300">
-            <thead className="bg-gray-100">
-              <tr className="text-left">
-                <th className="p-3 text-center w-[8%]">{t("productSupport.number")}</th>
-                <th className="p-3 w-[20%]">{t("productSupport.author")}</th>
-                <th className="p-3 w-[25%]">{t("productSupport.subject")}</th>
-                <th className="p-3 w-[35%]">{t("productSupport.content")}</th>
-                <th className="p-3 text-center w-[12%]">{t("productSupport.status")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {posts.map((p, i) => (
-                <tr
-                  key={p._id}
-                  className={`border-b border-gray-200 hover:bg-gray-50 ${
-                    p.isNotice ? "bg-gray-200" : ""
-                  }`}
-                  onClick={() => setSelectedPost(p)}
-                >
-                  <td className="p-3 text-center">{i + 1}</td>
-                  <td className="p-3 text-sm">
-                    {p.isNotice ? t("productSupport.admin") : displayEmail(p.email)}
-                  </td>
-                  <td className="p-3 font-semibold text-gray-800">
-                    {p.isNotice && (
-                      <span className="text-blue-600 font-bold">[{t("productSupport.notice")}]</span>
-                    )}{" "}
-                    {p.question}
-                    {p.isPrivate && <span className="ml-1 text-gray-500 text-xs">🔒</span>}
-                  </td>
-                  <td className="p-3 text-gray-700 text-sm">
-                    {p.isPrivate ? (
-                      <span className="italic text-gray-400">🔒 {t("productSupport.privateLabel")}</span>
-                    ) : p.answer?.length > 40 ? (
-                      p.answer.slice(0, 40) + "..."
-                    ) : (
-                      p.answer
-                    )}
-                  </td>
-                  <td className="p-3 text-center">
-                    {p.reply ? (
-                      <span className="text-green-600 font-medium">{t("productSupport.answered")}</span>
-                    ) : p.isNotice ? (
-                      <span className="text-blue-600 font-medium">{t("productSupport.notice")}</span>
-                    ) : (
-                      <span className="text-gray-500">{t("productSupport.pending")}</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+          <table
+  className="
+    w-full border-collapse border-t border-gray-300
+    text-base
+    max-[480px]:text-xs
+  "
+>
 
-              {posts.length === 0 && (
-                <tr>
-                  <td colSpan="5" className="text-center text-gray-500 py-6 bg-gray-50">
-                    {t("productSupport.noPosts")}
-                  </td>
-                </tr>
-              )}
-            </tbody>
+           <thead className="bg-gray-100">
+  <tr className="text-left max-[480px]:text-center">
+    <th
+      className="
+        p-3 text-center w-[8%]
+        max-[480px]:p-1 max-[480px]:text-xs
+      "
+    >
+      {t("productSupport.number")}
+    </th>
+    <th
+      className="
+        p-3 w-[20%]
+        max-[480px]:p-1 max-[480px]:text-xs
+      "
+    >
+      {t("productSupport.author")}
+    </th>
+    <th
+      className="
+        p-3 w-[25%]
+        max-[480px]:p-1 max-[480px]:text-xs
+      "
+    >
+      {t("productSupport.subject")}
+    </th>
+    <th
+      className="
+        p-3 w-[35%]
+        max-[480px]:p-1 max-[480px]:text-xs
+      "
+    >
+      {t("productSupport.content")}
+    </th>
+    <th
+      className="
+        p-3 text-center w-[12%]
+        max-[480px]:p-1 max-[480px]:text-xs
+      "
+    >
+      {t("productSupport.status")}
+    </th>
+  </tr>
+</thead>
+
+            <tbody>
+  {posts.map((p, i) => (
+    <tr
+      key={p._id}
+      className={`border-b border-gray-200 hover:bg-gray-50 ${
+        p.isNotice ? "bg-gray-200" : ""
+      }`}
+      onClick={() => setSelectedPost(p)}
+    >
+      <td
+        className="
+          p-3 text-center
+          max-[480px]:p-1 max-[480px]:text-xs
+        "
+      >
+        {i + 1}
+      </td>
+
+      <td
+        className="
+          p-3 text-sm
+          max-[480px]:p-1 max-[480px]:text-xs
+        "
+      >
+        {p.isNotice ? t("productSupport.admin") : displayEmail(p.email)}
+      </td>
+
+      <td
+        className="
+          p-3 font-semibold text-gray-800
+          max-[480px]:p-1 max-[480px]:text-xs
+        "
+      >
+        {p.isNotice && (
+          <span className="text-blue-600 font-bold">
+            [{t("productSupport.notice")}]
+          </span>
+        )}{" "}
+        {p.question}
+        {p.isPrivate && (
+          <span className="ml-1 text-gray-500 text-xs">🔒</span>
+        )}
+      </td>
+
+      <td
+        className="
+          p-3 text-gray-700 text-sm
+          max-[480px]:p-1 max-[480px]:text-xs
+        "
+      >
+        {p.isPrivate ? (
+          <span className="italic text-gray-400">
+            🔒 {t("productSupport.privateLabel")}
+          </span>
+        ) : p.answer?.length > 40 ? (
+          p.answer.slice(0, 40) + "..."
+        ) : (
+          p.answer
+        )}
+      </td>
+
+      <td
+        className="
+          p-3 text-center
+          max-[480px]:p-1 max-[480px]:text-xs
+        "
+      >
+        {p.reply ? (
+          <span className="text-green-600 font-medium">
+            {t("productSupport.answered")}
+          </span>
+        ) : p.isNotice ? (
+          <span className="text-blue-600 font-medium">
+            {t("productSupport.notice")}
+          </span>
+        ) : (
+          <span className="text-gray-500">
+            {t("productSupport.pending")}
+          </span>
+        )}
+      </td>
+    </tr>
+  ))}
+</tbody>
+
           </table>
         </div>
       )}
@@ -487,10 +587,11 @@ export default function ProductSupport() {
           ref={detailRef}
           onContextMenu={startDetailResize}
           style={{
-            width: `${detailSize.width}px`,
-            minHeight: `${detailSize.height}px`,
-            cursor: isResizeMode ? "se-resize" : "default",
-          }}
+  ...(isMobile ? mobileSafeStyle : { width: `${detailSize.width}px` }),
+  minHeight: `${detailSize.height}px`,
+  cursor: isResizeMode ? "se-resize" : "default",
+}}
+
           className="max-w-3xl mx-auto bg-gray-50 rounded-2xl p-8 shadow relative"
         >
           <button
