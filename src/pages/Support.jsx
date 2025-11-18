@@ -202,6 +202,12 @@ export default function Support() {
     }
   }
 
+  // 📱 모바일 전용 전체폭 스타일
+const mobileSafeStyle = isMobile
+  ? { width: "100%", minWidth: "100%", maxWidth: "100%" }
+  : {};
+
+
   return (
   <div className="min-h-screen bg-white text-black py-16 px-4 font-['Pretendard'] relative">
 
@@ -314,10 +320,11 @@ export default function Support() {
           ref={formRef}
           onContextMenu={startFormResize}
           style={{
-            width: `${formSize.width}px`,
-            minHeight: `${formSize.height}px`,
-            cursor: isResizeMode ? "se-resize" : "default",
-          }}
+  ...(isMobile ? mobileSafeStyle : { width: `${formSize.width}px` }),
+  minHeight: `${formSize.height}px`,
+  cursor: isResizeMode ? "se-resize" : "default",
+}}
+
           className="max-w-3xl mx-auto mb-16 bg-gray-50 rounded-2xl p-8 shadow"
         >
           <h2 className="text-2xl font-bold mb-6">{t("support.writeFormTitle")}</h2>
@@ -379,11 +386,12 @@ export default function Support() {
         <div
           ref={tableRef}
           onContextMenu={startTableResize}
-          style={{
-            width: `${tableSize.width}px`,
-            minHeight: `${tableSize.height}px`,
-            cursor: isResizeMode ? "se-resize" : "default",
-          }}
+         style={{
+  ...(isMobile ? mobileSafeStyle : { width: `${tableSize.width}px` }),
+  minHeight: `${tableSize.height}px`,
+  cursor: isResizeMode ? "se-resize" : "default",
+}}
+
           className="max-w-6xl mx-auto bg-white p-4 rounded shadow"
         >
           <h2 className="text-3xl font-bold mb-6">{t("support.listTitle")}</h2>
@@ -469,10 +477,11 @@ export default function Support() {
           ref={detailRef}
           onContextMenu={startDetailResize}
           style={{
-            width: `${detailSize.width}px`,
-            minHeight: `${detailSize.height}px`,
-            cursor: isResizeMode ? "se-resize" : "default",
-          }}
+  ...(isMobile ? mobileSafeStyle : { width: `${detailSize.width}px` }),
+  minHeight: `${detailSize.height}px`,
+  cursor: isResizeMode ? "se-resize" : "default",
+}}
+
           className="max-w-3xl mx-auto bg-gray-50 rounded-2xl p-8 shadow relative"
         >
           <button
