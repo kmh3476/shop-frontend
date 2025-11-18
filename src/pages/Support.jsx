@@ -218,41 +218,48 @@ export default function Support() {
               setIsResizeMode(false);
             }
           }}
-          className="fixed bottom-5 right-5 z-[9999] bg-black text-white px-4 py-3 rounded-full shadow-xl"
+          className="fixed top-4 left-4 z-[9999] bg-black text-white px-3 py-2 rounded-lg shadow-md text-sm"
+
         >
-          {showAdminToolbar ? "Admin OFF" : "Admin ON"}
+          {showAdminToolbar ? "OFF" : "ON"}
         </button>
       )}
 
       {/* 🧰 관리자 툴바 (PC에서는 항상, 모바일에선 ON일 때만) */}
       {user?.isAdmin && (showAdminToolbar || !isMobile) && (
-        <div className="fixed top-6 left-6 z-50 flex gap-3">
-          <button
-            onClick={() => setIsEditMode((p) => !p)}
-            className={`px-4 py-2 rounded text-white font-semibold ${
-              isEditMode ? "bg-green-600" : "bg-gray-700"
-            }`}
-          >
-            {isEditMode ? t("support.designModeOn") : t("support.designModeOff")}
-          </button>
-          <button
-            onClick={() => setIsResizeMode((p) => !p)}
-            className={`px-4 py-2 rounded text-white font-semibold ${
-              isResizeMode ? "bg-blue-600" : "bg-gray-700"
-            }`}
-          >
-            {isResizeMode
-              ? t("support.resizeModeOn")
-              : t("support.resizeModeOff")}
-          </button>
-          <button
-            onClick={handleNoticeSubmit}
-            className="px-4 py-2 rounded bg-yellow-500 text-white font-semibold hover:bg-yellow-600"
-          >
-            📢 {t("support.addNotice")}
-          </button>
-        </div>
-      )}
+  <div className="fixed top-16 left-4 z-[9999] flex flex-col gap-2">
+
+    {/* 디자인 모드 */}
+    <button
+      onClick={() => setIsEditMode(p => !p)}
+      className={`px-3 py-2 rounded text-white font-semibold text-sm shadow ${
+        isEditMode ? "bg-green-600" : "bg-gray-700"
+      }`}
+    >
+      {isEditMode ? t("support.designModeOn") : t("support.designModeOff")}
+    </button>
+
+    {/* 리사이즈 모드 */}
+    <button
+      onClick={() => setIsResizeMode(p => !p)}
+      className={`px-3 py-2 rounded text-white font-semibold text-sm shadow ${
+        isResizeMode ? "bg-blue-600" : "bg-gray-700"
+      }`}
+    >
+      {isResizeMode ? t("support.resizeModeOn") : t("support.resizeModeOff")}
+    </button>
+
+    {/* 공지추가 */}
+    <button
+      onClick={handleNoticeSubmit}
+      className="px-3 py-2 rounded bg-yellow-500 text-white font-semibold text-sm shadow hover:bg-yellow-600"
+    >
+      📢 {t("support.addNotice")}
+    </button>
+
+  </div>
+)}
+
 
 
       <div className="flex justify-center mb-12">
