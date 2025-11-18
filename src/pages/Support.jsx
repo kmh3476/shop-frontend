@@ -63,6 +63,8 @@ function useResizableBox(id, defaultSize = { width: 900, height: 600 }, active) 
 }
 
 export default function Support() {
+  const [showAdminToolbar, setShowAdminToolbar] = useState(false);
+  const isMobile = window.innerWidth <= 480;
   const { user } = useAuth();
   const { isEditMode, isResizeMode, setIsEditMode, setIsResizeMode } =
     useEditMode();
@@ -201,8 +203,29 @@ export default function Support() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black py-16 px-4 font-['Pretendard'] relative">
-      {user?.isAdmin && (
+  <div className="min-h-screen bg-white text-black py-16 px-4 font-['Pretendard'] relative">
+
+      {/* 🔧 모바일용 관리자 툴바 ON/OFF 토글 버튼 */}
+      {user?.isAdmin && isMobile && (
+        <button
+          onClick={() => {
+            const newState = !showAdminToolbar;
+            setShowAdminToolbar(newState);
+
+            // OFF 될 때는 디자인/리사이즈 모드도 같이 끄기
+            if (!newState) {
+              setIsEditMode(false);
+              setIsResizeMode(false);
+            }
+          }}
+          className="fixed bottom-5 right-5 z-[9999] bg-black text-white px-4 py-3 rounded-full shadow-xl"
+        >
+          {showAdminToolbar ? "Admin OFF" : "Admin ON"}
+        </button>
+      )}
+
+      {/* 🧰 관리자 툴바 (PC에서는 항상, 모바일에선 ON일 때만) */}
+      {user?.isAdmin && (showAdminToolbar || !isMobile) && (
         <div className="fixed top-6 left-6 z-50 flex gap-3">
           <button
             onClick={() => setIsEditMode((p) => !p)}
@@ -230,6 +253,7 @@ export default function Support() {
           </button>
         </div>
       )}
+
 
       <div className="flex justify-center mb-12">
         <div className="inline-flex bg-gray-100 rounded-full p-1 shadow-sm">
