@@ -176,6 +176,8 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
 
 /** ✅ 전체 상품 리스트 페이지 */
 function ProductList() {
+  const [showAdminToolbar, setShowAdminToolbar] = useState(true);
+  const isMobile = window.innerWidth <= 480;
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [pages, setPages] = useState([]);
@@ -270,27 +272,40 @@ function ProductList() {
   "
 >
 
-      {/* 🧰 관리자 툴바 */}
-      {user?.isAdmin && (
-        <div className="fixed top-6 left-6 z-[9999] flex gap-3 items-center">
-          <button
-            onClick={toggleEditMode}
-            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
-              isEditMode ? "bg-green-600" : "bg-gray-800"
-            }`}
-          >
-            {isEditMode ? t("productList.designOn") : t("productList.designOff")}
-          </button>
-          <button
-            onClick={toggleResizeMode}
-            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
-              isResizeMode ? "bg-blue-600" : "bg-gray-700"
-            }`}
-          >
-            {isResizeMode ? t("productList.resizeOn") : t("productList.resizeOff")}
-          </button>
-        </div>
-      )}
+{/* 🔧 모바일 관리자 툴바 ON/OFF 토글 */}
+{user?.isAdmin && isMobile && (
+  <button
+    onClick={() => setShowAdminToolbar(!showAdminToolbar)}
+    className="fixed bottom-5 right-5 z-[9999] bg-black text-white px-4 py-3 rounded-full shadow-xl"
+  >
+    {showAdminToolbar ? "OFF" : "ON"}
+  </button>
+)}
+
+
+      {/* 🧰 관리자 툴바 - PC or ON일 때만 표시 */}
+{user?.isAdmin && (showAdminToolbar || !isMobile) && (
+  <div className="fixed top-6 left-6 z-[9999] flex gap-3 items-center">
+    <button
+      onClick={toggleEditMode}
+      className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
+        isEditMode ? "bg-green-600" : "bg-gray-800"
+      }`}
+    >
+      {isEditMode ? t("productList.designOn") : t("productList.designOff")}
+    </button>
+
+    <button
+      onClick={toggleResizeMode}
+      className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md transition-colors duration-200 ${
+        isResizeMode ? "bg-blue-600" : "bg-gray-700"
+      }`}
+    >
+      {isResizeMode ? t("productList.resizeOn") : t("productList.resizeOff")}
+    </button>
+  </div>
+)}
+
 
       {/* 헤더 (편집 가능) */}
       <header className="w-full max-w-6xl text-center mb-8">
