@@ -4,14 +4,30 @@ import axios from "axios";
 import { Table, Button, Space, Popconfirm, message } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import AdminProductForm from "./AdminProductForm";
-import { useNavigate } from "react-router-dom"; // ✅ 추가
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); // ✅ 추가
+  const navigate = useNavigate();
+  const { i18n } = useTranslation();
+  const currentLang = (i18n.language || "ko").split("-")[0];
+
+  // ✅ 언어별 상품명 가져오기 (i18nNames → ko/en/th → name 순으로 fallback)
+ const getProductName = (product) => {
+   if (product.i18nNames && typeof product.i18nNames === "object") {
+     return (
+       product.i18nNames[currentLang] ||
+       product.i18nNames.ko ||
+       product.name ||
+       "이름 없음"
+     );
+   }
+   return product.name || "이름 없음";
+ };
 
   // ✅ 상품 목록 불러오기
   const fetchProducts = async () => {
@@ -54,19 +70,26 @@ const AdminProducts = () => {
   const columns = [
     {
       title: "이미지",
-      dataIndex: "image",
-      render: (img) =>
-        img ? (
-          <img
-            src={img}
-            alt="상품 이미지"
-            className="w-16 h-16 object-cover rounded-lg"
-          />
-        ) : (
-          "없음"
-        ),
+         // ✅ record에서 mainImage 또는 images[0] 사용
+   render: (_, record) => {
+     const img = record.mainImage || (record.images && record.images[0]);
+     return img ? (
+       <img
+         src={img}
+         alt="상품 이미지"
+         className="w-16 h-16 object-cover rounded-lg"
+       />
+     ) : (
+       "없음"
+     );
+   },
     },
-    { title: "상품명", dataIndex: "name" },
+
+     {
+   title: "상품명",
+   render: (_, record) => getProductName(record),
+ },
+
     {
       title: "가격",
       dataIndex: "price",

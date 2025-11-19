@@ -302,16 +302,16 @@ function Admin() {
         : cleanImages[0] || "";
 
     const productData = {
-      i18nNames: form.i18nNames,
-      name: form.i18nNames.ko || form.name,
-      price: Number(form.price),
-      description: form.description.trim(),
-      detailText: form.detailText.trim(),
-      sizeText: form.sizeText.trim(),
-      images: cleanImages,
-      mainImage: mainImg,
-      categoryPage: selectedPage,
-    };
+  i18nNames: form.i18nNames,  // 다국어 이름 저장
+  price: Number(form.price),
+  description: form.description.trim(),
+  detailText: form.detailText.trim(),
+  sizeText: form.sizeText.trim(),
+  images: cleanImages,
+  mainImage: mainImg,
+  categoryPage: selectedPage,
+};
+
 
     try {
       setUploading("🕓 상품 저장 중...");

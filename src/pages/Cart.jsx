@@ -10,7 +10,7 @@ function Cart() {
     return saved ? JSON.parse(saved) : [];
   });
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // ✅ localStorage 동기화
   useEffect(() => {
@@ -109,18 +109,22 @@ function Cart() {
                 />
 
                 {/* ✅ 상품 정보 */}
-                <div
-                  style={{ flex: 1, cursor: "pointer" }}
-                  onClick={() => goToDetail(item)}
-                >
-                  <strong>{item.name}</strong> -{" "}
-                  {Number(item.price).toLocaleString()}
-                  {t("cart.currency")}
-                  <br />
-                  {item.description && (
-                    <small style={{ color: "#555" }}>{item.description}</small>
-                  )}
-                </div>
+<div
+  style={{ flex: 1, cursor: "pointer" }}
+  onClick={() => goToDetail(item)}
+>
+  <strong>
+    {item.i18nNames?.[i18n.language] || item.name}
+  </strong>{" "}
+  - {Number(item.price).toLocaleString()}
+  {t("cart.currency")}
+  <br />
+
+  {item.description && (
+    <small style={{ color: "#555" }}>{item.description}</small>
+  )}
+</div>
+
 
                 {/* ✅ 수량 조절 */}
 <div

@@ -71,15 +71,25 @@ function AdminProductEdit() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    name: "",
-    price: "",
-    description: "",
-    detailText: "",
-    sizeText: "",
-    images: [],
-    mainImage: "",
-    categoryPage: "",
-  });
+  // ✅ 다국어 이름
+  i18nNames: { ko: "", en: "", th: "" },
+
+  // ✅ 다국어 설명/상세/사이즈
+  i18nDescriptions: { ko: "", en: "", th: "" },
+  i18nDetailTexts: { ko: "", en: "", th: "" },
+  i18nSizeTexts: { ko: "", en: "", th: "" },
+
+  // ✅ 기존 단일 필드(ko 백업용 + 기존 화면 호환용)
+  name: "",
+  price: "",
+  description: "",
+  detailText: "",
+  sizeText: "",
+  images: [],
+  mainImage: "",
+  categoryPage: "",
+});
+
 
   const [pages, setPages] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -106,15 +116,45 @@ function AdminProductEdit() {
       });
       const product = res.data;
       setForm({
-        name: product.name || "",
-        price: product.price || "",
-        description: product.description || "",
-        detailText: product.detailText || "",
-        sizeText: product.sizeText || "",
-        images: product.images || [],
-        mainImage: product.mainImage || "",
-        categoryPage: product.categoryPage || "",
-      });
+  // ✅ 다국어 이름: 없으면 name을 ko로 채워주기
+  i18nNames: product.i18nNames || {
+    ko: product.name || "",
+    en: "",
+    th: "",
+  },
+
+  // ✅ 다국어 설명: 없으면 기존 description을 ko에 넣기
+  i18nDescriptions: product.i18nDescriptions || {
+    ko: product.description || "",
+    en: "",
+    th: "",
+  },
+
+  // ✅ 다국어 상세
+  i18nDetailTexts: product.i18nDetailTexts || {
+    ko: product.detailText || "",
+    en: "",
+    th: "",
+  },
+
+  // ✅ 다국어 사이즈 안내
+  i18nSizeTexts: product.i18nSizeTexts || {
+    ko: product.sizeText || "",
+    en: "",
+    th: "",
+  },
+
+  // ✅ 단일 필드(ko 기준)
+  name: product.name || "",
+  price: product.price || "",
+  description: product.description || "",
+  detailText: product.detailText || "",
+  sizeText: product.sizeText || "",
+  images: product.images || [],
+  mainImage: product.mainImage || "",
+  categoryPage: product.categoryPage || "",
+});
+
     } catch (err) {
       console.error("❌ 상품 불러오기 실패:", err);
       alert("상품 정보를 불러오지 못했습니다.");
@@ -226,18 +266,31 @@ function AdminProductEdit() {
         : cleanImages[0] || "https://placehold.co/250x200?text=No+Image";
 
     const productData = {
-      name: form.name.trim(),
-      price: Number(form.price),
-      description: form.description.trim(),
-      detailText: form.detailText.trim(),
-      sizeText: form.sizeText.trim(),
-      images: cleanImages, // ✅ 여기 cleanImages 직접 사용
-      mainImage: mainImg,
-      categoryPage:
-        form.categoryPage && form.categoryPage !== "null" && form.categoryPage !== ""
-          ? form.categoryPage
-          : null,
-    };
+  // ✅ 다국어 이름
+  i18nNames: form.i18nNames,
+  name: (form.i18nNames.ko || form.name || "").trim(),
+
+  // ✅ 다국어 설명
+  i18nDescriptions: form.i18nDescriptions,
+  description: (form.i18nDescriptions.ko || form.description || "").trim(),
+
+  // ✅ 다국어 상세
+  i18nDetailTexts: form.i18nDetailTexts,
+  detailText: (form.i18nDetailTexts.ko || form.detailText || "").trim(),
+
+  // ✅ 다국어 사이즈
+  i18nSizeTexts: form.i18nSizeTexts,
+  sizeText: (form.i18nSizeTexts.ko || form.sizeText || "").trim(),
+
+  price: Number(form.price),
+  images: cleanImages,
+  mainImage: mainImg,
+  categoryPage:
+    form.categoryPage && form.categoryPage !== "null" && form.categoryPage !== ""
+      ? form.categoryPage
+      : null,
+};
+
 
     try {
       setUploading("🕓 상품 수정 중...");
@@ -313,20 +366,50 @@ function AdminProductEdit() {
     >
       <h2 style={{ marginBottom: "20px" }}>🛠 상품 수정</h2>
 
-      {/* ✅ 상품명 */}
-      <input
-        type="text"
-        placeholder="상품명"
-        value={form.name}
-        onChange={(e) => setForm({ ...form, name: e.target.value })}
-        style={{
-          width: "100%",
-          padding: "10px",
-          marginBottom: "10px",
-          borderRadius: "6px",
-          border: "1px solid #ccc",
-        }}
-      />
+      {/* ✅ 상품명 (한국어) */}
+<input
+  type="text"
+  placeholder="상품명 (한국어)"
+  value={form.i18nNames.ko}
+  onChange={(e) =>
+    setForm((prev) => ({
+      ...prev,
+      i18nNames: { ...prev.i18nNames, ko: e.target.value },
+      // ko를 기존 name에도 같이 넣어주기
+      name: e.target.value,
+    }))
+  }
+  style={{ width: "100%", padding: "10px", marginBottom: "6px", borderRadius: "6px", border: "1px solid #ccc" }}
+/>
+
+{/* ✅ 상품명 (영어) */}
+<input
+  type="text"
+  placeholder="상품명 (영어)"
+  value={form.i18nNames.en}
+  onChange={(e) =>
+    setForm((prev) => ({
+      ...prev,
+      i18nNames: { ...prev.i18nNames, en: e.target.value },
+    }))
+  }
+  style={{ width: "100%", padding: "10px", marginBottom: "6px", borderRadius: "6px", border: "1px solid #ccc" }}
+/>
+
+{/* ✅ 상품명 (태국어) */}
+<input
+  type="text"
+  placeholder="상품명 (태국어)"
+  value={form.i18nNames.th}
+  onChange={(e) =>
+    setForm((prev) => ({
+      ...prev,
+      i18nNames: { ...prev.i18nNames, th: e.target.value },
+    }))
+  }
+  style={{ width: "100%", padding: "10px", marginBottom: "10px", borderRadius: "6px", border: "1px solid #ccc" }}
+/>
+
 
       {/* ✅ 가격 */}
       <input
@@ -343,39 +426,157 @@ function AdminProductEdit() {
         }}
       />
 
-      {/* ✅ 설명 */}
-      <textarea
-        placeholder="상품 요약 설명"
-        rows={3}
-        value={form.description}
-        onChange={(e) => setForm({ ...form, description: e.target.value })}
-        style={{
-          width: "100%",
-          padding: "10px",
-          marginBottom: "10px",
-          borderRadius: "6px",
-          border: "1px solid #ccc",
-        }}
-      />
+      {/* ✅ 상품 요약 설명 (한국어) */}
+<textarea
+  placeholder="상품 요약 설명 (ko)"
+  rows={3}
+  value={form.i18nDescriptions.ko}
+  onChange={(e) =>
+    setForm((prev) => ({
+      ...prev,
+      i18nDescriptions: { ...prev.i18nDescriptions, ko: e.target.value },
+      // ko는 기존 description에도 반영
+      description: e.target.value,
+    }))
+  }
+  style={{
+    width: "100%",
+    padding: "10px",
+    marginBottom: "6px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+  }}
+/>
+
+{/* ✅ 상품 요약 설명 (en) */}
+<textarea
+  placeholder="상품 요약 설명 (en)"
+  rows={3}
+  value={form.i18nDescriptions.en}
+  onChange={(e) =>
+    setForm((prev) => ({
+      ...prev,
+      i18nDescriptions: { ...prev.i18nDescriptions, en: e.target.value },
+    }))
+  }
+  style={{
+    width: "100%",
+    padding: "10px",
+    marginBottom: "6px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+  }}
+/>
+
+{/* ✅ 상품 요약 설명 (th) */}
+<textarea
+  placeholder="상품 요약 설명 (th)"
+  rows={3}
+  value={form.i18nDescriptions.th}
+  onChange={(e) =>
+    setForm((prev) => ({
+      ...prev,
+      i18nDescriptions: { ...prev.i18nDescriptions, th: e.target.value },
+    }))
+  }
+  style={{
+    width: "100%",
+    padding: "10px",
+    marginBottom: "10px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+  }}
+/>
+
 
       {/* ✅ 상세정보 */}
-      <label>📋 상품 상세정보</label>
+      <label>📋 상품 상세정보 (ko)</label>
 <ReactQuill
   theme="snow"
-  value={form.detailText}
-  onChange={(value) => setForm((prev) => ({ ...prev, detailText: value }))}
+  value={form.i18nDetailTexts.ko}
+  onChange={(value) =>
+    setForm((prev) => ({
+      ...prev,
+      i18nDetailTexts: { ...prev.i18nDetailTexts, ko: value },
+      detailText: value, // ko는 기존 필드에도 반영
+    }))
+  }
   modules={quillModules}
-  style={{ minHeight: "300px" }}
+  style={{ minHeight: "250px", marginBottom: "16px" }}
 />
 
-<label>📏 사이즈 & 구매안내</label>
+<label>📋 상품 상세정보 (en)</label>
 <ReactQuill
   theme="snow"
-  value={form.sizeText}
-  onChange={(value) => setForm((prev) => ({ ...prev, sizeText: value }))}
+  value={form.i18nDetailTexts.en}
+  onChange={(value) =>
+    setForm((prev) => ({
+      ...prev,
+      i18nDetailTexts: { ...prev.i18nDetailTexts, en: value },
+    }))
+  }
   modules={quillModules}
-  style={{ minHeight: "300px" }}
+  style={{ minHeight: "250px", marginBottom: "16px" }}
 />
+
+<label>📋 상품 상세정보 (th)</label>
+<ReactQuill
+  theme="snow"
+  value={form.i18nDetailTexts.th}
+  onChange={(value) =>
+    setForm((prev) => ({
+      ...prev,
+      i18nDetailTexts: { ...prev.i18nDetailTexts, th: value },
+    }))
+  }
+  modules={quillModules}
+  style={{ minHeight: "250px", marginBottom: "24px" }}
+/>
+
+
+<label>📏 사이즈 & 구매안내 (ko)</label>
+<ReactQuill
+  theme="snow"
+  value={form.i18nSizeTexts.ko}
+  onChange={(value) =>
+    setForm((prev) => ({
+      ...prev,
+      i18nSizeTexts: { ...prev.i18nSizeTexts, ko: value },
+      sizeText: value, // ko는 기존 필드에도 반영
+    }))
+  }
+  modules={quillModules}
+  style={{ minHeight: "250px", marginBottom: "16px" }}
+/>
+
+<label>📏 사이즈 & 구매안내 (en)</label>
+<ReactQuill
+  theme="snow"
+  value={form.i18nSizeTexts.en}
+  onChange={(value) =>
+    setForm((prev) => ({
+      ...prev,
+      i18nSizeTexts: { ...prev.i18nSizeTexts, en: value },
+    }))
+  }
+  modules={quillModules}
+  style={{ minHeight: "250px", marginBottom: "16px" }}
+/>
+
+<label>📏 사이즈 & 구매안내 (th)</label>
+<ReactQuill
+  theme="snow"
+  value={form.i18nSizeTexts.th}
+  onChange={(value) =>
+    setForm((prev) => ({
+      ...prev,
+      i18nSizeTexts: { ...prev.i18nSizeTexts, th: value },
+    }))
+  }
+  modules={quillModules}
+  style={{ minHeight: "250px", marginBottom: "24px" }}
+/>
+
 
 
 

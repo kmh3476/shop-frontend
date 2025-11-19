@@ -147,7 +147,8 @@ export default function ProductDetail() {
   const [inquiryInput, setInquiryInput] = useState({ name: "", question: "" });
   const { user } = useAuth();
   const { isEditMode, setIsEditMode, isResizeMode, setIsResizeMode } = useEditMode();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = (i18n.language || "ko").split("-")[0];
 
   const refs = {
     detail: useRef(null),
@@ -181,19 +182,48 @@ export default function ProductDetail() {
           api.get(`/api/inquiries/${id}`),
         ]);
         const product = p.data;
-        const imgs = product.mainImage
+        const imgs = product.mainImage 
           ? [product.mainImage, ...(product.images || []).filter((img) => img && img !== product.mainImage)]
           : (product.images || []).filter((img) => img && img.startsWith("http"));
         const uniqueImgs = [...new Set(imgs.filter((img) => img && img.startsWith("http")))];
 
-        setProduct({
-          ...product,
-          name: localStorage.getItem(`detail-name-${id}`) ?? product.name,
-          description: localStorage.getItem(`detail-desc-${id}`) ?? product.description,
-          detailText: product.detailText || "",
-          sizeText: product.sizeText || "",
-          images: uniqueImgs,
-        });
+              // ✅ 언어별 상품명 선택 (i18nNames → ko/en/th → name → fallback)
+      const i18nNames = product.i18nNames || {};
+      const localizedNameFromServer =
+        i18nNames[currentLang] || i18nNames.ko || product.name || "";
+
+      // ✅ 관리자 페이지에서 EditableText로 덮어쓴 경우(localStorage) 우선
+      const overrideName =
+        localStorage.getItem(`detail-name-${id}`) || localizedNameFromServer;
+
+      const overrideDesc =
+        localStorage.getItem(`detail-desc-${id}`) || product.description || "";
+
+
+        // ✅ 다국어 상세설명
+const detailText =
+  product.i18nDetailTexts?.[currentLang] ||
+  product.i18nDetailTexts?.ko ||
+  product.detailText ||
+  "";
+
+// ✅ 다국어 사이즈정보
+const sizeText =
+  product.i18nSizeTexts?.[currentLang] ||
+  product.i18nSizeTexts?.ko ||
+  product.sizeText ||
+  "";
+
+// 🔥 최종 setProduct
+setProduct({
+  ...product,
+  i18nNames,
+  name: overrideName,
+  description: overrideDesc,
+  detailText,
+  sizeText,
+  images: uniqueImgs,
+});
 
         setMainImage(product.mainImage || uniqueImgs[0]);
         setReviews(r.data || []);
@@ -205,7 +235,7 @@ export default function ProductDetail() {
       }
     };
     load();
-  }, [id]);
+  }, [id, currentLang]);
   // ✅ 후기 등록
   const addReview = async () => {
     if (!reviewInput.name || !reviewInput.comment)

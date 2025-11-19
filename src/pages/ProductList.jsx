@@ -79,7 +79,8 @@ const useResizableCard = (id, isResizeMode, defaultWidth = 230, defaultHeight = 
 
 /* ✅ 개별 상품 카드 컴포넌트 */
 function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language?.split("-")[0] || "ko";
   const isMobile = window.innerWidth <= 480;
 
   const imageHeight = isMobile ? "13rem" : "15rem"; // 📌 이미지 더 길게 증가
@@ -130,7 +131,12 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
         <h2 className="text-base font-semibold text-gray-800 leading-tight">
           <EditableText
             id={`product-name-${product._id}`}
-            defaultText={product.name}
+            defaultText={
+  product.i18nNames?.[currentLang] ||
+  product.i18nNames?.ko ||
+  product.name
+}
+
             filePath="src/pages/ProductList.jsx"
             componentName="ProductCard"
           />
@@ -140,7 +146,13 @@ function ProductCard({ product, isEditMode, isResizeMode, addToCart, navigate })
         <p className="text-gray-500 text-xs mt-1 line-clamp-1 leading-tight">
           <EditableText
             id={`product-desc-${product._id}`}
-            defaultText={product.description || t("productList.noDescription")}
+            defaultText={
+  product.i18nDescriptions?.[currentLang] ||
+  product.i18nDescriptions?.ko ||
+  product.description ||
+  t("productList.noDescription")
+}
+
             filePath="src/pages/ProductList.jsx"
             componentName="ProductCard"
           />
@@ -220,19 +232,48 @@ function ProductList() {
   };
 
   const fetchProducts = async () => {
-    try {
-      const baseURL = import.meta.env.VITE_API_BASE_URL;
-      const endpoint = baseURL.endsWith("/api")
-        ? `${baseURL}/products`
-        : `${baseURL}/api/products`;
-      const res = await api.get(endpoint);
-      setProducts(res.data);
-      setFilteredProducts(res.data);
-    } catch (err) {
-      console.error("❌ 상품 불러오기 실패:", err.message, err);
-      alert(t("productList.fetchFail"));
-    }
-  };
+  try {
+    const baseURL = import.meta.env.VITE_API_BASE_URL;
+    const endpoint = baseURL.endsWith("/api")
+      ? `${baseURL}/products`
+      : `${baseURL}/api/products`;
+
+    // 🔥 res 선언 필수
+    const res = await api.get(endpoint);
+    const data = res.data;
+
+    const currentLang = i18n.language?.split("-")[0] || "ko";
+
+    // 🔥 다국어 상품명/설명 매핑
+    const localizedList = data.map((p) => {
+      const name =
+        p.i18nNames?.[currentLang] ||
+        p.i18nNames?.ko ||
+        p.name ||
+        "";
+
+      const description =
+        p.i18nDescriptions?.[currentLang] ||
+        p.i18nDescriptions?.ko ||
+        p.description ||
+        "";
+
+      return {
+        ...p,
+        name,
+        description,
+      };
+    });
+
+    // 🔥 products, filteredProducts 저장
+    setProducts(localizedList);
+    setFilteredProducts(localizedList);
+
+  } catch (err) {
+    console.error("❌ 상품 불러오기 실패:", err.message, err);
+    alert(t("productList.fetchFail"));
+  }
+};
 
   const handlePageChange = (pageId) => {
     setActivePage(pageId);
