@@ -179,6 +179,12 @@ function MainLayout() {
       360,
       520
     );
+    // ⭐ 다국어 이름 처리 추가
+    const { i18n } = useTranslation();
+    const currentLang = (i18n.language || "ko").split("-")[0];
+    const i18nNames = product.i18nNames || {};
+    const localizedName = i18nNames[currentLang] || i18nNames.ko || product.name || "";
+
     const scale = isMobile ? (size.width / 360) : 1;
     const isLocked = isEditMode;
 
@@ -235,7 +241,7 @@ aspectRatio: `${size.width / size.height}`,
       isMobile ? "text-xl" : "text-3xl"
     }`}
   >
-    {product.name}
+    {localizedName}
   </h3>
 
   {/* 상품 가격 — 검정색 */}
@@ -260,6 +266,12 @@ aspectRatio: `${size.width / size.height}`,
       300,
       460
     );
+    // ⭐ 다국어 이름 처리 추가
+    const { i18n } = useTranslation();
+    const currentLang = (i18n.language || "ko").split("-")[0];
+    const i18nNames = product.i18nNames || {};
+    const localizedName = i18nNames[currentLang] || i18nNames.ko || product.name || "";
+
     const scale = isMobile ? (size.width / 300) : 1;
     const isLocked = isEditMode;
 
@@ -314,7 +326,7 @@ fontSize: `${scale * (isMobile ? 0.75 : 1)}rem`,
     isMobile ? "text-sm" : "text-xl"
   }`}
 >
-  {product.name}
+  {localizedName}
 </h3>
 
 <p
