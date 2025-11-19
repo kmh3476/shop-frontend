@@ -117,11 +117,30 @@ function AdminProductEdit() {
       const product = res.data;
       setForm({
   // ✅ 다국어 이름: 없으면 name을 ko로 채워주기
-  i18nNames: product.i18nNames || {
-    ko: product.name || "",
-    en: "",
-    th: "",
-  },
+ i18nNames: {
+  ko: product.i18nNames?.ko ?? product.name ?? "",
+  en: product.i18nNames?.en ?? "",
+  th: product.i18nNames?.th ?? "",
+},
+
+i18nDescriptions: {
+  ko: product.i18nDescriptions?.ko ?? product.description ?? "",
+  en: product.i18nDescriptions?.en ?? "",
+  th: product.i18nDescriptions?.th ?? "",
+},
+
+i18nDetailTexts: {
+  ko: product.i18nDetailTexts?.ko ?? product.detailText ?? "",
+  en: product.i18nDetailTexts?.en ?? "",
+  th: product.i18nDetailTexts?.th ?? "",
+},
+
+i18nSizeTexts: {
+  ko: product.i18nSizeTexts?.ko ?? product.sizeText ?? "",
+  en: product.i18nSizeTexts?.en ?? "",
+  th: product.i18nSizeTexts?.th ?? "",
+},
+
 
   // ✅ 다국어 설명: 없으면 기존 description을 ko에 넣기
   i18nDescriptions: product.i18nDescriptions || {
