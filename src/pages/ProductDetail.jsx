@@ -235,7 +235,7 @@ setProduct({
       }
     };
     load();
-  }, [id, currentLang]);
+  }, [id, i18n.language]);
   // ✅ 후기 등록
   const addReview = async () => {
     if (!reviewInput.name || !reviewInput.comment)

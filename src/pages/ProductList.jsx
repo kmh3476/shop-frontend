@@ -220,7 +220,7 @@ function ProductList() {
   useEffect(() => {
     fetchPages();
     fetchProducts();
-  }, []);
+  }, [i18n.language]);
 
   const fetchPages = async () => {
     try {
