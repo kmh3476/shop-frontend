@@ -139,7 +139,7 @@ function AdminProductForm({ selectedPage, onSave }) {
 
     try {
       setUploading("🕓 상품 저장 중...");
-      await api.post("/products", productData, { headers: getAuthHeader() });
+      await api.post("/api/products", productData, { headers: getAuthHeader() });
       setUploading(false);
       alert("✅ 상품이 등록되었습니다!");
       setForm({
