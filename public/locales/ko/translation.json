@@ -426,6 +426,15 @@
     "delete": "삭제",
     "cancel": "취소",
     "ok": "확인"
-}
+},
+
+ "admin": {
+    "open": "관리자 열기",
+    "close": "관리자 닫기",
+    "designOn": "디자인모드 ON",
+    "designOff": "디자인모드 OFF",
+    "resizeOn": "리사이즈모드 ON",
+    "resizeOff": "리사이즈모드 OFF"
+  }
 
 }

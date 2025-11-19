@@ -426,6 +426,15 @@
     "delete": "Delete",
     "cancel": "Cancel",
     "ok": "OK"
-}
+},
+
+  "admin": {
+    "open": "OPEN ADMIN",
+    "close": "CLOSE ADMIN",
+    "designOn": "Design Mode ON",
+    "designOff": "Design Mode OFF",
+    "resizeOn": "Resize Mode ON",
+    "resizeOff": "Resize Mode OFF"
+  }
 
 }
