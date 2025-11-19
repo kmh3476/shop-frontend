@@ -149,7 +149,8 @@ export default function ProductDetail() {
   const { isEditMode, setIsEditMode, isResizeMode, setIsResizeMode } = useEditMode();
   const { t, i18n } = useTranslation();
   const currentLang = (i18n.language || "ko").split("-")[0];
-
+  const [showAdminButtons, setShowAdminButtons] = useState(false);
+  const isMobile = window.innerWidth <= 480;
   const refs = {
     detail: useRef(null),
     size: useRef(null),
@@ -196,8 +197,17 @@ export default function ProductDetail() {
       const overrideName =
         localStorage.getItem(`detail-name-${id}`) || localizedNameFromServer;
 
-      const overrideDesc =
-        localStorage.getItem(`detail-desc-${id}`) || product.description || "";
+      // ⭐ 다국어 요약 설명
+const description =
+  product.i18nDescriptions?.[currentLang] ||
+  product.i18nDescriptions?.ko ||
+  product.description ||
+  "";
+
+// ⭐ 관리자 수정 모드에서 저장된 로컬 텍스트 우선 적용
+const overrideDesc =
+  localStorage.getItem(`detail-desc-${id}`) || description;
+
 
 
         // ✅ 다국어 상세설명
@@ -286,27 +296,106 @@ setProduct({
 
   return (
     <div className="bg-gray-50 min-h-screen pb-20">
-      {/* ✅ 관리자 툴바 */}
-      {user?.isAdmin && (
-        <div className="fixed top-6 left-6 z-50 flex gap-3">
+      {/* ✅ MainLayout 스타일 관리자 툴바 */}
+{user?.isAdmin && (
+  <>
+    {/* 📱 모바일: 메뉴 ON/OFF 버튼 */}
+    {isMobile && (
+      <button
+        onClick={() => setShowAdminButtons(!showAdminButtons)}
+        className="fixed top-6 left-6 z-[9999] bg-black text-white px-4 py-2 rounded-lg shadow-md"
+      >
+        {showAdminButtons ? "관리자 닫기" : "관리자 열기"}
+      </button>
+    )}
+
+    {/* 📱 모바일: 관리자 버튼 패널 */}
+    {!isMobile && showAdminButtons && (
+      <div className="fixed top-20 left-6 z-[9999] p-4 bg-black/80 rounded-lg shadow-xl flex flex-col gap-3 text-white min-w-[200px]">
+
+        {/* 상태 표시 */}
+        <div className="text-sm mb-2 border-b border-gray-500 pb-2">
+          <p>
+            디자인모드:{" "}
+            <span className={isEditMode ? "text-green-400 font-bold" : "text-gray-300"}>
+              {isEditMode ? "ON" : "OFF"}
+            </span>
+          </p>
+          <p>
+            리사이즈모드:{" "}
+            <span className={isResizeMode ? "text-green-400 font-bold" : "text-gray-300"}>
+              {isResizeMode ? "ON" : "OFF"}
+            </span>
+          </p>
+        </div>
+
+        {/* 디자인모드 버튼 */}
+        <button
+          onClick={toggleEdit}
+          className={`px-4 py-2 rounded-lg font-semibold shadow-md duration-200 ${
+            isEditMode ? "bg-green-600" : "bg-gray-700"
+          }`}
+        >
+          {isEditMode ? "디자인모드 ON" : "디자인모드 OFF"}
+        </button>
+
+        {/* 리사이즈모드 버튼 */}
+        <button
+          onClick={toggleResize}
+          className={`px-4 py-2 rounded-lg font-semibold shadow-md duration-200 ${
+            isResizeMode ? "bg-blue-600" : "bg-gray-700"
+          }`}
+        >
+          {isResizeMode ? "리사이즈모드 ON" : "리사이즈모드 OFF"}
+        </button>
+      </div>
+    )}
+
+    {/* 🖥 PC 버전 */}
+    {window.innerWidth > 480 && (
+      <div className="fixed top-6 left-6 z-[9999] flex flex-col gap-4">
+
+        {/* 상태창 */}
+        <div className="px-4 py-3 bg-black/80 text-white rounded-lg shadow-md text-sm leading-tight">
+          <p>
+            디자인모드:{" "}
+            <span className={isEditMode ? "text-green-400 font-bold" : "text-gray-300"}>
+              {isEditMode ? "ON" : "OFF"}
+            </span>
+          </p>
+          <p>
+            리사이즈모드:{" "}
+            <span className={isResizeMode ? "text-green-400 font-bold" : "text-gray-300"}>
+              {isResizeMode ? "ON" : "OFF"}
+            </span>
+          </p>
+        </div>
+
+        {/* 버튼 그룹 */}
+        <div className="flex gap-3">
           <button
             onClick={toggleEdit}
-            className={`px-4 py-2 rounded text-white font-semibold ${
+            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md ${
               isEditMode ? "bg-green-600" : "bg-gray-700"
             }`}
           >
-            {isEditMode ? t("product.designModeOn") : t("product.designModeOff")}
+            {isEditMode ? "디자인모드 ON" : "디자인모드 OFF"}
           </button>
+
           <button
             onClick={toggleResize}
-            className={`px-4 py-2 rounded text-white font-semibold ${
+            className={`px-5 py-2 rounded-lg text-white font-semibold shadow-md ${
               isResizeMode ? "bg-blue-600" : "bg-gray-700"
             }`}
           >
-            {isResizeMode ? t("product.resizeOn") : t("product.resizeOff")}
+            {isResizeMode ? "리사이즈모드 ON" : "리사이즈모드 OFF"}
           </button>
         </div>
-      )}
+      </div>
+    )}
+  </>
+)}
+
       <div className="max-w-3xl mx-auto py-10">
         <Link
   to="/products"
