@@ -213,7 +213,7 @@ const mobileSafeStyle = isMobile
   className="
   min-h-screen bg-white text-black 
   py-4 px-3 
-  max-[480px]:py-2 max-[480px]:px-2
+  max-[480px]:py-1 max-[480px]:px-2
 "
 
 >
@@ -419,8 +419,8 @@ const mobileSafeStyle = isMobile
 }}
 
           className="
-  w-full max-w-[95%] mx-auto bg-white p-4 rounded shadow
-  max-[480px]:p-2 max-[480px]:rounded-lg
+  w-full mx-auto bg-white p-4 rounded shadow
+ max-[480px]:px-1 max-[480px]:py-2 max-[480px]:rounded-lg
 "
 
 

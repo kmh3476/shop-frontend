@@ -70,7 +70,7 @@ export default function ProductSupport() {
   const isMobile = window.innerWidth <= 480;
   // 📱 모바일 전용 전체폭 스타일
 const mobileSafeStyle = isMobile
-   ? { width: "100%" }
+   ? { width: "100%", minWidth: "100%", maxWidth: "100%" }
    : {};
   const { user } = useAuth();
   const { isEditMode, isResizeMode, setIsEditMode, setIsResizeMode } = useEditMode();
@@ -243,7 +243,7 @@ const mobileSafeStyle = isMobile
   className="
     min-h-screen bg-white text-black
     py-4 px-3
-    max-[480px]:py-2 max-[480px]:px-2
+    max-[480px]:py-1 max-[480px]:px-2
   "
 >
 
@@ -453,8 +453,8 @@ const mobileSafeStyle = isMobile
 }}
 
           className="
-  w-full max-w-[95%] mx-auto bg-white p-4 rounded shadow
-  max-[480px]:p-2 max-[480px]:rounded-lg
+  w-full mx-auto bg-white p-4 rounded shadow
+  max-[480px]:px-1 max-[480px]:py-2 max-[480px]:rounded-lg
 "
 
         >
