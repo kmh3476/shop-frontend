@@ -275,30 +275,42 @@ const mobileSafeStyle = isMobile
 
 
 
-      <div className="flex justify-center mb-12">
-        <div className="inline-flex bg-gray-100 rounded-full p-1 shadow-sm">
-          <button
-            onClick={() => navigate("/support")}
-            className={`px-6 py-2 rounded-full text-base font-medium transition-all ${
-              location.pathname === "/support"
-                ? "bg-black text-white shadow-sm"
-                : "text-gray-600 hover:text-black"
-            }`}
-          >
-            {t("support.userInquiry")}
-          </button>
-          <button
-            onClick={() => navigate("/product-support")}
-            className={`px-6 py-2 rounded-full text-base font-medium transition-all ${
-              location.pathname === "/product-support"
-                ? "bg-black text-white shadow-sm"
-                : "text-gray-600 hover:text-black"
-            }`}
-          >
-            {t("support.productInquiry")}
-          </button>
-        </div>
-      </div>
+      <div className="
+  flex justify-center mb-12 
+  max-[480px]:mb-6 max-[480px]:mt-2
+">
+  <div className="
+    inline-flex bg-gray-100 rounded-full p-1 shadow-sm 
+    max-[480px]:p-0.5
+  ">
+    <button
+      onClick={() => navigate("/support")}
+      className={`
+        px-6 py-2 rounded-full text-base font-medium transition-all
+        ${location.pathname === "/support"
+          ? "bg-black text-white shadow-sm"
+          : "text-gray-600 hover:text-black"}
+        max-[480px]:px-3 max-[480px]:py-1.5 max-[480px]:text-xs
+      `}
+    >
+      {t("support.userInquiry")}
+    </button>
+
+    <button
+      onClick={() => navigate("/product-support")}
+      className={`
+        px-6 py-2 rounded-full text-base font-medium transition-all
+        ${location.pathname === "/product-support"
+          ? "bg-black text-white shadow-sm"
+          : "text-gray-600 hover:text-black"}
+        max-[480px]:px-3 max-[480px]:py-1.5 max-[480px]:text-xs
+      `}
+    >
+      {t("support.productInquiry")}
+    </button>
+  </div>
+</div>
+
 
       <h1
   className="
