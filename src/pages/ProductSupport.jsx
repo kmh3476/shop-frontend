@@ -243,7 +243,7 @@ const mobileSafeStyle = isMobile
   className="
     min-h-screen bg-white text-black
     py-4 px-3
-    max-[480px]:py-1 max-[480px]:px-2
+    max-[480px]:py-0 max-[480px]:px-2
   "
 >
 
