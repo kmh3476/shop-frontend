@@ -242,8 +242,8 @@ const mobileSafeStyle = isMobile
     <div
   className="
     min-h-screen bg-white text-black
-    py-16 px-4
-    max-[480px]:py-6 max-[480px]:px-2
+    py-8 px-4
+    max-[480px]:py-3 max-[480px]:px-2
   "
 >
 
@@ -348,8 +348,8 @@ const mobileSafeStyle = isMobile
 
       <h1
   className="
-    text-4xl font-extrabold text-center mb-14
-    max-[480px]:text-2xl max-[480px]:mb-6
+    text-4xl font-extrabold text-center mb-8
+    max-[480px]:text-2xl max-[480px]:mb-3
   "
 >
   <EditableText id="support-title" defaultText={t("productSupport.title")} />
@@ -453,7 +453,7 @@ const mobileSafeStyle = isMobile
 }}
 
           className="
-  max-w-6xl mx-auto bg-white p-4 rounded shadow
+  w-full bg-white p-4 rounded shadow
   max-[480px]:p-2 max-[480px]:rounded-lg
 "
 
