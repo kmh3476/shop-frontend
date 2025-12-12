@@ -1,5 +1,6 @@
 // 📁 src/api/axiosInstance.js
 import axios from "axios";
+import i18n from "../i18n";
 
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, ""), // ✅ 슬래시 중복 방지
@@ -13,10 +14,17 @@ API.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // ✅ 추가: 서버 언어 판별용 헤더
+    const lang = i18n?.language || "ko";
+    config.headers["x-app-language"] = lang;
+    config.headers["Accept-Language"] = lang; // (선택) 같이 맞춰주면 더 안전
+
     return config;
   },
   (error) => Promise.reject(error)
 );
+
 
 // ✅ 응답 인터셉터 (토큰 만료 시 자동 갱신)
 API.interceptors.response.use(
