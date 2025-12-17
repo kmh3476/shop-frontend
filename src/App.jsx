@@ -509,8 +509,6 @@ useEffect(() => {
 function InnerApp() {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const [showAdminToolbar, setShowAdminToolbar] = useState(false);
-  const isMobile = window.innerWidth < 768;
 
   useEffect(() => {
     const logEntry = {
@@ -530,95 +528,94 @@ function InnerApp() {
         {/* ✅ 언어 선택 (전역 노출) */}
         <LanguageSelector />
 
-        <Routes>
-          {/* 홈 페이지 */}
-          <Route path="/" element={<><MainLayout /><Navigation /></>} />
+        {/* ✅ AppWrapper(=transform) 밖! -> 스크롤해도 고정 */}
+        <Navigation />
 
-          {/* 일반 페이지 */}
-          <Route
-            element={
-              <>
-                <CleanLayout />
-                <Navigation />
-              </>
-            }
-          >
-            <Route path="/products" element={<ProductList />} />
-            <Route path="/products/:id" element={<ProductDetail />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/support" element={<Support />} />
-            <Route path="/product-support" element={<ProductSupport />} />
+        {/* ✅ scale은 컨텐츠에만 적용 */}
+        <AppWrapper>
+          <Routes>
+            {/* ✅ 홈 */}
+            <Route path="/" element={<MainLayout />} />
 
-            {/* 관리자 페이지 */}
-            <Route
-              path="/admin"
-              element={
-                <AdminRoute>
-                  <Admin />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/support"
-              element={
-                <AdminRoute>
-                  <AdminSupport />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/product-support"
-              element={
-                <AdminRoute>
-                  <AdminSupport />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/products"
-              element={
-                <AdminRoute>
-                  <AdminProducts />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/admin/products/:id/edit"
-              element={
-                <AdminRoute>
-                  <AdminProductEdit />
-                </AdminRoute>
-              }
-            />
+            {/* ✅ 일반 페이지들 (CleanLayout 적용) */}
+            <Route element={<CleanLayout />}>
+              <Route path="/products" element={<ProductList />} />
+              <Route path="/products/:id" element={<ProductDetail />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/product-support" element={<ProductSupport />} />
 
-            {/* 인증 관련 */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/find-id" element={<FindId />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-          </Route>
+              {/* ✅ 관리자 페이지 */}
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <Admin />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/support"
+                element={
+                  <AdminRoute>
+                    <AdminSupport />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/product-support"
+                element={
+                  <AdminRoute>
+                    <AdminSupport />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/products"
+                element={
+                  <AdminRoute>
+                    <AdminProducts />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/products/:id/edit"
+                element={
+                  <AdminRoute>
+                    <AdminProductEdit />
+                  </AdminRoute>
+                }
+              />
 
-          {/* 404 페이지 */}
-          <Route
-            path="*"
-            element={
-              <div style={{ padding: "40px", textAlign: "center" }}>
-                <h2>🚫 {t("error.pageNotFound")}</h2>
-                <Link
-                  to="/"
-                  style={{
-                    marginTop: "10px",
-                    display: "inline-block",
-                    color: "#2563eb",
-                    textDecoration: "underline",
-                  }}
-                >
-                  {t("button.goHome")}
-                </Link>
-              </div>
-            }
-          />
-        </Routes>
+              {/* ✅ 인증 관련 */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/find-id" element={<FindId />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+            </Route>
+
+            {/* ✅ 404 */}
+            <Route
+              path="*"
+              element={
+                <div style={{ padding: "40px", textAlign: "center" }}>
+                  <h2>🚫 {t("error.pageNotFound")}</h2>
+                  <Link
+                    to="/"
+                    style={{
+                      marginTop: "10px",
+                      display: "inline-block",
+                      color: "#2563eb",
+                      textDecoration: "underline",
+                    }}
+                  >
+                    {t("button.goHome")}
+                  </Link>
+                </div>
+              }
+            />
+          </Routes>
+        </AppWrapper>
       </Router>
     </SiteSettingsProvider>
   );
@@ -695,9 +692,7 @@ const BUTTON_BASE = {
 function App() {
   return (
     <EditModeProvider>
-    <AppWrapper>
       <InnerApp />
-    </AppWrapper>
     </EditModeProvider>
   );
 }
