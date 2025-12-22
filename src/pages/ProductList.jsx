@@ -430,10 +430,6 @@ function ProductList() {
         ))}
       </section>
 
-      {/* 푸터 */}
-      <footer className="mt-16 text-gray-400 text-sm border-t pt-4 w-full text-center">
-        © 2025 onyou
-      </footer>
     </div>
   );
 }
